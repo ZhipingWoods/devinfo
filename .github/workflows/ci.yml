@@ -1,0 +1,90 @@
+name: ci
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  # Linux and macOS: one target each.
+  unix:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, macos-13]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: cmake --build build --config Release
+
+      - name: Table
+        run: ./build/devinfo --table
+
+      - name: Bench
+        run: ./build/devinfo --bench --table
+
+      - name: Validate JSON
+        run: |
+          ./build/devinfo --json | python3 -c "
+          import json, sys
+          d = json.load(sys.stdin)
+          assert d['schema'] == 'devinfo/1', d.get('schema')
+          assert d['abi'] == 1
+          assert 'cores' in d['cpu']
+          assert isinstance(d['gpus'], list) and isinstance(d['npus'], list)
+          assert isinstance(d['accelerators'], dict)
+          print('schema OK:', d['cpu'].get('model'), len(d['gpus']), 'gpu(s)')
+          "
+
+      - name: FFI round-trip
+        run: python3 examples/ffi_python.py > /dev/null && echo "ctypes OK"
+
+  # Windows needs both bitnesses: the plugin ships as win64 and win32.
+  windows:
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [x64, Win32]
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -A ${{ matrix.arch }}
+
+      - name: Build
+        run: cmake --build build --config Release
+
+      - name: Table
+        run: .\build\Release\devinfo.exe --table
+
+      - name: Bench
+        run: .\build\Release\devinfo.exe --bench --table
+
+      - name: Validate JSON
+        shell: bash
+        run: |
+          ./build/Release/devinfo.exe --json | python3 -c "
+          import json, sys
+          d = json.load(sys.stdin)
+          assert d['schema'] == 'devinfo/1', d.get('schema')
+          assert d['abi'] == 1
+          assert 'cores' in d['cpu']
+          assert isinstance(d['gpus'], list) and isinstance(d['npus'], list)
+          print('schema OK:', d['cpu'].get('model'), len(d['gpus']), 'gpu(s)')
+          "
+
+      - name: Report bitness
+        shell: bash
+        run: |
+          ./build/Release/devinfo.exe --json | python3 -c "
+          import json, sys
+          d = json.load(sys.stdin)
+          print('arch reported:', d['host'].get('arch'))
+          "

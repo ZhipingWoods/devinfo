@@ -1,0 +1,56 @@
+cmake_minimum_required(VERSION 3.16)
+project(devinfo VERSION 1.0.0 LANGUAGES CXX)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+  set(CMAKE_BUILD_TYPE Release CACHE STRING "" FORCE)
+endif()
+
+# ---- platform sources: one file per OS, everything else shared ----
+set(DEVINFO_SRC src/core.cpp src/table.cpp src/emit.cpp)
+if(APPLE)
+  list(APPEND DEVINFO_SRC src/apple.cpp)
+elseif(WIN32)
+  list(APPEND DEVINFO_SRC src/win32.cpp)
+else()
+  list(APPEND DEVINFO_SRC src/linux.cpp)
+endif()
+
+find_package(Threads REQUIRED)
+
+add_library(devinfo_core STATIC ${DEVINFO_SRC})
+target_include_directories(devinfo_core PUBLIC include)
+target_link_libraries(devinfo_core PUBLIC Threads::Threads)
+
+# The static library is also linked into the shared plugin. macOS defaults to
+# PIC and hides this; Linux and Windows do not, so be explicit.
+set_target_properties(devinfo_core PROPERTIES POSITION_INDEPENDENT_CODE ON)
+
+if(APPLE)
+  target_compile_options(devinfo_core PRIVATE -Wall -Wextra -Wno-unused-parameter)
+  target_link_libraries(devinfo_core PUBLIC "-framework IOKit" "-framework CoreFoundation")
+elseif(WIN32)
+  target_compile_options(devinfo_core PRIVATE /W3 /utf-8)
+  target_link_libraries(devinfo_core PUBLIC dxgi setupapi version)
+else()
+  target_compile_options(devinfo_core PRIVATE -Wall -Wextra -Wno-unused-parameter)
+  target_link_libraries(devinfo_core PUBLIC ${CMAKE_DL_LIBS})
+endif()
+
+# ---- plugin proper: C ABI shared library ----
+add_library(devinfo SHARED src/capi.cpp)
+target_link_libraries(devinfo PRIVATE devinfo_core)
+set_target_properties(devinfo PROPERTIES
+  OUTPUT_NAME devinfo
+  CXX_VISIBILITY_PRESET hidden
+  VISIBILITY_INLINES_HIDDEN ON)
+if(WIN32)
+  target_compile_options(devinfo PRIVATE /utf-8)
+endif()
+
+# ---- command line ----
+add_executable(devinfo-cli src/main.cpp)
+target_link_libraries(devinfo-cli PRIVATE devinfo_core)
+set_target_properties(devinfo-cli PROPERTIES OUTPUT_NAME devinfo)
