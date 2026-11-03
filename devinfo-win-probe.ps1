@@ -682,14 +682,16 @@ if ($ok -and $vcvars) {
     $dllPath = Join-Path $od 'devinfo.dll'
     $common = '/nologo /std:c++17 /O2 /EHsc /utf-8 /I' + $Q + $inc + $Q
     $links  = '/link dxgi.lib setupapi.lib version.lib'
-    $srcExe = ($srcCLI | ForEach-Object { $Q + $_ + $Q }) -join ' '
-    $srcDll = ($srcDLL | ForEach-Object { $Q + $_ + $Q }) -join ' '
+    # PowerShell variables are case-insensitive, so these must not be called
+    # $srcExe / $srcDll: that would clobber the arrays used by the g++ pass.
+    $srcExeQuoted = ($srcCLI | ForEach-Object { $Q + $_ + $Q }) -join ' '
+    $srcDllQuoted = ($srcDLL | ForEach-Object { $Q + $_ + $Q }) -join ' '
     # Written to .bat files on purpose: passing a quoted command straight to
     # cmd.exe /c invites it to strip the wrong quotes.
     $bat1 = Join-Path $od 'build-exe.bat'
     $bat2 = Join-Path $od 'build-dll.bat'
-    Set-Content -Path $bat1 -Encoding ASCII -Value ('call ' + $Q + $vcvars + $Q + ' ' + $arch + ' && cl ' + $common + ' ' + $srcExe + ' /Fe:' + $Q + $exePath + $Q + ' ' + $links)
-    Set-Content -Path $bat2 -Encoding ASCII -Value ('call ' + $Q + $vcvars + $Q + ' ' + $arch + ' && cl ' + $common + ' /LD ' + $srcDll + ' /Fe:' + $Q + $dllPath + $Q + ' ' + $links)
+    Set-Content -Path $bat1 -Encoding ASCII -Value ('call ' + $Q + $vcvars + $Q + ' ' + $arch + ' && cl ' + $common + ' ' + $srcExeQuoted + ' /Fe:' + $Q + $exePath + $Q + ' ' + $links)
+    Set-Content -Path $bat2 -Encoding ASCII -Value ('call ' + $Q + $vcvars + $Q + ' ' + $arch + ' && cl ' + $common + ' /LD ' + $srcDllQuoted + ' /Fe:' + $Q + $dllPath + $Q + ' ' + $links)
     Push-Location $od
     $o1 = & cmd.exe /c $bat1 2>&1
     $rc1 = $LASTEXITCODE
