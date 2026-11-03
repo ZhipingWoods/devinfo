@@ -146,20 +146,67 @@ x86_64 and arm64 on all three.
 
 ## Verification status
 
-| platform | status |
-|---|---|
-| macOS arm64 | **built and run**, output verified on Apple M5 |
-| Linux | `src/linux.cpp` is POSIX-only and passes `-Wall -Wextra` compilation; exercised by CI on ubuntu-latest |
-| Windows | written against documented Win32/DXGI/SetupAPI; exercised by CI on windows-latest |
+| platform | status | hardware |
+|---|---|---|
+| macOS arm64 | **built and run** | Apple M5, macOS 26.6 |
+| Linux x86_64 | **built and run** | 2x EPYC 7402 (96 threads), 8x RTX 4090, Ubuntu 22.04, driver 580.119.02 |
+| Windows win64 | written, CI-compiled | CI runner |
+| Windows win32 | written, CI-compiled | CI runner |
 
-`.github/workflows/ci.yml` builds and runs the CLI on all three targets,
-so the paths that could not be executed locally are still compiled on every push.
+The Linux run is a real acceptance, not a smoke test: it reported 48 cores /
+96 threads, L1d 1.5 MiB, L2 24 MiB, L3 256 MiB, and all eight GPUs at 128 SM /
+512 Tensor Cores / 1008 GB/s with `sm_8.9`. Those are the datasheet numbers,
+which is the point.
+
+`.github/workflows/ci.yml` builds ubuntu-latest, macos-latest, macos-13 and
+windows-latest in both bitnesses (`-A x64` and `-A Win32`), and validates
+the JSON schema on each.
+
+## Measured against a second machine
+
+    # 2x AMD EPYC 7402, 8x RTX 4090, 501 GiB, Ubuntu 22.04
+    devinfo - 139 ms  (fast)
+    linux Ubuntu 22.04.5 LTS | x86_64 | native
+    CPU  AMD EPYC 7402 24-Core Processor
+         48 cores / 96 threads         clock 2.800 GHz  x86_64
+         L1i 1.5 MiB  L1d 1.5 MiB  L2 24.0 MiB  L3 256.0 MiB  line 64B
+         RAM 501.3 GiB
+         peak FP32 2.150 TFLOPS~
+    GPU0 NVIDIA GeForce RTX 4090
+         128 SM(s)  512 Tensor Cores  sm_8.9
+         vram 23.5 GiB  clock 2.520 GHz  bw 1008.1 GB/s
+         peak FP32 82.58 TF~  FP16 330.3 TF~  BF16 330.3 TF~  (sparse 660.6 TF)~
+    ...
+    accelerators
+         cuda          13.0          driver
+         cuda_runtime  13.0          runtime
+         nvml          580.119.02    lib
+         vulkan                      runtime
+         opencl                      runtime
+         nvcc                        toolchain
+
+Note which values lack the `~`: GPU clock, VRAM, bandwidth, SM and Tensor
+Core counts and the CUDA driver/toolkit versions all came off the machine.
+Only the throughput peaks are derived.
+
+### Why Linux takes ~140 ms and macOS ~5 ms
+
+Enumerating an NVIDIA GPU through the driver costs `cuInit`: measured
+**139 ms** on this 8-GPU node versus **28 ms** for `nvmlInit`. But NVML cannot
+report SM counts on this driver, and SM count is what Tensor Core figures come
+from, so the CUDA driver is the price of the headline number. For comparison,
+shelling out to `nvidia-smi` costs 200-800 ms and returns less.
+
+On macOS there is no driver to initialise, hence single-digit milliseconds.
 
 ## What this deliberately is not
 
 - **not a benchmark suite** - peaks are theoretical. `--bench` measures a
-  multi-threaded copy bandwidth (threads pinned to performance cores where
-  the count is known), which typically lands at 70-80% of theoretical peak.
+  4-thread copy bandwidth. Four is deliberate: an EPYC sweep at 1/2/4/8
+  threads gives 29.5 / 40.2 / 44.2 / 33.7 GB/s, so scaling with the core count
+  makes the number *worse*. Expect roughly 70-80% of theoretical peak.
+  First touch of the buffers costs ~60 ms per 128 MB; that happens before the
+  clock starts, so it makes `--bench` slower, not wrong.
 - **not a monitor** - no sampling, no daemon, no utilisation.
 - **not 100% precise** - a chip missing from `table.cpp` yields a warning
   and omitted fields rather than invented numbers.

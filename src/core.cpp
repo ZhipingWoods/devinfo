@@ -651,11 +651,21 @@ Num measure_memory_bandwidth(uint64_t bytes_hint, unsigned threads_hint) {
   using clk = std::chrono::steady_clock;
   size_t n = (size_t)(bytes_hint ? bytes_hint : (64ull << 20));
 
-  /* Prefer the number of performance cores: spilling a copy thread onto an
-   * efficiency core drags the aggregate down and adds run-to-run noise. */
-  unsigned nt = threads_hint ? threads_hint : std::thread::hardware_concurrency();
-  if (nt == 0) nt = 4;
-  if (nt > 16) nt = 16;
+  /* Copy bandwidth saturates early and then degrades: extra threads add
+   * scheduling and cross-socket NUMA traffic. Measured sweeps on an Apple M5
+   * (10 cores) and on a 2-socket 96-thread EPYC both peak at 4 threads:
+   * EPYC 1/2/4/8 -> 29.5 / 40.2 / 44.2 / 33.7 GB/s. Do not scale with the
+   * core count; clamp instead.
+   *
+   * Note the page-fault cost: first touch of the two buffers costs roughly
+   * 60 ms per 128 MB on a VM. That happens before timing starts, so it slows
+   * the call down but does not corrupt the number. */
+  unsigned nt = threads_hint ? threads_hint
+                             : (std::thread::hardware_concurrency()
+                                    ? std::thread::hardware_concurrency() / 2
+                                    : 4);
+  if (nt < 2) nt = 2;
+  if (nt > 4) nt = 4;
   if (n < (size_t)nt * 4096) nt = 1;
 
   std::vector<unsigned char> src(n, 1), dst(n, 0);
