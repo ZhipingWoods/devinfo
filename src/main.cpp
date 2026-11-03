@@ -28,9 +28,12 @@ void usage() {
       "  --bench       add a memory bandwidth micro-benchmark\n"
       "  -v, --version print version\n"
       "  -h, --help    this text\n"
+#if defined(_WIN32)
       "\n"
       "Started by double-click, it also writes devinfo-report.txt and\n"
-      "devinfo-report.json next to the executable and waits for Enter.\n",
+      "devinfo-report.json next to the executable and waits for Enter.\n"
+#endif
+      ,
       stdout);
 }
 
