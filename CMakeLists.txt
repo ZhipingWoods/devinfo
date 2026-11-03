@@ -8,6 +8,17 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   set(CMAKE_BUILD_TYPE Release CACHE STRING "" FORCE)
 endif()
 
+# These binaries are meant to be dropped onto a machine nobody administers, so
+# they must not depend on a runtime that machine may not have: MSVC defaults to
+# /MD, which needs the VC++ redistributable on the target, and gcc defaults to a
+# shared libstdc++, which needs a matching distro package.
+if(MSVC)
+  cmake_policy(SET CMP0091 NEW)
+  set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+elseif(NOT APPLE AND NOT WIN32)
+  add_link_options(-static-libstdc++ -static-libgcc)
+endif()
+
 # ---- platform sources: one file per OS, everything else shared ----
 set(DEVINFO_SRC src/core.cpp src/table.cpp src/emit.cpp)
 if(APPLE)
