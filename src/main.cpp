@@ -34,6 +34,7 @@ void usage() {
       stdout);
 }
 
+#if defined(_WIN32)
 bool write_file(const std::string& path, const std::string& data) {
   std::FILE* f = std::fopen(path.c_str(), "wb");
   if (!f) return false;
@@ -42,7 +43,6 @@ bool write_file(const std::string& path, const std::string& data) {
   return n == data.size();
 }
 
-#if defined(_WIN32)
 /* A console program started from Explorer gets a console of its own with
  * exactly one process attached to it. Anything started from cmd or PowerShell
  * shares that console with at least the shell, so the count is >= 2. This is
@@ -102,14 +102,17 @@ int main(int argc, char** argv) {
   devinfo::Report r = devinfo::probe(flags);
 
 #if defined(_WIN32)
-  /* The console we get from Explorer is GBK on a Chinese install; the report is
-   * UTF-8, so any non-ASCII name would come out as mojibake. */
+  /* The console is GBK on a Chinese install and the report is UTF-8, so any
+   * non-ASCII device name would come out as mojibake. Only touch the console;
+   * redirected output must stay byte-for-byte UTF-8. */
   bool interactive = launched_by_double_click();
-  if (interactive) SetConsoleOutputCP(CP_UTF8);
+  if (ISATTY(stdout)) SetConsoleOutputCP(CP_UTF8);
 #endif
 
+  /* Render both: the double-click path writes both files, and formatting costs
+   * microseconds against a probe that takes milliseconds. */
   std::string table = devinfo::to_table(r);
-  std::string json = (mode == 1) ? table : devinfo::to_json(r);
+  std::string json = devinfo::to_json(r);
   const std::string& shown = (mode == 1) ? json : table;
   std::fwrite(shown.data(), 1, shown.size(), stdout);
 

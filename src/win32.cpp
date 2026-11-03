@@ -325,14 +325,28 @@ void probe_npu(Report& r) {
 /* Windows 10 exposes the hybrid topology through CPU Sets: every logical CPU
  * carries an EfficiencyClass and the highest class is the performance tier.
  * Compiled out on toolchains without the Win10 SDK. */
+#if defined(_WIN32_WINNT) && _WIN32_WINNT >= 0x0A00
+typedef BOOL(WINAPI* GetCpuSetInfo_t)(PSYSTEM_CPU_SET_INFORMATION, ULONG, PULONG,
+                                      HANDLE, ULONG);
+#endif
+
 void detect_hybrid(Cpu& c) {
 #if defined(_WIN32_WINNT) && _WIN32_WINNT >= 0x0A00
+  /* GetSystemCpuSetInformation only exists on Windows 10 and later. Importing
+   * it directly makes the loader refuse to start the whole program on 7 and 8
+   * with "procedure entry point could not be located", which is a fine way to
+   * lose every machine you actually care about. Resolve it at run time. */
+  HMODULE k32 = GetModuleHandleA("kernel32.dll");
+  if (!k32) return;
+  auto get_info = (GetCpuSetInfo_t)(void*)GetProcAddress(k32, "GetSystemCpuSetInformation");
+  if (!get_info) return;
+
   DWORD len = 0;
-  GetSystemCpuSetInformation(nullptr, 0, &len, GetCurrentProcess(), 0);
+  get_info(nullptr, 0, &len, GetCurrentProcess(), 0);
   if (len == 0) return;
   std::vector<unsigned char> buf(len);
-  if (!GetSystemCpuSetInformation(reinterpret_cast<PSYSTEM_CPU_SET_INFORMATION>(buf.data()),
-                                  len, &len, GetCurrentProcess(), 0))
+  if (!get_info(reinterpret_cast<PSYSTEM_CPU_SET_INFORMATION>(buf.data()),
+                len, &len, GetCurrentProcess(), 0))
     return;
 
   /* Group logical CPUs into tiers and dedupe SMT siblings by (group, core). */

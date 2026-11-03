@@ -1,6 +1,15 @@
 cmake_minimum_required(VERSION 3.16)
 project(devinfo VERSION 1.0.0 LANGUAGES CXX)
 
+# One macOS binary that runs on Intel and Apple Silicon, and on anything from
+# Big Sur up. The APIs used here (sysctl, IOKit) are far older than that.
+if(APPLE AND NOT CMAKE_OSX_ARCHITECTURES)
+  set(CMAKE_OSX_ARCHITECTURES "arm64;x86_64" CACHE STRING "" FORCE)
+endif()
+if(APPLE AND NOT CMAKE_OSX_DEPLOYMENT_TARGET)
+  set(CMAKE_OSX_DEPLOYMENT_TARGET "11.0" CACHE STRING "" FORCE)
+endif()
+
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
