@@ -40,6 +40,11 @@ elseif(WIN32)
     target_compile_options(devinfo_core PRIVATE /W3 /utf-8)
   else()
     target_compile_options(devinfo_core PRIVATE -Wall -Wextra -Wno-unused-parameter)
+    # GetProcAddress returns FARPROC; casting it to the real signature is the
+    # canonical Win32 idiom, and MSVC does not diagnose it at all. ggc and clang
+    # each spell the warning differently.
+    target_compile_options(devinfo_core PRIVATE
+      -Wno-cast-function-type -Wno-cast-function-type-mismatch)
   endif()
 else()
   target_compile_options(devinfo_core PRIVATE -Wall -Wextra -Wno-unused-parameter)
@@ -53,6 +58,10 @@ set_target_properties(devinfo PROPERTIES
   OUTPUT_NAME devinfo
   CXX_VISIBILITY_PRESET hidden
   VISIBILITY_INLINES_HIDDEN ON)
+if(WIN32)
+  # mingw prepends "lib"; Windows users expect devinfo.dll from either toolchain.
+  set_target_properties(devinfo PROPERTIES PREFIX "")
+endif()
 if(MSVC)
   target_compile_options(devinfo PRIVATE /utf-8)
 endif()
@@ -61,3 +70,11 @@ endif()
 add_executable(devinfo-cli src/main.cpp)
 target_link_libraries(devinfo-cli PRIVATE devinfo_core)
 set_target_properties(devinfo-cli PROPERTIES OUTPUT_NAME devinfo)
+
+if(WIN32 AND NOT MSVC)
+  # mingw/llvm-mingw link libc++ and libunwind dynamically by default, which
+  # leaves an .exe that will not start on a machine without those DLLs. The
+  # point of this tool is to be dropped onto a strange box and run.
+  target_link_options(devinfo-cli PRIVATE -static)
+  target_link_options(devinfo PRIVATE -static)
+endif()

@@ -8,7 +8,9 @@
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
-#include <dxgi1_1.h>
+/* IDXGIFactory1/IDXGIAdapter1 live in dxgi.h; there is no dxgi1_1.h in
+ * either the Windows SDK or mingw, so naming one breaks every toolchain. */
+#include <dxgi.h>
 #include <setupapi.h>
 
 #include <cctype>
@@ -124,7 +126,7 @@ void read_caches(Cpu& c) {
   while (off < len) {
     auto* e = (PSYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX)(buf.data() + off);
     if (e->Relationship == RelationCache) {
-      const CACHE_INFO& ci = e->Cache;
+      const CACHE_RELATIONSHIP& ci = e->Cache;
       unsigned long long bytes = ci.CacheSize;
       if (ci.Level == 1) {
         if (ci.Type == CacheInstruction) c.l1i += (unsigned)bytes;
@@ -210,6 +212,11 @@ bool is_virtual_display(const std::string& name) {
   return false;
 }
 
+}  /* anonymous namespace */
+
+/* probe_gpu/probe_npu are the platform entry points core.cpp calls, so they
+ * must sit in devinfo itself: inside the anonymous namespace they get internal
+ * linkage and every build fails to link. */
 void probe_gpu(Report& r) {
   IDXGIFactory1* factory = nullptr;
   if (FAILED(CreateDXGIFactory1(__uuidof(IDXGIFactory1), (void**)&factory)) || !factory) return;
@@ -313,8 +320,6 @@ void probe_npu(Report& r) {
   }
   SetupDiDestroyDeviceInfoList(set);
 }
-
-}  /* anonymous namespace */
 
 /* ================================================================ CPU */
 /* Windows 10 exposes the hybrid topology through CPU Sets: every logical CPU

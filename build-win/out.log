@@ -1,0 +1,25 @@
+src/capi.cpp:17:25: warning: redeclaration of 'devinfo_abi_version' should not add 'dllexport' attribute [-Wdll-attribute-on-redeclaration]
+   17 | DEVINFO_EXPORT uint32_t devinfo_abi_version(void) { return DEVINFO_ABI_VERSION; }
+      |                         ^
+include/devinfo.h:26:13: note: previous declaration is here
+   26 | uint32_t    devinfo_abi_version(void);
+      |             ^
+src/capi.cpp:19:28: warning: redeclaration of 'devinfo_version' should not add 'dllexport' attribute [-Wdll-attribute-on-redeclaration]
+   19 | DEVINFO_EXPORT const char* devinfo_version(void) { return DEVINFO_VERSION_STRING; }
+      |                            ^
+include/devinfo.h:27:13: note: previous declaration is here
+   27 | const char* devinfo_version(void);
+      |             ^
+src/capi.cpp:21:22: warning: redeclaration of 'devinfo_probe_json' should not add 'dllexport' attribute [-Wdll-attribute-on-redeclaration]
+   21 | DEVINFO_EXPORT char* devinfo_probe_json(uint32_t flags) {
+      |                      ^
+include/devinfo.h:31:7: note: previous declaration is here
+   31 | char* devinfo_probe_json(uint32_t flags);
+      |       ^
+src/capi.cpp:33:21: warning: redeclaration of 'devinfo_free' should not add 'dllexport' attribute [-Wdll-attribute-on-redeclaration]
+   33 | DEVINFO_EXPORT void devinfo_free(char* p) { std::free(p); }
+      |                     ^
+include/devinfo.h:33:6: note: previous declaration is here
+   33 | void devinfo_free(char* p);
+      |      ^
+4 warnings generated.

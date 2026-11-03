@@ -2,3 +2,6 @@ build/
 .DS_Store
 *.o
 *.obj
+
+# local-only cross toolchain used for Windows builds, ~1 GB of binaries
+.toolchain/
