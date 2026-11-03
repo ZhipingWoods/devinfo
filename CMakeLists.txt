@@ -32,10 +32,15 @@ if(APPLE)
   target_compile_options(devinfo_core PRIVATE -Wall -Wextra -Wno-unused-parameter)
   target_link_libraries(devinfo_core PUBLIC "-framework IOKit" "-framework CoreFoundation")
 elseif(WIN32)
-  target_compile_options(devinfo_core PRIVATE /W3 /utf-8)
-  target_link_libraries(devinfo_core PUBLIC dxgi setupapi version)
-  # CPU Sets (hybrid P/E topology) need the Windows 10 SDK surface.
+  # CPU Sets (hybrid P/E topology) need the Windows 10 SDK surface. Set for
+  # every Windows toolchain, not just MSVC, or mingw compiles the block out.
   target_compile_definitions(devinfo_core PUBLIC _WIN32_WINNT=0x0A00)
+  target_link_libraries(devinfo_core PUBLIC dxgi setupapi version)
+  if(MSVC)
+    target_compile_options(devinfo_core PRIVATE /W3 /utf-8)
+  else()
+    target_compile_options(devinfo_core PRIVATE -Wall -Wextra -Wno-unused-parameter)
+  endif()
 else()
   target_compile_options(devinfo_core PRIVATE -Wall -Wextra -Wno-unused-parameter)
   target_link_libraries(devinfo_core PUBLIC ${CMAKE_DL_LIBS})
@@ -48,7 +53,7 @@ set_target_properties(devinfo PROPERTIES
   OUTPUT_NAME devinfo
   CXX_VISIBILITY_PRESET hidden
   VISIBILITY_INLINES_HIDDEN ON)
-if(WIN32)
+if(MSVC)
   target_compile_options(devinfo PRIVATE /utf-8)
 endif()
 

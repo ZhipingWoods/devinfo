@@ -11,6 +11,7 @@
 #include <dxgi1_1.h>
 #include <setupapi.h>
 
+#include <cctype>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -193,6 +194,22 @@ NvmlApi load_nvml() {
   return a;
 }
 
+/* ToDesk, GameViewer, Oray, Parsec and friends ship indirect display drivers.
+ * Those are real WDDM adapters, not DXGI_ADAPTER_FLAG_SOFTWARE ones, so they
+ * turn up next to the actual GPUs and would otherwise be reported as hardware. */
+bool is_virtual_display(const std::string& name) {
+  static const char* kPatterns[] = {
+    "virtual display", "virtual monitor", "idddriver", "indirect display",
+    "basic render", "remote display", "mirror driver", "displaylink",
+  };
+  std::string low;
+  low.reserve(name.size());
+  for (char ch : name) low.push_back((char)std::tolower((unsigned char)ch));
+  for (const char* p : kPatterns)
+    if (low.find(p) != std::string::npos) return true;
+  return false;
+}
+
 void probe_gpu(Report& r) {
   IDXGIFactory1* factory = nullptr;
   if (FAILED(CreateDXGIFactory1(__uuidof(IDXGIFactory1), (void**)&factory)) || !factory) return;
@@ -200,15 +217,17 @@ void probe_gpu(Report& r) {
   NvmlApi nv = load_nvml();
   bool nv_ready = false;
   unsigned nv_count = 0;
+  unsigned nv_seen = 0;
   if (nv.ok() && nv.init() == 0 && nv.count(&nv_count) == 0) nv_ready = true;
 
   IDXGIAdapter1* adapter = nullptr;
   for (UINT i = 0; factory->EnumAdapters1(i, &adapter) != DXGI_ERROR_NOT_FOUND; ++i) {
     DXGI_ADAPTER_DESC1 desc{};
     if (SUCCEEDED(adapter->GetDesc1(&desc))) {
-      if (!(desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE)) {
+      std::string adapter_name = wide_to_utf8(desc.Description);
+      if (!(desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE) && !is_virtual_display(adapter_name)) {
         Gpu g;
-        g.name = wide_to_utf8(desc.Description);
+        g.name = adapter_name;
         switch (desc.VendorId) {
           case 0x10DE: g.vendor = "nvidia"; g.core_unit = "SM"; break;
           case 0x1002:
@@ -221,10 +240,12 @@ void probe_gpu(Report& r) {
         if (desc.DedicatedVideoMemory > 0)
           g.vram_bytes = Num{(double)desc.DedicatedVideoMemory, true, false};
 
-        /* Enrich the first NVIDIA adapter through NVML. */
-        if (g.vendor == "nvidia" && nv_ready && nv_count > i) {
+        /* Index NVML by NVIDIA adapters seen, not by DXGI adapter index: on a
+         * box with an Intel iGPU in slot 0 the two orders differ. */
+        if (g.vendor == "nvidia" && nv_ready && nv_seen < nv_count) {
           unsigned dev = 0;
-          if (nv.handle(&dev, i) == 0) {
+          unsigned nv_i = nv_seen++;
+          if (nv.handle(&dev, nv_i) == 0) {
             unsigned cores = 0;
             if (nv.num_cores && nv.num_cores(&dev, &cores) == 0 && cores > 0) {
               g.cores = Num{(double)cores, true, false};
