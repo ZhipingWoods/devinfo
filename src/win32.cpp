@@ -296,6 +296,67 @@ void probe_npu(Report& r) {
 }  /* anonymous namespace */
 
 /* ================================================================ CPU */
+/* Windows 10 exposes the hybrid topology through CPU Sets: every logical CPU
+ * carries an EfficiencyClass and the highest class is the performance tier.
+ * Compiled out on toolchains without the Win10 SDK. */
+void detect_hybrid(Cpu& c) {
+#if defined(_WIN32_WINNT) && _WIN32_WINNT >= 0x0A00
+  DWORD len = 0;
+  GetSystemCpuSetInformation(nullptr, 0, &len, GetCurrentProcess(), 0);
+  if (len == 0) return;
+  std::vector<unsigned char> buf(len);
+  if (!GetSystemCpuSetInformation(reinterpret_cast<PSYSTEM_CPU_SET_INFORMATION>(buf.data()),
+                                  len, &len, GetCurrentProcess(), 0))
+    return;
+
+  /* Group logical CPUs into tiers and dedupe SMT siblings by (group, core). */
+  struct Tier {
+    unsigned char cls = 0;
+    std::vector<std::string> cores;
+  };
+  std::vector<Tier> tiers;
+
+  size_t off = 0;
+  while (off + sizeof(SYSTEM_CPU_SET_INFORMATION) <= len) {
+    auto* info = reinterpret_cast<PSYSTEM_CPU_SET_INFORMATION>(buf.data() + off);
+    if (info->Size == 0) break;
+    off += info->Size;
+    if (info->Type != CpuSetInformation) continue;
+
+    const auto& cs = info->CpuSet;
+    Tier* t = nullptr;
+    for (auto& x : tiers) if (x.cls == cs.EfficiencyClass) t = &x;
+    if (!t) {
+      tiers.push_back(Tier{});
+      tiers.back().cls = cs.EfficiencyClass;
+      t = &tiers.back();
+    }
+    std::string key = std::to_string(cs.Group) + "/" + std::to_string(cs.CoreIndex);
+    bool dup = false;
+    for (const auto& s : t->cores) if (s == key) { dup = true; break; }
+    if (!dup) t->cores.push_back(key);
+  }
+
+  if (tiers.size() < 2) return;   /* uniform part: no P/E split to report */
+
+  size_t best = 0;
+  for (size_t i = 1; i < tiers.size(); ++i)
+    if (tiers[i].cls > tiers[best].cls) best = i;
+  unsigned p = (unsigned)tiers[best].cores.size();
+  unsigned e = 0;
+  for (size_t i = 0; i < tiers.size(); ++i)
+    if (i != best) e += (unsigned)tiers[i].cores.size();
+  if (p && e) {
+    c.p_cores = p;
+    c.e_cores = e;
+    c.p_name = "P";
+    c.e_name = "E";
+  }
+#else
+  (void)c;
+#endif
+}
+
 void probe_cpu(Cpu& c, Report& r) {
   c.arch = r.arch;
 
@@ -318,8 +379,7 @@ void probe_cpu(Cpu& c, Report& r) {
   DWORD logical = GetActiveProcessorCount(ALL_PROCESSOR_GROUPS);
   if (logical != (DWORD)-1) c.logical = logical;
 
-  /* Windows does not publish a performance-tier split; assume uniform. */
-  c.p_cores = c.physical;
+  detect_hybrid(c);
 
   read_caches(c);
   if (c.line == 0) c.line = 64;

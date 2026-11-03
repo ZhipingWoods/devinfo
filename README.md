@@ -149,7 +149,8 @@ x86_64 and arm64 on all three.
 | platform | status | hardware |
 |---|---|---|
 | macOS arm64 | **built and run** | Apple M5, macOS 26.6 |
-| Linux x86_64 | **built and run** | 2x EPYC 7402 (96 threads), 8x RTX 4090, Ubuntu 22.04, driver 580.119.02 |
+| Linux x86_64 (big) | **built and run** | 2x EPYC 7402 (96 threads), 8x RTX 4090, Ubuntu 22.04, driver 580.119.02 |
+| Linux x86_64 (hybrid) | **built and run** | Intel i5-1335U (2P + 8E), Ubuntu 24.04 |
 | Windows win64 | written, CI-compiled | CI runner |
 | Windows win32 | written, CI-compiled | CI runner |
 
@@ -161,6 +162,39 @@ which is the point.
 `.github/workflows/ci.yml` builds ubuntu-latest, macos-latest, macos-13 and
 windows-latest in both bitnesses (`-A x64` and `-A Win32`), and validates
 the JSON schema on each.
+
+## Hybrid CPUs (P/E cores and split caches)
+
+A 13th-gen mobile part is not a uniform machine, and the naive approach gets
+it wrong twice.
+
+**Core counts.** `/sys/devices/cpu_core/cpus` holds *logical* CPUs, so an
+i5-1335U lists `0-3` for two hyperthreaded P cores. Counting entries reports
+4 P cores. The fix is to resolve each CPU's `(physical_package_id, core_id)`
+and count distinct pairs:
+
+ ~~BT~~
+ 10 cores (2P + 8E) / 12 threads     <- 2 physical P + 8 physical E
+ ~~BT~~
+
+**Caches.** P cores and E cores ship different L1 and L2 sizes, so scaling
+one core's cache by the core count is wrong. Instead every cache *instance*
+is summed once, keyed by `indexN + shared_cpu_list`:
+
+| | P core | E core | total |
+|---|---|---|---|
+| L1d | 48 KiB x2 | 32 KiB x8 | 352 KiB |
+| L1i | 32 KiB x2 | 64 KiB x8 | 576 KiB |
+| L2 | 1280 KiB x2 | 2048 KiB x2 clusters | 6.5 MiB |
+| L3 | shared by all 12 | | 12 MiB |
+
+Verified against `sysfs` on both the hybrid laptop and a 2-socket EPYC.
+
+On Windows the same split comes from `GetSystemCpuSetInformation`, which
+tags each logical CPU with an `EfficiencyClass`.
+
+A non-hybrid CPU reports no P/E split at all: inventing "48 P cores" on a
+homogeneous EPYC would be a fiction.
 
 ## Measured against a second machine
 

@@ -74,26 +74,6 @@ double parse_cache_size(const std::string& raw) {
   return std::atof(s.c_str()) * mult;
 }
 
-/* Parse the kernel's cpu-list syntax: "0-3,8,10-11" -> count */
-unsigned cpulist_count(const std::string& s) {
-  unsigned n = 0;
-  size_t i = 0;
-  while (i < s.size()) {
-    size_t j = s.find(',', i);
-    std::string part = s.substr(i, j == std::string::npos ? std::string::npos : j - i);
-    size_t dash = part.find('-');
-    if (dash == std::string::npos) {
-      if (!part.empty()) ++n;
-    } else {
-      long a = std::atol(part.substr(0, dash).c_str());
-      long b = std::atol(part.substr(dash + 1).c_str());
-      if (b >= a) n += (unsigned)(b - a + 1);
-    }
-    if (j == std::string::npos) break;
-    i = j + 1;
-  }
-  return n;
-}
 
 /* ---------------------------------------------------------- /proc/cpuinfo */
 struct CpuInfo {
@@ -183,44 +163,135 @@ unsigned count_physical_cores() {
   return fallback;
 }
 
-void read_caches(Cpu& c) {
-  std::string base = "/sys/devices/system/cpu/cpu0/cache/";
-  std::vector<std::string> idx = list_dir(base);
-  /* shared_cpu_list counts logical CPUs, so divide by the thread count. */
-  unsigned ncores = c.logical ? c.logical : (c.physical ? c.physical : 1);
-  for (const auto& i : idx) {
-    if (i.rfind("index", 0) != 0) continue;
-    std::string dir = base + i + "/";
-    std::string level = one_line(dir + "level");
-    std::string type = one_line(dir + "type");
-    double bytes = parse_cache_size(one_line(dir + "size"));
-    /* shared_cpu_list is the human cpulist ("0,48"); shared_cpu_map is a hex
-     * bitmask and must not be fed to the cpulist parser. */
-    std::string shared = one_line(dir + "shared_cpu_list");
-    if (bytes <= 0) continue;
-
-    /* size is per-instance; the sharing unit is threads, not cores */
-    unsigned instances = 1;
-    if (!shared.empty()) {
-      unsigned ncpu = cpulist_count(shared);
-      if (ncpu > 0 && ncores >= ncpu) instances = ncores / ncpu;
+/* Expand a kernel cpulist ("0-3,8,10-11") into cpu indices. */
+std::vector<unsigned> cpulist_expand(const std::string& s) {
+  std::vector<unsigned> out;
+  size_t i = 0;
+  while (i < s.size()) {
+    size_t j = s.find(',', i);
+    if (j == std::string::npos) j = s.size();
+    std::string part = trim(s.substr(i, j - i));
+    if (!part.empty()) {
+      size_t dash = part.find('-');
+      if (dash == std::string::npos) {
+        out.push_back((unsigned)std::atoi(part.c_str()));
+      } else {
+        unsigned a = (unsigned)std::atoi(part.substr(0, dash).c_str());
+        unsigned b = (unsigned)std::atoi(part.substr(dash + 1).c_str());
+        for (unsigned k = a; k <= b && k - a < 4096; ++k) out.push_back(k);
+      }
     }
-    if (level == "1" && (type == "Instruction" || type == "Data"))
-      (type == "Instruction" ? c.l1i : c.l1d) += (unsigned)(bytes * instances);
-    else if (level == "2")
-      c.l2 += (unsigned)(bytes * instances);
-    else if (level == "3")
-      c.l3 += (unsigned)(bytes * instances);
+    i = j + 1;
   }
-  c.line = (unsigned)std::atol(one_line(base + "index0/coherency_line_size").c_str());
+  return out;
+}
+
+/* A cpulist holds threads; SMT siblings share one core. Count real cores. */
+unsigned distinct_cores(const std::vector<unsigned>& cpus) {
+  std::vector<std::string> seen;
+  for (unsigned id : cpus) {
+    std::string base = "/sys/devices/system/cpu/cpu" + std::to_string(id) + "/topology/";
+    std::string pkg = one_line(base + "physical_package_id");
+    std::string core = one_line(base + "core_id");
+    if (core.empty()) continue;
+    std::string key = pkg + "/" + core;
+    bool dup = false;
+    for (const auto& s : seen) if (s == key) { dup = true; break; }
+    if (!dup) seen.push_back(key);
+  }
+  return (unsigned)seen.size();
+}
+
+void read_caches(Cpu& c) {
+  /* Walk every CPU and count each cache *instance* exactly once. Scaling one
+   * CPU's cache size by a core count is wrong on hybrid parts, where P and E
+   * cores ship different L1/L2 sizes, and on multi-socket boxes. Every
+   * instance is a distinct symlink target, so realpath() is its identity. */
+  unsigned nlogical = c.logical ? c.logical : 1;
+  if (nlogical > 1024) nlogical = 1024;
+  std::vector<std::string> seen;
+  unsigned line = 0;
+
+  for (unsigned cpu = 0; cpu < nlogical; ++cpu) {
+    std::string base = "/sys/devices/system/cpu/cpu" + std::to_string(cpu) + "/cache/";
+    for (const auto& i : list_dir(base)) {
+      if (i.rfind("index", 0) != 0) continue;
+      std::string dir = base + i;
+
+      /* shared_cpu_list names the CPUs sharing one cache, so it identifies the
+       * instance. These sysfs dirs are real directories, not symlinks, so
+       * neither the path nor realpath() dedupes them. */
+      std::string shared = one_line(dir + "/shared_cpu_list");
+      if (shared.empty()) continue;
+      /* index name + sharing set is a unique instance id, so level and type
+       * only need reading once per instance rather than once per CPU. */
+      std::string key = i + "/" + shared;
+      bool dup = false;
+      for (const auto& s : seen) if (s == key) { dup = true; break; }
+      if (dup) continue;
+      seen.push_back(key);
+
+      std::string level = one_line(dir + "/level");
+      std::string type = one_line(dir + "/type");
+
+      double bytes = parse_cache_size(one_line(dir + "/size"));
+      if (bytes <= 0) continue;
+      if (level == "1" && type == "Instruction") c.l1i += (unsigned)bytes;
+      else if (level == "1")                    c.l1d += (unsigned)bytes;
+      else if (level == "2")                    c.l2 += (unsigned)bytes;
+      else if (level == "3")                    c.l3 += (unsigned)bytes;
+      if (line == 0 && level == "1")
+        line = (unsigned)std::atol(one_line(dir + "/coherency_line_size").c_str());
+    }
+  }
+  c.line = line;
 }
 
 /* ------------------------------------------------------------------- GPU */
 struct PciDev {
-  std::string path;
+  std::string path;   /* .../cardN/device/ */
+  std::string card;   /* .../cardN/ */
   unsigned vendor = 0, device = 0;
   std::string driver;
 };
+
+/* Turn a PCI id into a human name from the distro's pci.ids database. Read
+ * the file directly; still no subprocesses. Empty when unavailable. */
+std::string pci_ids_name(unsigned vendor, unsigned device) {
+  static const char* kPaths[] = {
+      "/usr/share/hwdata/pci.ids",
+      "/usr/share/misc/pci.ids",
+      "/usr/share/pci.ids",
+  };
+  std::FILE* f = nullptr;
+  for (const char* p : kPaths) {
+    f = std::fopen(p, "rb");
+    if (f) break;
+  }
+  if (!f) return {};
+
+  char line[512];
+  bool in_vendor = false;
+  std::string out;
+  while (std::fgets(line, sizeof line, f)) {
+    if (line[0] == '#') continue;
+    if (line[0] == '\t') {
+      if (!in_vendor) continue;
+      if (line[1] == '\t') continue;            /* subsystem, not a device */
+      unsigned id = (unsigned)std::strtoul(line + 1, nullptr, 16);
+      if (id != device) continue;
+      const char* s = line + 5;
+      while (*s == ' ' || *s == '\t') ++s;
+      std::string n(s);
+      while (!n.empty() && (n.back() == '\n' || n.back() == '\r')) n.pop_back();
+      out = n;
+      break;
+    }
+    in_vendor = ((unsigned)std::strtoul(line, nullptr, 16) == vendor);
+  }
+  std::fclose(f);
+  return out;
+}
 
 std::vector<PciDev> drm_cards() {
   std::vector<PciDev> out;
@@ -231,6 +302,7 @@ std::vector<PciDev> drm_cards() {
     if (ven.empty()) continue;
     PciDev d;
     d.path = base;
+    d.card = "/sys/class/drm/" + e + "/";
     d.vendor = (unsigned)std::strtoul(ven.c_str(), nullptr, 0);
     std::string dev = one_line(base + "device");
     d.device = (unsigned)std::strtoul(dev.c_str(), nullptr, 0);
@@ -416,16 +488,19 @@ void probe_cpu(Cpu& c, Report& r) {
 
   /* Intel hybrid: the kernel publishes separate P/E cpu lists. */
   {
-    unsigned p = cpulist_count(one_line("/sys/devices/cpu_core/cpus"));
-    unsigned e = cpulist_count(one_line("/sys/devices/cpu_atom/cpus"));
+    /* These lists hold logical CPUs: a P core appears twice when SMT is on. */
+    std::vector<unsigned> plist = cpulist_expand(one_line("/sys/devices/cpu_core/cpus"));
+    std::vector<unsigned> elist = cpulist_expand(one_line("/sys/devices/cpu_atom/cpus"));
+    unsigned p = plist.empty() ? 0 : distinct_cores(plist);
+    unsigned e = elist.empty() ? 0 : distinct_cores(elist);
     if (p && e) {
       c.p_cores = p;
       c.e_cores = e;
       c.p_name = "P";
       c.e_name = "E";
-    } else {
-      c.p_cores = c.physical;
     }
+    /* Non-hybrid parts get no P/E split: inventing "48 P cores" on a
+     * homogeneous EPYC would be a fiction. */
   }
 
   read_caches(c);
@@ -460,7 +535,9 @@ void probe_gpu(Report& r) {
 
     char id[64];
     std::snprintf(id, sizeof id, "%04x:%04x", d.vendor, d.device);
-    g.name = g.vendor + std::string(" GPU [") + id + "]";
+    std::string pci = pci_ids_name(d.vendor, d.device);
+    g.name = pci.empty() ? (g.vendor + std::string(" GPU [") + id + "]")
+                         : (pci + " [" + id + "]");
     if (!d.driver.empty()) g.name += " (" + d.driver + ")";
     g.method = "sysfs /sys/class/drm";
 
@@ -469,6 +546,13 @@ void probe_gpu(Report& r) {
     if (!vram.empty()) {
       double b = std::atof(vram.c_str());
       if (b > 0) g.vram_bytes = Num{b, true, false};
+    }
+
+    /* i915 publishes the GT max frequency at the card level */
+    std::string gt = one_line(d.card + "gt_max_freq_mhz");
+    if (!gt.empty()) {
+      double mhz = std::atof(gt.c_str());
+      if (mhz > 0) g.clock_ghz = Num{mhz / 1000.0, true, false};
     }
     r.gpus.push_back(std::move(g));
   }

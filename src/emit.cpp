@@ -75,6 +75,7 @@ const char* mark(const Num& n) { return n.estimated ? "~" : ""; }
 
 std::string pad(const std::string& s, size_t w) {
   std::string o = s;
+  if (o.size() >= w) return o + ' ';   /* never lose the separator */
   while (o.size() < w) o += ' ';
   return o;
 }

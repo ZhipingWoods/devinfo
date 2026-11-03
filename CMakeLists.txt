@@ -34,6 +34,8 @@ if(APPLE)
 elseif(WIN32)
   target_compile_options(devinfo_core PRIVATE /W3 /utf-8)
   target_link_libraries(devinfo_core PUBLIC dxgi setupapi version)
+  # CPU Sets (hybrid P/E topology) need the Windows 10 SDK surface.
+  target_compile_definitions(devinfo_core PUBLIC _WIN32_WINNT=0x0A00)
 else()
   target_compile_options(devinfo_core PRIVATE -Wall -Wextra -Wno-unused-parameter)
   target_link_libraries(devinfo_core PUBLIC ${CMAKE_DL_LIBS})
