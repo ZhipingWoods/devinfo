@@ -1,37 +1,54 @@
-#requires -version 5.1
+#requires -version 3.0
 <#
-  devinfo - Windows probe (self-contained)
+  devinfo - black-box probe
 
   Run:
       powershell -ExecutionPolicy Bypass -File .\devinfo-win-probe.ps1
 
-  Needs no network and no admin rights. The C++ source is embedded below, so
-  nothing has to be cloned or downloaded. It reports the machine, then tries to
-  build the project as 64-bit and as 32-bit, runs each, and calls the plugin
-  through Python ctypes when it can.
+  Assumes nothing about the machine. It discovers the toolchain itself, records
+  ground truth straight from the OS (independent of the code under test), builds
+  the project every way it can - x64, Win32, ARM64, through cmake, through
+  cl.exe via vcvarsall, or through g++ - runs each build, and calls the DLL
+  through Python ctypes.
 
-  Send back devinfo-report.txt (written next to this script), or just paste the
-  console output.
+  Output: devinfo-report.txt next to this script. Send that file back.
+  No network, no admin rights, no installs.
 #>
 
 $ErrorActionPreference = 'Continue'
 $ProgressPreference    = 'SilentlyContinue'
+$Q      = '"'
+$pf     = [Environment]::GetEnvironmentVariable('ProgramFiles')
+$pf86   = [Environment]::GetEnvironmentVariable('ProgramFiles(x86)')
+$pfdata = [Environment]::GetEnvironmentVariable('ProgramData')
 
 $script:lines = New-Object System.Collections.Generic.List[string]
-
 function Say([string]$t = '') {
   Write-Host $t
   $script:lines.Add($t) | Out-Null
 }
 function Head([string]$t) {
   Say ''
-  Say ('===== ' + $t + ' =====')
+  Say '==============================================================='
+  Say (' ' + $t)
+  Say '==============================================================='
 }
-function Try-Say([scriptblock]$b) {
+function Safe([scriptblock]$b) {
   try { & $b } catch { Say ('  <error: ' + $_.Exception.Message + '>') }
 }
+function Dump([string]$title, $lines) {
+  $arr = @($lines | ForEach-Object { [string]$_ })
+  Say ('--- ' + $title + '  (' + $arr.Count + ' lines) ---')
+  if ($arr.Count -le 140) {
+    $arr | ForEach-Object { Say ('  ' + $_) }
+  } else {
+    $arr[0..29] | ForEach-Object { Say ('  ' + $_) }
+    Say ('  ... [' + ($arr.Count - 130) + ' lines omitted] ...')
+    $arr[($arr.Count - 100)..($arr.Count - 1)] | ForEach-Object { Say ('  ' + $_) }
+  }
+}
 
-# ---------------------------------------------------------------- payload
+# ------------------------------------------------------------------ payload
 $b64 = @'
 UEsDBBQAAAAIAFOoY119yFPYhgMAAGYIAAAOABwAQ01ha2VMaXN0cy50eHRVVAkAA27b6WrL2+lqdXgLAAEE9QEAAAQUAAAAxVVdc5s6EH33r9hx+2Bmasdp
 ZtpO7twHDHKiiQsUcJI+MQrItm4AcYVonOn0v3eF8Uc+2rR9qR8wknZXe3bPWdKC3fKkEKUomiJR/P9GKJ4NLkkYUd+Dk9HxO6tXKfkfT/Ug419EuZCwPT0e
@@ -408,215 +425,319 @@ AAAAAQAAAICB+HgAAGV4YW1wbGVzL2ZmaV9jLmNVVAUAAxzN6Wp1eAsAAQT1AQAABBQAAABQSwECHgMU
 AAAAgIHYegAAZXhhbXBsZXMvZmZpX3B5dGhvbi5weVVUBQADHM3panV4CwABBPUBAAAEFAAAAFBLBQYAAAAAEAAQADYFAADJfQAAAAA=
 '@
 
-# ---------------------------------------------------------------- machine
-Head 'ENVIRONMENT'
-Say ('Machine     : ' + $env:COMPUTERNAME)
-Try-Say {
+Say ('devinfo probe   ' + (Get-Date -Format 'yyyy-MM-dd HH:mm:ss') + '  on ' + $env:COMPUTERNAME)
+
+# ================================================================== A
+Head 'A. ENVIRONMENT'
+Safe {
   $os = Get-CimInstance Win32_OperatingSystem
-  Say ('Caption     : ' + $os.Caption)
-  Say ('Version     : ' + $os.Version + '  build ' + $os.BuildNumber)
-  Say ('OSArch      : ' + $os.OSArchitecture)
-  Say ('RAM KiB     : ' + $os.TotalVisibleMemorySize)
+  Say ('OS          : ' + $os.Caption)
+  Say ('Version     : ' + $os.Version + '  build ' + $os.BuildNumber + '  (' + $os.OSArchitecture + ')')
+  Say ('RAM (KiB)   : ' + $os.TotalVisibleMemorySize)
 }
-Say ('Process64   : ' + [Environment]::Is64BitProcess + '  (this shell)')
-Say ('PSVersion   : ' + $PSVersionTable.PSVersion)
+Safe {
+  $cs = Get-CimInstance Win32_ComputerSystem
+  Say ('Vendor      : ' + $cs.Manufacturer)
+  Say ('Model       : ' + $cs.Model)
+}
+Say ('Shell 64bit : ' + [Environment]::Is64BitProcess)
+Say ('OS 64bit    : ' + [Environment]::Is64BitOperatingSystem)
+Say ('PowerShell  : ' + $PSVersionTable.PSVersion)
+Say ('Culture     : ' + (Get-Culture).Name)
 Say ('WSL marker  : ' + $(if ($env:WSL_DISTRO_NAME) { 'yes' } else { 'no' }))
 
-Head 'CPU'
-Try-Say {
+# ================================================================== B
+Head 'B. CPU  (ground truth, from the OS)'
+Safe {
   Get-CimInstance Win32_Processor | ForEach-Object {
     Say ('Name        : ' + $_.Name)
+    Say ('Manufacturer: ' + $_.Manufacturer)
     Say ('Cores       : ' + $_.NumberOfCores + '   Logical: ' + $_.NumberOfLogicalProcessors)
-    Say ('MaxClockMHz : ' + $_.MaxClockSpeed)
-    Say ('L2 KiB      : ' + $_.L2CacheSize + '   L3 KiB: ' + $_.L3CacheSize)
+    Say ('MaxClockMHz : ' + $_.MaxClockSpeed + '   CurrentMHz: ' + $_.CurrentClockSpeed)
+    Say ('L2CacheSize : ' + $_.L2CacheSize + ' KiB   L3CacheSize: ' + $_.L3CacheSize + ' KiB')
+    Say ('Socket      : ' + $_.SocketDesignation + '   Stepping: ' + $_.Stepping)
+  }
+}
+Safe {
+  $r = 'HKLM:\HARDWARE\DESCRIPTION\System\CentralProcessor\0'
+  if (Test-Path $r) {
+    $p = Get-ItemProperty $r
+    Say ('Registry    : ' + $p.ProcessorNameString)
+    Say ('Identifier  : ' + $p.Identifier)
+    Say ('MHz         : ' + $p.'~MHz')
   }
 }
 
-Head 'GPU (CIM - reference only, devinfo uses DXGI/NVML)'
-Try-Say {
+# ================================================================== C
+Head 'C. CACHE INSTANCES  (ground truth: level / purpose / max size KiB)'
+Safe {
+  $n = 0
+  Get-CimInstance Win32_CacheMemory | ForEach-Object {
+    $n++
+    Say ('  [' + $n + '] Level=' + $_.Level + ' Purpose=' + $_.Purpose + ' Size=' + $_.MaxCacheSize + ' KiB Assocs=' + $_.Associativity + ' Dev=' + $_.DeviceID)
+  }
+  Say ('  total instances: ' + $n)
+}
+
+# ================================================================== D
+Head 'D. MEMORY MODULES  (ground truth for bandwidth estimation)'
+Safe {
+  Get-CimInstance Win32_PhysicalMemory | ForEach-Object {
+    Say ('  ' + [math]::Round($_.Capacity/1GB,1) + ' GiB  Speed=' + $_.Speed + ' MT/s  Configured=' + $_.ConfiguredClockSpeed + '  Type=' + $_.SMBIOSMemoryType + '  Form=' + $_.FormFactor + '  ' + $_.Manufacturer)
+  }
+}
+
+# ================================================================== E
+Head 'E. GPU  (ground truth: Win32_VideoController)'
+Safe {
   Get-CimInstance Win32_VideoController | ForEach-Object {
     Say ('Name        : ' + $_.Name)
-    Say ('DriverVer   : ' + $_.DriverVersion)
-    Say ('AdapterRAM  : ' + $_.AdapterRAM)
+    Say ('DriverVer   : ' + $_.DriverVersion + '   Date: ' + $_.DriverDate)
+    Say ('AdapterRAM  : ' + $_.AdapterRAM + '   Mode: ' + $_.VideoModeDescription)
+    Say ('PNPDeviceID : ' + $_.PNPDeviceID)
+    Say ''
   }
 }
 
-Head 'ACCELERATOR DLLS'
-$dllNames = @(
-  'nvml.dll', 'nvcuda.dll', 'cudart64_12.dll', 'cudart64_13.dll',
-  'cudnn64_9.dll', 'nvinfer_10.dll', 'nccl.dll',
-  'DirectML.dll', 'onnxruntime.dll', 'vulkan-1.dll', 'OpenCL.dll'
-)
-$dllDirs = @($env:WINDIR + '\System32') + ($env:PATH -split ';')
+# ================================================================== F
+Head 'F. NPU / AI ACCELERATOR DEVICES  (PnP name match)'
+Safe {
+  $hits = Get-CimInstance Win32_PnPEntity | Where-Object { $_.Name -and ($_.Name -match 'NPU|Neural|AI Boost|VPU|GNA|Movidius|Hailo|Cambricon|Ascend') }
+  if ($hits) { $hits | ForEach-Object { Say ('  ' + $_.Name + '   [' + $_.PNPDeviceID + ']') } }
+  else { Say '  none matched' }
+}
+
+# ================================================================== G
+Head 'G. ACCELERATOR RUNTIME INVENTORY'
+$dllNames = @('nvml.dll','nvcuda.dll','cudart64_12.dll','cudart64_13.dll','cudnn64_9.dll','nvinfer_10.dll','nccl.dll','DirectML.dll','onnxruntime.dll','vulkan-1.dll','OpenCL.dll','sycl7.dll','cnrt.dll')
+$scanDirs = @($env:WINDIR + '\System32')
+$scanDirs += ($env:PATH -split ';')
+if ($pf)   { $scanDirs += @((Join-Path $pf 'NVIDIA Corporation\NVSMI'), (Join-Path $pf 'NVIDIA GPU Computing Toolkit\CUDA')) }
+if ($pf86) { $scanDirs += @((Join-Path $pf86 'NVIDIA Corporation\NVSMI')) }
 foreach ($n in $dllNames) {
   $found = ''
-  foreach ($d in $dllDirs) {
+  foreach ($d in $scanDirs) {
     if ([string]::IsNullOrWhiteSpace($d)) { continue }
     $p = Join-Path $d $n
     if (Test-Path $p -ErrorAction SilentlyContinue) { $found = $p; break }
   }
-  if ($found) { Say ($n.PadRight(20) + $found) } else { Say ($n.PadRight(20) + '-') }
+  if ($found) { Say ($n.PadRight(18) + $found) } else { Say ($n.PadRight(18) + '-') }
+}
+$nv = Get-Command nvidia-smi -ErrorAction SilentlyContinue
+if ($nv) {
+  Say ''
+  Say ('nvidia-smi  : ' + $nv.Source)
+  $o = & $nv.Source --query-gpu=name,memory.total,clocks.max.sm,driver_version,compute_cap --format=csv 2>&1
+  Dump 'nvidia-smi ground truth' $o
+} else {
+  Say ''
+  Say 'nvidia-smi  : not found'
 }
 
-Head 'TOOLCHAIN'
-foreach ($t in @('cmake', 'cl', 'g++', 'gcc', 'ninja', 'python')) {
+# ================================================================== H
+Head 'H. TOOLCHAIN DISCOVERY'
+foreach ($t in @('cmake','cl','clang','clang++','g++','gcc','ninja','make','python','vswhere')) {
   $c = Get-Command $t -ErrorAction SilentlyContinue
-  if ($c) { Say ($t.PadRight(8) + $c.Source) } else { Say ($t.PadRight(8) + '-') }
+  if ($c) { Say ($t.PadRight(10) + $c.Source) } else { Say ($t.PadRight(10) + '-') }
 }
 
 $cmakeExe = $null
 $c = Get-Command cmake -ErrorAction SilentlyContinue
-if ($c) {
-  $cmakeExe = $c.Source
-} else {
-  $cands = @(
-    (Join-Path $env:ProgramFiles 'CMake\bin\cmake.exe'),
-    (Join-Path $env:LOCALAPPDATA 'Programs\CMake\bin\cmake.exe')
-  )
-  $vsDir = Join-Path $env:ProgramFiles 'Microsoft Visual Studio'
-  if (Test-Path $vsDir) {
+if ($c) { $cmakeExe = $c.Source }
+if (-not $cmakeExe) {
+  $cands = @()
+  if ($pf) { $cands += (Join-Path $pf 'CMake\bin\cmake.exe') }
+  if ($pfdata) { $cands += (Join-Path $pfdata 'chocolatey\bin\cmake.exe') }
+  if ($env:LOCALAPPDATA) { $cands += (Join-Path $env:LOCALAPPDATA 'Programs\CMake\bin\cmake.exe') }
+  $vsDir = if ($pf) { Join-Path $pf 'Microsoft Visual Studio' } else { '' }
+  if ($vsDir -and (Test-Path $vsDir)) {
     $cands += (Get-ChildItem -Path $vsDir -Filter cmake.exe -Recurse -ErrorAction SilentlyContinue | ForEach-Object { $_.FullName })
   }
-  foreach ($p in $cands) {
-    if ($p -and (Test-Path $p)) { $cmakeExe = $p; break }
+  foreach ($p in $cands) { if ($p -and (Test-Path $p)) { $cmakeExe = $p; break } }
+}
+Say ('cmake       : ' + $(if ($cmakeExe) { $cmakeExe } else { 'not found' }))
+if ($cmakeExe) {
+  $v = & $cmakeExe --version 2>&1 | Select-Object -First 1
+  Say ('cmake ver   : ' + $v)
+}
+
+$vcvars = $null
+$vswhere = ''
+if ($pf86) { $vswhere = Join-Path $pf86 'Microsoft Visual Studio\Installer\vswhere.exe' }
+if ($vswhere -and (Test-Path $vswhere)) {
+  Say ('vswhere     : ' + $vswhere)
+  $vsPath = & $vswhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath 2>&1
+  Say ('VS path     : ' + $vsPath)
+  if ($vsPath -and (Test-Path $vsPath)) {
+    $cand = Join-Path $vsPath 'VC\Auxiliary\Build\vcvarsall.bat'
+    if (Test-Path $cand) { $vcvars = $cand }
+  }
+} else {
+  Say 'vswhere     : not found'
+}
+if (-not $vcvars -and $pf) {
+  $vsDir2 = Join-Path $pf 'Microsoft Visual Studio'
+  if (Test-Path $vsDir2) {
+    $c2 = Get-ChildItem -Path $vsDir2 -Filter vcvarsall.bat -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+    if ($c2) { $vcvars = $c2.FullName }
   }
 }
-if ($cmakeExe) { Say ('cmake -> ' + $cmakeExe) } else { Say 'cmake -> not found' }
+Say ('vcvarsall   : ' + $(if ($vcvars) { $vcvars } else { 'not found' }))
 
-# ---------------------------------------------------------------- unpack
-Head 'UNPACK'
+# ================================================================== I
+Head 'I. UNPACK EMBEDDED SOURCE'
 $work = Join-Path $env:TEMP ('devinfo-' + [Guid]::NewGuid().ToString('N').Substring(0, 8))
 $ok = $false
-try {
+Safe {
   New-Item -ItemType Directory -Path $work -Force | Out-Null
   $zip = Join-Path $work 'src.zip'
   [IO.File]::WriteAllBytes($zip, [Convert]::FromBase64String($b64))
   Expand-Archive -Path $zip -DestinationPath $work -Force -ErrorAction Stop
-  Say ('unpacked    : ' + $work)
-  Say ('files       : ' + (Get-ChildItem -Path $work -Recurse -File | Measure-Object).Count)
+  Say ('work dir    : ' + $work)
+  Get-ChildItem -Path $work -Recurse -File | ForEach-Object { Say ('  ' + $_.FullName.Substring($work.Length)) }
   $ok = $true
-} catch {
-  Say ('UNPACK FAILED: ' + $_.Exception.Message)
 }
+if (-not $ok) { Say '  UNPACK FAILED - stopping build stage' }
 
-# ---------------------------------------------------------------- build
-$ran = $false
-$builtArchs = @()
+# ================================================================== J
+Head 'J. BUILD AND RUN'
+$inc = Join-Path $work 'include'
+$baseSrcs = @('core.cpp','table.cpp','emit.cpp','win32.cpp') | ForEach-Object { Join-Path $work ('src\' + $_) }
+$srcCLI = $baseSrcs + @((Join-Path $work 'src\main.cpp'))
+$srcDLL = $baseSrcs + @((Join-Path $work 'src\capi.cpp'))
+$built = @()
 $py = Get-Command python -ErrorAction SilentlyContinue
 
+function Run-Binary([string]$exe, [string]$label) {
+  Say ''
+  Say ('>>> running ' + $label + ' : ' + $exe)
+  Say '--- table ---'
+  & $exe --table 2>&1 | ForEach-Object { Say ([string]$_) }
+  Say ('--- exit: ' + $LASTEXITCODE + ' ---')
+  Say '--- json ---'
+  & $exe --json 2>&1 | ForEach-Object { Say ([string]$_) }
+  Say ('--- exit: ' + $LASTEXITCODE + ' ---')
+  Say '--- bench json ---'
+  & $exe --bench --json 2>&1 | ForEach-Object { Say ([string]$_) }
+  Say ('--- exit: ' + $LASTEXITCODE + ' ---')
+}
+
+function Run-Abi([string]$workdir) {
+  $d = Get-ChildItem -Path $workdir -Filter 'devinfo.dll' -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+  if (-not $d) { Say '  (no devinfo.dll produced)'; return }
+  Say ''
+  Say ('--- plugin ABI via ctypes: ' + $d.FullName + ' ---')
+  if (-not $py) { Say '  python not available, skipped'; return }
+  $probe = Join-Path $work 'ffi_probe.py'
+  @(
+    'import ctypes, json, sys',
+    'lib = ctypes.CDLL(sys.argv[1])',
+    'lib.devinfo_abi_version.restype = ctypes.c_uint32',
+    'lib.devinfo_version.restype = ctypes.c_char_p',
+    'lib.devinfo_probe_json.restype = ctypes.c_void_p',
+    'lib.devinfo_probe_json.argtypes = [ctypes.c_uint32]',
+    'lib.devinfo_free.argtypes = [ctypes.c_void_p]',
+    'print("abi_version  :", lib.devinfo_abi_version())',
+    'print("version      :", lib.devinfo_version().decode())',
+    'p = lib.devinfo_probe_json(0)',
+    'doc = json.loads(ctypes.string_at(p).decode("utf-8"))',
+    'lib.devinfo_free(p)',
+    'print("schema       :", doc["schema"])',
+    'print("cpu          :", doc["cpu"]["model"])',
+    'print("cores        :", doc["cpu"]["cores"])',
+    'print("cache_bytes  :", doc["cpu"]["cache_bytes"])',
+    'print("gpus         :", len(doc["gpus"]))',
+    'print("npus         :", len(doc["npus"]))',
+    'print("accelerators :", [k for k,v in doc["accelerators"].items() if v.get("available")])',
+    'print("warnings     :", doc["warnings"])'
+  ) | Set-Content -Path $probe -Encoding ASCII
+  & $py.Source $probe $d.FullName 2>&1 | ForEach-Object { Say ('  ' + [string]$_) }
+}
+
+# ---- J1: cmake, both bitnesses
 if ($ok -and $cmakeExe) {
-  Head 'BUILD + RUN'
-  $attempts = @(
-    @{ Label = 'x64 (VS -A x64)'; A = @('-A', 'x64') },
-    @{ Label = 'Win32 (VS -A Win32)'; A = @('-A', 'Win32') },
-    @{ Label = 'default generator'; A = @() }
-  )
-  foreach ($att in $attempts) {
-    # Both bitnesses are worth testing; the default generator is only a
-    # last resort for toolchains that cannot select one.
-    if ($att.Label -eq 'default generator' -and $ran) { continue }
+  foreach ($arch in @('x64','Win32','ARM64')) {
     Say ''
-    Say ('--- ' + $att.Label + ' ---')
-    $bd = Join-Path $work ('build-' + ($att.Label -replace '[^A-Za-z0-9]', ''))
-    $cfg = @('-S', $work, '-B', $bd) + $att.A
-    $out = & $cmakeExe @cfg 2>&1
-    if ($LASTEXITCODE -ne 0) {
-      Say 'configure FAILED:'
-      $out | Select-Object -Last 20 | ForEach-Object { Say ('  ' + [string]$_) }
-      continue
-    }
+    Say ('--- cmake -A ' + $arch + ' ---')
+    $bd = Join-Path $work ('cmake-' + $arch)
+    $out = & $cmakeExe -S $work -B $bd -A $arch 2>&1
+    if ($LASTEXITCODE -ne 0) { Dump 'configure log' $out; continue }
     $out = & $cmakeExe --build $bd --config Release 2>&1
-    if ($LASTEXITCODE -ne 0) {
-      Say 'build FAILED:'
-      $out | Select-Object -Last 40 | ForEach-Object { Say ('  ' + [string]$_) }
-      continue
-    }
+    if ($LASTEXITCODE -ne 0) { Dump 'build log' $out; continue }
     $exe = Get-ChildItem -Path $bd -Filter 'devinfo.exe' -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
-    if (-not $exe) { Say 'built, but devinfo.exe was not found'; continue }
-    Say ('built OK    : ' + $exe.FullName + '  (' + $exe.Length + ' bytes)')
-    $builtArchs += $att.Label
-    $ran = $true
-
-    Say ''
-    & $exe.FullName --table 2>&1 | ForEach-Object { Say ([string]$_) }
-    Say ''
-    Say '--- json ---'
-    & $exe.FullName --json 2>&1 | ForEach-Object { Say ([string]$_) }
-    Say ''
-    Say '--- bench ---'
-    & $exe.FullName --bench --json 2>&1 | ForEach-Object { Say ([string]$_) }
-
-    # exercise the C ABI itself, which is what ships as the plugin
-    $dll = Get-ChildItem -Path $bd -Filter 'devinfo.dll' -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
-    if ($dll -and $py) {
-      $probe = Join-Path $work 'ffi_probe.py'
-      @(
-        'import ctypes, json, sys',
-        'lib = ctypes.CDLL(sys.argv[1])',
-        'lib.devinfo_abi_version.restype = ctypes.c_uint32',
-        'lib.devinfo_probe_json.restype = ctypes.c_void_p',
-        'lib.devinfo_probe_json.argtypes = [ctypes.c_uint32]',
-        'lib.devinfo_free.argtypes = [ctypes.c_void_p]',
-        'p = lib.devinfo_probe_json(0)',
-        'doc = json.loads(ctypes.string_at(p).decode("utf-8"))',
-        'lib.devinfo_free(p)',
-        'print("ctypes OK: stash=%s abi=%s cpu=%s gpus=%s" % (doc["schema"], lib.devinfo_abi_version(), doc["cpu"]["model"], len(doc["gpus"])))'
-      ) | Set-Content -Path $probe -Encoding ASCII
-      Say ''
-      Say '--- plugin ABI via ctypes ---'
-      & $py.Source $probe $dll.FullName 2>&1 | ForEach-Object { Say ([string]$_) }
-    } elseif (-not $dll) {
-      Say ''
-      Say '--- no devinfo.dll produced ---'
-    }
+    Say ('built exe   : ' + $(if ($exe) { $exe.FullName + ' (' + $exe.Length + ' bytes)' } else { 'missing' }))
+    if ($exe) { Run-Binary $exe.FullName ('cmake ' + $arch); $built += ('cmake-' + $arch) }
+    Run-Abi $bd
   }
 }
 
-if ($ok -and -not $ran) {
-  Head 'FALLBACK: direct g++ build'
+# ---- J2: cl.exe through vcvarsall (VS present but no cmake on PATH)
+if ($ok -and $vcvars) {
+  foreach ($arch in @('x64','x86','arm64')) {
+    Say ''
+    Say ('--- cl ' + $arch + ' via vcvarsall ---')
+    $od = Join-Path $work ('cl-' + $arch)
+    New-Item -ItemType Directory -Path $od -Force | Out-Null
+    $exePath = Join-Path $od 'devinfo.exe'
+    $dllPath = Join-Path $od 'devinfo.dll'
+    $common = '/nologo /std:c++17 /O2 /EHsc /utf-8 /I' + $Q + $inc + $Q
+    $links  = '/link dxgi.lib setupapi.lib version.lib'
+    $srcExe = ($srcCLI | ForEach-Object { $Q + $_ + $Q }) -join ' '
+    $srcDll = ($srcDLL | ForEach-Object { $Q + $_ + $Q }) -join ' '
+    # Written to .bat files on purpose: passing a quoted command straight to
+    # cmd.exe /c invites it to strip the wrong quotes.
+    $bat1 = Join-Path $od 'build-exe.bat'
+    $bat2 = Join-Path $od 'build-dll.bat'
+    Set-Content -Path $bat1 -Encoding ASCII -Value ('call ' + $Q + $vcvars + $Q + ' ' + $arch + ' && cl ' + $common + ' ' + $srcExe + ' /Fe:' + $Q + $exePath + $Q + ' ' + $links)
+    Set-Content -Path $bat2 -Encoding ASCII -Value ('call ' + $Q + $vcvars + $Q + ' ' + $arch + ' && cl ' + $common + ' /LD ' + $srcDll + ' /Fe:' + $Q + $dllPath + $Q + ' ' + $links)
+    Push-Location $od
+    $o1 = & cmd.exe /c $bat1 2>&1
+    $rc1 = $LASTEXITCODE
+    $o2 = & cmd.exe /c $bat2 2>&1
+    $rc2 = $LASTEXITCODE
+    Pop-Location
+    if ($rc1 -ne 0) { Dump ('cl ' + $arch + ' exe log') $o1 } else { Say ('exe built   : ' + $exePath) }
+    if ($rc2 -ne 0) { Dump ('cl ' + $arch + ' dll log') $o2 } else { Say ('dll built   : ' + $dllPath) }
+    if ($rc1 -eq 0 -and (Test-Path $exePath)) { Run-Binary $exePath ('cl ' + $arch); $built += ('cl-' + $arch) }
+    if ($rc2 -eq 0) { Run-Abi $od }
+  }
+}
+
+# ---- J3: g++ (MSYS2 / MinGW)
+if ($ok -and $built.Count -eq 0) {
   $gpp = Get-Command g++ -ErrorAction SilentlyContinue
-  if (-not $gpp) {
-    Say 'no cmake build succeeded and g++ is not on PATH'
+  if ($gpp) {
+    Say ''
+    Say '--- g++ fallback ---'
+    $od = Join-Path $work 'gpp'
+    New-Item -ItemType Directory -Path $od -Force | Out-Null
+    $exePath = Join-Path $od 'devinfo.exe'
+    $gargs = @('-std=c++17','-O2','-I',$inc) + $srcCLI + @('-o',$exePath,'-ldxgi','-lsetupapi','-lversion')
+    $o = & $gpp.Source @gargs 2>&1
+    if ($LASTEXITCODE -ne 0) { Dump 'g++ log' $o }
+    else { Say ('exe built   : ' + $exePath); Run-Binary $exePath 'g++'; $built += 'g++' }
+    $dllPath = Join-Path $od 'devinfo.dll'
+    $gargs2 = @('-std=c++17','-O2','-shared','-I',$inc) + $srcDLL + @('-o',$dllPath,'-ldxgi','-lsetupapi','-lversion')
+    $o2 = & $gpp.Source @gargs2 2>&1
+    if ($LASTEXITCODE -ne 0) { Dump 'g++ dll log' $o2 }
+    else { Say ('dll built   : ' + $dllPath); Run-Abi $od }
   } else {
-    $exePath = Join-Path $work 'devinfo.exe'
-    $inc = Join-Path $work 'include'
-    $gargs = @(
-      '-std=c++17', '-O2', '-I', $inc,
-      (Join-Path $work 'src\core.cpp'),
-      (Join-Path $work 'src\table.cpp'),
-      (Join-Path $work 'src\emit.cpp'),
-      (Join-Path $work 'src\win32.cpp'),
-      (Join-Path $work 'src\main.cpp'),
-      '-o', $exePath, '-ldxgi', '-lsetupapi', '-lversion'
-    )
-    $out = & $gpp.Source @gargs 2>&1
-    if ($LASTEXITCODE -ne 0) {
-      Say 'g++ FAILED:'
-      $out | Select-Object -Last 40 | ForEach-Object { Say ('  ' + [string]$_) }
-    } else {
-      Say ('built OK    : ' + $exePath)
-      & $exePath --table 2>&1 | ForEach-Object { Say ([string]$_) }
-      Say ''
-      Say '--- json ---'
-      & $exePath --json 2>&1 | ForEach-Object { Say ([string]$_) }
-      $ran = $true
-    }
+    Say 'g++ not found'
   }
 }
 
-Head 'RESULT'
-if ($ran) {
-  Say ('BUILD OK for: ' + ($builtArchs -join ', '))
-} else {
-  Say 'NO BUILD - the diagnostics above are still useful'
-}
+# ================================================================== K
+Head 'K. SUMMARY'
+if ($built.Count -gt 0) { Say ('BUILD OK    : ' + ($built -join ', ')) }
+else { Say 'BUILD FAILED everywhere - section J holds the compiler output' }
+Say ('work dir    : ' + $work)
 
 $outFile = Join-Path (Get-Location) 'devinfo-report.txt'
 try {
   $script:lines | Set-Content -Path $outFile -Encoding UTF8
   $script:lines | Set-Content -Path (Join-Path $env:TEMP 'devinfo-report.txt') -Encoding UTF8
-  Say ''
-  Say ('report written to: ' + $outFile)
+  Write-Host ''
+  Write-Host ('REPORT WRITTEN TO: ' + $outFile)
 } catch {
-  Say ('could not write report: ' + $_.Exception.Message)
+  Write-Host ('could not write report: ' + $_.Exception.Message)
 }
