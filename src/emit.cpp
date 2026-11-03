@@ -251,6 +251,7 @@ std::string to_json(const Report& r) {
       o += '}';
 
       x.str("method", g.method);
+      if (!g.pci_id.empty()) x.str("pci", g.pci_id);
     }
     if (!est.empty()) {
       o += ",\"estimated\":";
@@ -391,6 +392,7 @@ std::string to_table(const Report& r) {
     o += line;
     std::string head;
     auto hpush = [&head](const std::string& s) { if (!head.empty()) head += "  "; head += s; };
+    if (!g.pci_id.empty()) hpush(g.pci_id);
     if (g.cores.has) hpush(fmt_count(g.cores.v) + " " + g.core_unit + "(s)");
     if (g.tensor_cores.has) hpush(fmt_count(g.tensor_cores.v) + " Tensor Cores");
     if (!g.arch.empty()) hpush(g.arch);

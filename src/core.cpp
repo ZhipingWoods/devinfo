@@ -522,6 +522,10 @@ void probe_environment(Report& r) {
       std::snprintf(b, sizeof b, "%lu.%lu.%lu", vi.major, vi.minor, vi.build);
       r.os_version = b;
       r.kernel = std::string("Windows ") + b;
+      /* Windows 11 still reports itself as 10.0: the build number is the only
+       * thing that separates them. Without this a Win11 box reads "windows". */
+      if (vi.major == 10 && vi.build >= 22000) r.os = "windows 11";
+      else if (vi.major == 10) r.os = "windows 10";
     }
   }
   {

@@ -42,6 +42,7 @@ struct Gpu {
   Num fp64_tflops, fp32_tflops, tf32_tflops, bf16_tflops,
       fp16_tflops, fp8_tflops, int8_tops, fp16_tflops_sparse;
   std::string method;
+  std::string pci_id;                  /* "8086:4c8a", when the OS tells us */
 };
 
 struct Npu {

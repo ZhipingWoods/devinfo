@@ -1,0 +1,29 @@
+devinfo - 69.91 ms  (fast)
+windows 10.0.26200 | x86_64 | native
+------------------------------------------------------------------
+CPU  11th Gen Intel(R) Core(TM) i7-11700 @ 2.50GHz
+     8 cores / 16 threads          clock 2.500 GHz  x86_64
+     L1i 256 KiB  L1d 384 KiB  L2 4.0 MiB  L3 16.0 MiB  line 64B
+     RAM 63.7 GiB
+     peak FP32 0.640 TFLOPS~
+     isa SSE2 AVX AVX2 AVX512F AVX512BW FMA
+GPU0 AMD Radeon RX 640
+     vram 4.0 GiB
+GPU1 Intel(R) UHD Graphics 750
+     vram 128.0 MiB
+GPU2 Intel(R) UHD Graphics 750
+     vram 128.0 MiB
+GPU3 Intel(R) UHD Graphics 750
+     vram 128.0 MiB
+GPU4 Intel(R) UHD Graphics 750
+     vram 128.0 MiB
+NPU  none detected
+------------------------------------------------------------------
+accelerators
+     rocm          5.2           runtime
+     onnxruntime                 runtime
+     directml                    runtime
+     vulkan                      runtime
+     opencl                      runtime
+     -- not present: cuda --
+     ~ = estimated from chip spec table, not read from hardware

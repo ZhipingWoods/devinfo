@@ -13,11 +13,15 @@
 #include <dxgi.h>
 #include <setupapi.h>
 
+#include <devguid.h>
+
 #include <cctype>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <map>
 #include <string>
+#include <utility>
 #include <vector>
 
 #if defined(_M_IX86) || defined(_M_X64)
@@ -217,6 +221,42 @@ bool is_virtual_display(const std::string& name) {
 /* probe_gpu/probe_npu are the platform entry points core.cpp calls, so they
  * must sit in devinfo itself: inside the anonymous namespace they get internal
  * linkage and every build fails to link. */
+/* DXGI reports every indirect display driver as an extra adapter, and those
+ * mirror the description of the GPU they extend, so name matching cannot
+ * identify them. Count the real PCI display devices instead and let each
+ * (vendor, device) pair account for at most that many adapters: a box with
+ * eight identical 4090s has eight matching PCI devices and keeps all eight,
+ * while a single iGPU shadowed by three virtual monitors keeps one. */
+std::map<std::pair<unsigned, unsigned>, unsigned> pci_display_quota() {
+  std::map<std::pair<unsigned, unsigned>, unsigned> quota;
+  HDEVINFO set = SetupDiGetClassDevsA(&GUID_DEVCLASS_DISPLAY, nullptr, nullptr,
+                                      DIGCF_PRESENT);
+  if (set == INVALID_HANDLE_VALUE) return quota;
+
+  SP_DEVINFO_DATA did{};
+  did.cbSize = sizeof did;
+  for (DWORD i = 0; SetupDiEnumDeviceInfo(set, i, &did); ++i) {
+    char ids[1024] = {0};
+    DWORD type = 0;
+    DWORD need = sizeof ids;
+    if (!SetupDiGetDeviceRegistryPropertyA(set, &did, SPDRP_HARDWAREID, &type,
+                                           (PBYTE)ids, need, &need))
+      continue;
+    /* REG_MULTI_SZ: first string is the most specific hardware id. */
+    const char* hw = ids;
+    if (hw[0] != 'P' || hw[1] != 'C' || hw[2] != 'I') continue;  /* not PCI */
+    unsigned vendor = 0, device = 0;
+    const char* v = std::strstr(hw, "VEN_");
+    const char* d = std::strstr(hw, "DEV_");
+    if (!v || !d) continue;
+    vendor = (unsigned)std::strtoul(v + 4, nullptr, 16);
+    device = (unsigned)std::strtoul(d + 4, nullptr, 16);
+    if (vendor && device) ++quota[{vendor, device}];
+  }
+  SetupDiDestroyDeviceInfoList(set);
+  return quota;
+}
+
 void probe_gpu(Report& r) {
   IDXGIFactory1* factory = nullptr;
   if (FAILED(CreateDXGIFactory1(__uuidof(IDXGIFactory1), (void**)&factory)) || !factory) return;
@@ -226,6 +266,11 @@ void probe_gpu(Report& r) {
   unsigned nv_count = 0;
   unsigned nv_seen = 0;
   if (nv.ok() && nv.init() == 0 && nv.count(&nv_count) == 0) nv_ready = true;
+
+  auto quota = pci_display_quota();
+  const bool have_quota = !quota.empty();
+  std::map<std::pair<unsigned, unsigned>, unsigned> emitted;
+  std::vector<Gpu> spares;  /* over-quota mirrors, used only as a fallback */
 
   IDXGIAdapter1* adapter = nullptr;
   for (UINT i = 0; factory->EnumAdapters1(i, &adapter) != DXGI_ERROR_NOT_FOUND; ++i) {
@@ -244,6 +289,11 @@ void probe_gpu(Report& r) {
           default:     g.vendor = "other"; g.core_unit = "core"; break;
         }
         g.method = "DXGI";
+        {
+          char pci[16];
+          std::snprintf(pci, sizeof pci, "%04x:%04x", desc.VendorId, desc.DeviceId);
+          g.pci_id = pci;
+        }
         if (desc.DedicatedVideoMemory > 0)
           g.vram_bytes = Num{(double)desc.DedicatedVideoMemory, true, false};
 
@@ -272,13 +322,36 @@ void probe_gpu(Report& r) {
             }
           }
         }
-        r.gpus.push_back(std::move(g));
+        /* How many physical adapters claim this (vendor, device) pair?
+         * Anything past that count is a virtual display mirroring real
+         * hardware, which DXGI describes with the real card's name. */
+        auto key = std::make_pair((unsigned)desc.VendorId, (unsigned)desc.DeviceId);
+        bool within_quota = true;
+        if (have_quota) {
+          auto it = quota.find(key);
+          unsigned allowed = (it == quota.end()) ? 0u : it->second;
+          if (emitted[key] >= allowed) within_quota = false;
+        }
+        if (within_quota) {
+          ++emitted[key];
+          r.gpus.push_back(std::move(g));
+        } else {
+          spares.push_back(std::move(g));
+        }
       }
     }
     adapter->Release();
   }
   factory->Release();
   if (nv.lib) FreeLibrary((HMODULE)nv.lib);
+
+  /* If the quota said no to everything, the quota is wrong, not DXGI. Report
+   * the unfiltered set: over-reporting is recoverable, reporting no GPU on a
+   * machine that has one is not. */
+  if (r.gpus.empty() && !spares.empty()) {
+    r.gpus = std::move(spares);
+    r.warnings.push_back("gpu list may include virtual display adapters");
+  }
 }
 
 /* ---------------------------------------------------------------- NPU */
