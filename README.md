@@ -173,9 +173,9 @@ i5-1335U lists `0-3` for two hyperthreaded P cores. Counting entries reports
 4 P cores. The fix is to resolve each CPU's `(physical_package_id, core_id)`
 and count distinct pairs:
 
- ~~BT~~
+```
  10 cores (2P + 8E) / 12 threads     <- 2 physical P + 8 physical E
- ~~BT~~
+```
 
 **Caches.** P cores and E cores ship different L1 and L2 sizes, so scaling
 one core's cache by the core count is wrong. Instead every cache *instance*
@@ -241,6 +241,11 @@ On macOS there is no driver to initialise, hence single-digit milliseconds.
   makes the number *worse*. Expect roughly 70-80% of theoretical peak.
   First touch of the buffers costs ~60 ms per 128 MB; that happens before the
   clock starts, so it makes `--bench` slower, not wrong.
+- **the measured number is a snapshot, and the machine's state is part of it.**
+  A 15 W laptop with 29 of 31 GB in use reports ~20 GB/s; an independent
+  pthread memcpy implementation built for comparison reports 19.2-20.8 GB/s on
+  the same box at the same time. Agreeing to 1% is the point - the tool is
+  reporting the machine, not flattering it.
 - **not a monitor** - no sampling, no daemon, no utilisation.
 - **not 100% precise** - a chip missing from `table.cpp` yields a warning
   and omitted fields rather than invented numbers.

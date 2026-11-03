@@ -660,11 +660,12 @@ Num measure_memory_bandwidth(uint64_t bytes_hint, unsigned threads_hint) {
    * Note the page-fault cost: first touch of the two buffers costs roughly
    * 60 ms per 128 MB on a VM. That happens before timing starts, so it slows
    * the call down but does not corrupt the number. */
-  unsigned nt = threads_hint ? threads_hint
-                             : (std::thread::hardware_concurrency()
-                                    ? std::thread::hardware_concurrency() / 2
-                                    : 4);
-  if (nt < 2) nt = 2;
+  unsigned nt = threads_hint;
+  if (nt == 0) {
+    unsigned hw = std::thread::hardware_concurrency();
+    nt = hw < 4 ? hw : 4;
+  }
+  if (nt < 1) nt = 1;
   if (nt > 4) nt = 4;
   if (n < (size_t)nt * 4096) nt = 1;
 
@@ -740,8 +741,22 @@ Report probe(uint32_t flags) {
     uint64_t hint = r.cpu.mem_bytes.has ? (uint64_t)(r.cpu.mem_bytes.v / 128) : (64ull << 20);
     if (hint < (8ull << 20)) hint = 8ull << 20;
     if (hint > (64ull << 20)) hint = 64ull << 20;
-    unsigned threads = r.cpu.p_cores ? r.cpu.p_cores : 0;
-    r.cpu.mem_bw_measured_gbs = measure_memory_bandwidth(hint, threads);
+    /* On a machine that is nearly out of memory the copy thrashes: every rep
+     * pays page faults again. Stay well inside what is actually available. */
+#if defined(__linux__)
+    {
+      std::string mi = read_small_file("/proc/meminfo", 4096);
+      size_t at = mi.find("MemAvailable:");
+      if (at != std::string::npos) {
+        unsigned long long kb = std::strtoull(mi.c_str() + at + 13, nullptr, 10);
+        unsigned long long spare = kb * 1024ull / 16ull;
+        if (spare < (8ull << 20)) spare = 8ull << 20;
+        if (hint > spare) hint = spare;
+      }
+    }
+#endif
+    if (hint > (64ull << 20)) hint = 64ull << 20;
+    r.cpu.mem_bw_measured_gbs = measure_memory_bandwidth(hint, 0);
   }
 
   r.probe_ms = std::chrono::duration<double, std::milli>(clk::now() - t0).count();
