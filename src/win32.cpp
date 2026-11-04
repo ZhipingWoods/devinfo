@@ -417,6 +417,55 @@ void probe_gpu(Report& r) {
   }
 }
 
+/* -------------------------------------------------------------- limits */
+/* A job object is the Windows equivalent of a cgroup: Docker Desktop, Windows
+ * Sandbox and most CI runners put the process in one. The memory ceiling and
+ * the CPU rate cap are both worth knowing before scheduling anything. */
+void probe_limits(Report& r) {
+  Limits& L = r.limits;
+
+  /* A NULL handle means "the job this process belongs to", which is only
+   * supported from Windows 8. On 7 the call simply fails and the probe reports
+   * nothing rather than a wrong number. */
+  {
+    JOBOBJECT_EXTENDED_LIMIT_INFORMATION li{};
+    if (QueryInformationJobObject(nullptr, JobObjectExtendedLimitInformation,
+                                  &li, sizeof li, nullptr)) {
+      const unsigned flags = li.BasicLimitInformation.LimitFlags;
+      if ((flags & JOB_OBJECT_LIMIT_JOB_MEMORY) && li.JobMemoryLimit > 0)
+        L.mem_bytes = Num{(double)li.JobMemoryLimit, true, false};
+      else if ((flags & JOB_OBJECT_LIMIT_PROCESS_MEMORY) && li.ProcessMemoryLimit > 0)
+        L.mem_bytes = Num{(double)li.ProcessMemoryLimit, true, false};
+    }
+  }
+
+  {
+    JOBOBJECT_CPU_RATE_CONTROL_INFORMATION ci{};
+    if (QueryInformationJobObject(nullptr, JobObjectCpuRateControlInformation,
+                                  &ci, sizeof ci, nullptr) &&
+        (ci.ControlFlags & JOB_OBJECT_CPU_RATE_CONTROL_ENABLE) &&
+        (ci.ControlFlags & JOB_OBJECT_CPU_RATE_CONTROL_HARD_CAP)) {
+      /* CpuRate is in hundredths of a percent of the whole machine. */
+      double cores = (double)ci.CpuRate / 10000.0 * (double)GetActiveProcessorCount(ALL_PROCESSOR_GROUPS);
+      if (cores > 0 && cores < (double)r.cpu.logical)
+        L.cpu_cores = Num{cores, true, false};
+    }
+  }
+
+  if (L.cpu_cores.has || L.mem_bytes.has) {
+    L.container = true;
+    if (L.cpu_cores.has) {
+      char buf[64];
+      std::snprintf(buf, sizeof buf, "%.2f", L.cpu_cores.v);
+      std::string n(buf);
+      while (!n.empty() && n.back() == '0') n.pop_back();
+      if (!n.empty() && n.back() == '.') n.pop_back();
+      r.warnings.push_back("job object limits this process to " + n + " of " +
+                           std::to_string(r.cpu.logical) + " logical CPUs");
+    }
+  }
+}
+
 /* ---------------------------------------------------------------- NPU */
 void probe_npu(Report& r) {
   /* Every shipping NPU today exposes a PnP node with a recognisable name.

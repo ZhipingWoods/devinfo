@@ -148,6 +148,21 @@ std::string to_json(const Report& r) {
   }
   o += '}';
 
+  /* What this process may actually use. Absent means "no tighter than the
+   * machine"; present means the machine numbers above are not schedulable. */
+  if (r.limits.container) {
+    std::vector<std::string> lim_est;
+    o += ",\"limits\":{";
+    {
+      W l(o);
+      l.str("cgroup", r.limits.cgroup);
+      l.num("cpu_cores", r.limits.cpu_cores, lim_est, "limits");
+      if (r.limits.mem_bytes.has)
+        l.u64("mem_bytes", (unsigned long long)r.limits.mem_bytes.v);
+    }
+    o += '}';
+  }
+
   /* ---- cpu ---- */
   o += ",\"cpu\":{";
   {
@@ -374,6 +389,32 @@ std::string to_table(const Report& r) {
     if (c.mem_bw_gbs.has) mem += "  bw " + fmt_num(c.mem_bw_gbs.v, " GB/s") + (c.mem_bw_gbs.estimated ? "~" : "");
     if (c.mem_bw_measured_gbs.has) mem += "  measured " + fmt_num(c.mem_bw_measured_gbs.v, " GB/s");
     o += "     " + mem + "\n";
+  }
+
+  /* The machine line above is what the hardware has. This one is what the
+   * process may touch, which is the number that decides batch size. */
+  if (r.limits.container) {
+    std::string lim = "limit ";
+    bool any = false;
+    if (r.limits.cpu_cores.has) {
+      /* "4 cores", not "4.000 cores": the value is a count, and the fraction
+       * only carries information when a quota lands between whole CPUs. */
+      const double v = r.limits.cpu_cores.v;
+      if (v - (double)(long long)v < 1e-9)
+        lim += std::to_string((long long)v) + " cores";
+      else
+        lim += fmt_num(v, " cores");
+      any = true;
+    }
+    if (r.limits.mem_bytes.has) {
+      if (any) lim += " / ";
+      lim += fmt_bytes(r.limits.mem_bytes.v);
+      any = true;
+    }
+    if (any) {
+      if (!r.limits.cgroup.empty()) lim += "  (cgroup " + r.limits.cgroup + ")";
+      o += "     " + lim + "\n";
+    }
   }
 
   {

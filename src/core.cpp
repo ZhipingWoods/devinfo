@@ -699,6 +699,14 @@ void collect_accels(Report& r) {
   }
 }
 
+/* ================================================================ limits */
+/* Windows and Linux override this in their own translation units; elsewhere
+ * there is nothing to ask. macOS containers are full VMs, so the machine the
+ * process sees is the machine it gets. */
+#if defined(__APPLE__)
+void probe_limits(Report& r) { (void)r; }
+#endif
+
 /* ============================================================ environment */
 void probe_environment(Report& r) {
 #if defined(_WIN32)
@@ -1009,6 +1017,11 @@ Report probe(uint32_t flags) {
   }
 
   probe_npu(r);
+
+  /* Before anything is derived from the core count: inside a container the
+   * number CPUID reports is the host's, not the schedulable one. */
+  probe_limits(r);
+
   collect_accels(r);
 
   if (flags & DEVINFO_BENCH) {

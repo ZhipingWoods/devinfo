@@ -63,12 +63,23 @@ struct Accel {
   std::string detail;
 };
 
+/* What the process is actually allowed to use, which inside a container is
+ * not what the machine has. Kept separate from Cpu so nothing downstream
+ * mistakes the host's core count for the schedulable one. */
+struct Limits {
+  bool container = false;
+  std::string cgroup;      /* "v2", "v1", "" */
+  Num cpu_cores;           /* effective schedulable CPUs */
+  Num mem_bytes;           /* effective memory ceiling */
+};
+
 struct Report {
   std::string os, os_version, kernel, arch, model_id, env, host;
   std::string level;
   double probe_ms = 0.0;
 
   Cpu cpu;
+  Limits limits;
   std::vector<Gpu> gpus;
   std::vector<Npu> npus;
   std::vector<Accel> accels;
@@ -83,6 +94,7 @@ void probe_npu(Report& r);
 /* ---- shared across all platforms */
 void collect_accels(Report& r);        /* dlopen/LoadLibrary scanning */
 void probe_environment(Report& r);
+void probe_limits(Report& r);   /* cgroup / job object ceilings */
 void canonical_features(std::vector<std::string>& feats, const std::string& arch);
 void derive_cpu_peaks(Cpu& c);
 void derive_gpu_peaks(Gpu& g);

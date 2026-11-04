@@ -405,6 +405,110 @@ void probe_nvidia_cuda(Report& r) {
   dlclose(h);
 }
 
+/* -------------------------------------------------------------- limits */
+/* Inside a container CPUID and /proc/meminfo describe the host. Scheduling
+ * against the host's 96 cores when cgroup allows 4 costs the difference
+ * between a fast build and a slow one, and every thread pool oversubscribes
+ * by the same factor. Read the ceiling the kernel actually enforces. */
+void probe_limits_impl(Report& r) {
+  Limits& L = r.limits;
+
+  auto first_tok = [](const char* p) {
+    std::string s = read_file(p, 256);
+    size_t sp = s.find_first_of(" \n");
+    return (sp == std::string::npos) ? s : s.substr(0, sp);
+  };
+
+  double cores = 0.0;
+  {
+    std::string quota_s = read_file("/sys/fs/cgroup/cpu.max", 128);
+    if (!quota_s.empty()) {
+      L.cgroup = "v2";
+      if (quota_s.compare(0, 3, "max") != 0) {
+        double q = std::atof(quota_s.c_str());
+        const char* sp = std::strchr(quota_s.c_str(), ' ');
+        double period = sp ? std::atof(sp + 1) : 100000.0;
+        if (q > 0 && period > 0) cores = q / period;
+      }
+    } else if (::access("/sys/fs/cgroup/cpu/cpu.cfs_quota_us", F_OK) == 0) {
+      L.cgroup = "v1";
+      double q = std::atof(read_file("/sys/fs/cgroup/cpu/cpu.cfs_quota_us", 64).c_str());
+      double period = std::atof(read_file("/sys/fs/cgroup/cpu/cpu.cfs_period_us", 64).c_str());
+      if (q > 0 && period > 0) cores = q / period;
+    }
+  }
+
+  /* cpuset is a hard affinity mask and can be tighter than the quota */
+  {
+    const char* kCpuset[] = {
+      "/sys/fs/cgroup/cpuset.cpus.effective",   /* v2 */
+      "/sys/fs/cgroup/cpuset/cpuset.cpus",      /* v1 */
+      nullptr,
+    };
+    for (int i = 0; kCpuset[i]; ++i) {
+      std::string s = read_file(kCpuset[i], 4096);
+      if (s.empty()) continue;
+      unsigned n = 0;
+      size_t p = 0;
+      while (p < s.size()) {
+        size_t comma = s.find(',', p);
+        std::string tok = s.substr(p, comma == std::string::npos ? std::string::npos : comma - p);
+        size_t dash = tok.find('-');
+        if (dash != std::string::npos) {
+          unsigned a = (unsigned)std::strtoul(tok.c_str(), nullptr, 10);
+          unsigned b = (unsigned)std::strtoul(tok.c_str() + dash + 1, nullptr, 10);
+          if (b >= a) n += b - a + 1;
+        } else if (!tok.empty()) {
+          ++n;
+        }
+        if (comma == std::string::npos) break;
+        p = comma + 1;
+      }
+      if (n > 0 && (cores <= 0 || (double)n < cores)) cores = (double)n;
+      break;
+    }
+  }
+  if (cores > 0 && cores < (double)r.cpu.logical)
+    L.cpu_cores = Num{cores, true, false};
+
+  {
+    double limit = 0.0;
+    std::string v2 = first_tok("/sys/fs/cgroup/memory.max");
+    if (!v2.empty() && v2 != "max") limit = std::atof(v2.c_str());
+    if (limit <= 0) {
+      std::string v1 = first_tok("/sys/fs/cgroup/memory/memory.limit_in_bytes");
+      if (!v1.empty()) {
+        double d = std::atof(v1.c_str());
+        /* v1 writes a near-SIZE_MAX number for "unlimited", not -1 */
+        if (d > 0 && d < 9.0e18) limit = d;
+      }
+    }
+    if (limit > 0 && (!r.cpu.mem_bytes.has || limit < r.cpu.mem_bytes.v))
+      L.mem_bytes = Num{limit, true, false};
+  }
+
+  if (L.cpu_cores.has || L.mem_bytes.has) {
+    L.container = true;
+    if (L.cpu_cores.has) {
+      /* 2.5 cores is a legal quota; truncating it to 2 would understate what
+       * the process may use, which is the opposite of the point. */
+      char buf[64];
+      std::snprintf(buf, sizeof buf, "%.2f", L.cpu_cores.v);
+      std::string n(buf);
+      while (!n.empty() && n.back() == '0') n.pop_back();
+      if (!n.empty() && n.back() == '.') n.pop_back();
+      r.warnings.push_back("cgroup limits this process to " + n + " of " +
+                           std::to_string(r.cpu.logical) + " logical CPUs");
+    }
+    if (L.mem_bytes.has)
+      r.warnings.push_back("cgroup limits memory to " +
+                           std::to_string((long long)(L.mem_bytes.v / (1024.0 * 1024 * 1024))) +
+                           " GiB of " +
+                           std::to_string((long long)(r.cpu.mem_bytes.v / (1024.0 * 1024 * 1024))) +
+                           " GiB");
+  }
+}
+
 /* --------------------------------------------------------------- NPU */
 void probe_ascend(Report& r) {
   unsigned n = 0;
@@ -443,6 +547,9 @@ void probe_accel_nodes(Report& r) {
 }
 
 }  /* anonymous namespace */
+
+/* ============================================================== limits */
+void probe_limits(Report& r) { probe_limits_impl(r); }
 
 /* ================================================================ CPU */
 void probe_cpu(Cpu& c, Report& r) {
