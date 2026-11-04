@@ -590,6 +590,77 @@ void probe_environment(Report& r) {
 }
 
 /* ================================================================ peaks */
+/* /proc/cpuinfo hands back every flag the kernel knows, most of which say
+ * nothing about what a model runtime can use. Map the ones that matter onto
+ * the same names Windows and macOS produce, in a fixed order, so a report from
+ * a Linux box and a report from a Windows box can be diffed directly. */
+void canonical_features(std::vector<std::string>& feats, const std::string& arch) {
+  struct Entry { const char* key; const char* name; };
+  /* Split by architecture on purpose: x86 and ARM reuse the same word for
+   * different things. "sme" on x86 is Secure Memory Encryption, on ARM it is
+   * the Scalable Matrix Extension, and reporting the second from the first
+   * would claim a matrix unit that does not exist. */
+  static const Entry kX86[] = {
+    {"sse2", "SSE2"}, {"sse4_1", "SSE4.1"}, {"sse4_2", "SSE4.2"}, {"popcnt", "POPCNT"},
+    {"avx", "AVX"}, {"avx2", "AVX2"}, {"fma", "FMA"}, {"f16c", "F16C"},
+    {"bmi1", "BMI1"}, {"bmi2", "BMI2"}, {"aes", "AES"}, {"sha_ni", "SHA"},
+    {"gfni", "GFNI"}, {"vaes", "VAES"}, {"vpclmulqdq", "VPCLMULQDQ"},
+    {"avx512f", "AVX512F"}, {"avx512dq", "AVX512DQ"}, {"avx512cd", "AVX512CD"},
+    {"avx512bw", "AVX512BW"}, {"avx512vl", "AVX512VL"},
+    {"avx512ifma", "AVX512IFMA"}, {"avx512vbmi", "AVX512_VBMI"},
+    {"avx512vbmi2", "AVX512_VBMI2"}, {"avx512_vnni", "AVX512_VNNI"},
+    {"avx512_bitalg", "AVX512_BITALG"}, {"avx512_vpopcntdq", "AVX512_VPOPCNTDQ"},
+    {"avx512_bf16", "AVX512_BF16"}, {"avx512_fp16", "AVX512_FP16"},
+    {"avx512_vp2intersect", "AVX512_VP2INTERSECT"}, {"avx_vnni", "AVX_VNNI"},
+    {"amx_tile", "AMX_TILE"}, {"amx_int8", "AMX_INT8"}, {"amx_bf16", "AMX_BF16"},
+  };
+  static const Entry kArm[] = {
+    {"asimd", "NEON"}, {"fp", "FP"}, {"fphp", "FP16"}, {"asimdhp", "FP16"},
+    {"asimdbf16", "BF16"}, {"bf16", "BF16"}, {"i8mm", "I8MM"},
+    {"asimddp", "DotProd"}, {"sve", "SVE"}, {"sve2", "SVE2"},
+    {"sme", "SME"}, {"sme2", "SME2"},
+    {"pmull", "PMULL"}, {"sha1", "SHA1"}, {"sha2", "SHA256"}, {"sha3", "SHA3"},
+    {"sha512", "SHA512"}, {"crc32", "CRC32"}, {"atomics", "LSE"},
+    {"jscvt", "JSCVT"}, {"fcma", "FCMA"}, {"asimdfhm", "FHM"},
+    {"asimdrdm", "RDM"}, {"lrcpc", "LRCPC"}, {"dcpop", "DCPOP"}, {"sb", "SB"},
+  };
+
+  const bool is_arm = arch == "aarch64" || arch == "arm64";
+  const Entry* map_begin = is_arm ? kArm : kX86;
+  const size_t map_size = is_arm ? sizeof(kArm) / sizeof(kArm[0])
+                                 : sizeof(kX86) / sizeof(kX86[0]);
+
+  auto lower = [](std::string s) {
+    for (char& c : s) if (c >= 'A' && c <= 'Z') c = (char)(c - 'A' + 'a');
+    return s;
+  };
+
+  std::vector<std::string> low;
+  low.reserve(feats.size());
+  for (const auto& f : feats) low.push_back(lower(f));
+
+  std::vector<std::string> out;
+  std::vector<bool> taken(low.size(), false);
+  for (size_t m = 0; m < map_size; ++m) {
+    const Entry& e = map_begin[m];
+    const std::string want = lower(e.name);
+    for (size_t i = 0; i < low.size(); ++i) {
+      if (taken[i]) continue;
+      if (low[i] == e.key || low[i] == want) {
+        out.push_back(e.name);
+        taken[i] = true;
+        break;
+      }
+    }
+  }
+  /* Anything we appended ourselves (SVE_VL=..., SME_VL=...) rides along. */
+  for (size_t i = 0; i < feats.size(); ++i) {
+    if (taken[i]) continue;
+    if (feats[i].find('=') != std::string::npos) out.push_back(feats[i]);
+  }
+  feats.swap(out);
+}
+
 void derive_cpu_peaks(Cpu& c) {
   if (c.physical == 0) return;
 

@@ -476,6 +476,9 @@ void probe_cpu(Cpu& c, Report& r) {
   }
 #endif
 
+  /* The raw kernel list carries cpu-vendor trivia; keep what a runtime uses. */
+  canonical_features(c.features, c.arch);
+
   /* arm64 SoCs usually have no "model name"; the device tree does. */
   if (c.model.empty()) {
     c.model = trim(read_file("/sys/firmware/devicetree/base/model", 256));

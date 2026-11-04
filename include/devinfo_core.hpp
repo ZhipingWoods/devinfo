@@ -80,6 +80,7 @@ void probe_npu(Report& r);
 /* ---- shared across all platforms */
 void collect_accels(Report& r);        /* dlopen/LoadLibrary scanning */
 void probe_environment(Report& r);
+void canonical_features(std::vector<std::string>& feats, const std::string& arch);
 void derive_cpu_peaks(Cpu& c);
 void derive_gpu_peaks(Gpu& g);
 Num  measure_memory_bandwidth(uint64_t bytes_hint, unsigned threads_hint);
