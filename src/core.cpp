@@ -32,6 +32,7 @@
 #include <unistd.h>
 #include <sys/sysctl.h>
 #include <sys/stat.h>
+#include <sys/mount.h>
 #include <sys/utsname.h>
 #else
 #include <dlfcn.h>
@@ -704,6 +705,19 @@ void collect_accels(Report& r) {
  * there is nothing to ask. macOS containers are full VMs, so the machine the
  * process sees is the machine it gets. */
 #if defined(__APPLE__)
+void probe_storage(Report& r) {
+  struct statfs sf {};
+  if (::statfs("/", &sf) != 0) return;
+  r.storage.mount = "/";
+  r.storage.total_bytes = Num{(double)sf.f_blocks * (double)sf.f_bsize, true, false};
+  r.storage.free_bytes = Num{(double)sf.f_bavail * (double)sf.f_bsize, true, false};
+  r.storage.media = (sf.f_flags & MNT_LOCAL) ? "ssd" : "network";
+}
+
+/* macOS link aggregation makes "the" interface ambiguous, and multi-node
+ * training on Macs is not a real workflow. Left unset rather than guessed. */
+void probe_network(Report& r) { (void)r; }
+
 void probe_limits(Report& r) { (void)r; }
 
 /* Apple Silicon is a single NUMA domain: the CPU and GPU share one memory
@@ -1026,6 +1040,8 @@ Report probe(uint32_t flags) {
    * number CPUID reports is the host's, not the schedulable one. */
   probe_limits(r);
   probe_numa(r);
+  probe_storage(r);
+  probe_network(r);
 
   collect_accels(r);
 

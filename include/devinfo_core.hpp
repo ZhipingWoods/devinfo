@@ -77,6 +77,22 @@ struct Limits {
   Num mem_bytes;           /* effective memory ceiling */
 };
 
+/* Weights are read from disk before anything is trained, so the filesystem
+ * and the link to it bound what a black-box device can actually load. */
+struct Storage {
+  std::string mount;       /* "/" or "C:\" */
+  Num free_bytes, total_bytes;
+  std::string media;       /* "nvme" / "ssd" / "hdd" / "" */
+};
+
+/* Only meaningful when more than one machine is involved, which is why the
+ * speed is reported without interpretation. */
+struct Network {
+  std::string iface;
+  Num speed_gbps;
+  bool rdma = false;
+};
+
 /* Multi-socket boxes put a GPU closer to one CPU than the other. Training
  * across that boundary costs more than most people expect, and it does not
  * show up anywhere except here. */
@@ -93,6 +109,8 @@ struct Report {
   Cpu cpu;
   Limits limits;
   Numa numa;
+  Storage storage;
+  Network network;
   std::vector<Gpu> gpus;
   std::vector<Npu> npus;
   std::vector<Accel> accels;
@@ -109,6 +127,8 @@ void collect_accels(Report& r);        /* dlopen/LoadLibrary scanning */
 void probe_environment(Report& r);
 void probe_limits(Report& r);   /* cgroup / job object ceilings */
 void probe_numa(Report& r);     /* socket/memory-node topology */
+void probe_storage(Report& r);  /* free space and media type */
+void probe_network(Report& r);  /* link speed, when one exists */
 void canonical_features(std::vector<std::string>& feats, const std::string& arch);
 void derive_cpu_peaks(Cpu& c);
 void derive_gpu_peaks(Gpu& g);

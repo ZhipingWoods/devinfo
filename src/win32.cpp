@@ -481,6 +481,33 @@ void probe_limits(Report& r) {
   }
 }
 
+/* ============================================================ storage */
+void probe_storage(Report& r) {
+  Storage& s = r.storage;
+  ULARGE_INTEGER free_b{}, total_b{}, total_free{};
+  if (!GetDiskFreeSpaceExA("C:\\", &free_b, &total_b, &total_free)) return;
+  s.mount = "C:\\";
+  s.total_bytes = Num{(double)total_b.QuadPart, true, false};
+  /* What the user can actually write, which is what a 140 GiB checkpoint
+   * has to fit into. */
+  s.free_bytes = Num{(double)free_b.QuadPart, true, false};
+
+  /* Media type needs an IOCTL per volume; the drive type is free and covers
+   * the case that matters (a network mount or a removable disk). */
+  switch (GetDriveTypeA("C:\\")) {
+    case DRIVE_REMOTE:  s.media = "network"; break;
+    case DRIVE_REMOVABLE: s.media = "removable"; break;
+    case DRIVE_FIXED:   s.media = ""; break;   /* ssd vs hdd: not readable */
+    default: break;
+  }
+}
+
+/* ============================================================ network */
+/* GetAdaptersAddresses would pull in iphlpapi and enumerate every virtual
+ * switch on the box. Multi-node training from Windows is rare enough that
+ * reporting nothing beats reporting the Hyper-V adapter's link speed. */
+void probe_network(Report& r) { (void)r; }
+
 /* ================================================================ NUMA */
 void probe_numa(Report& r) {
   ULONG highest = 0;

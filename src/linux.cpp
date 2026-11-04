@@ -10,7 +10,10 @@
 #include <dirent.h>
 #include <dlfcn.h>
 #include <sys/stat.h>
+#include <sys/statvfs.h>
+#include <sys/sysmacros.h>
 #include <unistd.h>
+#include <climits>
 #if defined(__aarch64__) && defined(__linux__)
 #include <sys/prctl.h>   /* SVE vector length */
 #endif
@@ -822,6 +825,84 @@ void probe_gpu(Report& r) {
     read_pcie_link(d.path, g);
     r.gpus.push_back(std::move(g));
   }
+}
+
+/* ============================================================ storage */
+void probe_storage(Report& r) {
+  Storage& s = r.storage;
+  struct statvfs sv {};
+  if (::statvfs("/", &sv) != 0) return;
+  s.mount = "/";
+  s.total_bytes = Num{(double)sv.f_blocks * (double)sv.f_frsize, true, false};
+  s.free_bytes = Num{(double)sv.f_bavail * (double)sv.f_frsize, true, false};
+
+  /* Which kind of device backs this mount. Model loading is a million
+   * sequential reads; an HDD and an NVMe differ by more than any kernel
+   * optimisation. Resolve the mount's st_dev to its block device rather than
+   * looking at what disks exist, which on a mixed box names the wrong one. */
+  struct stat st {};
+  if (::stat("/", &st) != 0) return;
+  char link[64];
+  std::snprintf(link, sizeof link, "/sys/dev/block/%u:%u",
+                (unsigned)(st.st_dev >> 8 & 0xfff), (unsigned)(st.st_dev & 0xff));
+  char real[PATH_MAX];
+  if (!::realpath(link, real)) {
+    /* st_dev packing is not portable; fall back to the encoded form. */
+    std::snprintf(link, sizeof link, "/sys/dev/block/%u:%u",
+                  (unsigned)major(st.st_dev), (unsigned)minor(st.st_dev));
+    if (!::realpath(link, real)) return;
+  }
+  const std::string dev(real);
+  if (dev.find("/nvme") != std::string::npos) {
+    s.media = "nvme";
+  } else {
+    /* The device node is a partition; its parent holds the queue attributes. */
+    std::string base = dev;
+    size_t slash = base.rfind('/');
+    if (slash != std::string::npos) base = base.substr(0, slash);
+    std::string rot = one_line(base + "/queue/rotational");
+    if (rot == "0") s.media = "ssd";
+    else if (rot == "1") s.media = "hdd";
+  }
+}
+
+/* ============================================================ network */
+void probe_network(Report& r) {
+  Network& n = r.network;
+
+  /* Interface names are whatever the driver in question picked: eth0, ens1f0,
+   * enp3s0, bond0. Enumerate rather than guess, and take the fastest real
+   * port, since a container adds a dozen virtual ones at 10 Gb/s. */
+  DIR* dp = opendir("/sys/class/net");
+  if (dp) {
+    double best = 0;
+    std::string best_name;
+    while (struct dirent* e = readdir(dp)) {
+      const std::string name = e->d_name;
+      if (name == "lo" || name == "." || name == "..") continue;
+      /* Virtual interfaces report a speed but do not carry the wire. */
+      if (name.compare(0, 6, "docker") == 0 || name.compare(0, 4, "veth") == 0 ||
+          name.compare(0, 2, "br") == 0 || name.compare(0, 3, "vir") == 0 ||
+          name.compare(0, 4, "cni") == 0 || name.compare(0, 4, "tun") == 0 ||
+          name.compare(0, 4, "tap") == 0)
+        continue;
+      const std::string dir = "/sys/class/net/" + name;
+      if (::access((dir + "/device").c_str(), F_OK) != 0) continue;  /* no hardware */
+      double mbps = std::atof(one_line(dir + "/speed").c_str());
+      if (mbps > best) {
+        best = mbps;
+        best_name = name;
+      }
+    }
+    closedir(dp);
+    if (best > 0) {
+      n.iface = best_name;
+      n.speed_gbps = Num{best / 1000.0, true, false};
+    }
+  }
+  /* RDMA changes the calculus for multi-node training by an order of
+   * magnitude; presence is the useful bit, not the port count. */
+  n.rdma = ::access("/sys/class/infiniband", F_OK) == 0;
 }
 
 /* ================================================================ NPU */

@@ -150,6 +150,29 @@ std::string to_json(const Report& r) {
 
   /* What this process may actually use. Absent means "no tighter than the
    * machine"; present means the machine numbers above are not schedulable. */
+  if (r.storage.free_bytes.has) {
+    o += ",\"storage\":{";
+    {
+      W s(o);
+      s.str("mount", r.storage.mount);
+      s.u64("free_bytes", r.storage.free_bytes.v);
+      s.u64("total_bytes", r.storage.total_bytes.v);
+      if (!r.storage.media.empty()) s.str("media", r.storage.media);
+    }
+    o += '}';
+  }
+
+  if (r.network.speed_gbps.has || r.network.rdma) {
+    o += ",\"network\":{";
+    {
+      W n(o);
+      if (!r.network.iface.empty()) n.str("iface", r.network.iface);
+      if (r.network.speed_gbps.has) n.u32("speed_mbps", (unsigned)(r.network.speed_gbps.v * 1000.0));
+      n.boolean("rdma", r.network.rdma);
+    }
+    o += '}';
+  }
+
   if (r.numa.nodes > 1 && !r.numa.layout.empty()) {
     o += ",\"numa\":{";
     {
@@ -442,6 +465,26 @@ std::string to_table(const Report& r) {
    * has nothing to place. */
   if (r.numa.nodes > 1 && !r.numa.layout.empty())
     o += "     numa " + r.numa.layout + "\n";
+
+  if (r.storage.free_bytes.has) {
+    std::string st = "disk " + fmt_bytes(r.storage.free_bytes.v) + " free";
+    if (r.storage.total_bytes.has)
+      st += " of " + fmt_bytes(r.storage.total_bytes.v);
+    if (!r.storage.media.empty()) st += "  " + r.storage.media;
+    o += "     " + st + "  " + r.storage.mount + "\n";
+  }
+
+  if (r.network.speed_gbps.has || r.network.rdma) {
+    std::string nt = "net ";
+    if (r.network.speed_gbps.has) {
+      nt += fmt_num(r.network.speed_gbps.v, " Gb/s");
+      if (!r.network.iface.empty()) nt += " " + r.network.iface;
+    } else {
+      nt += "no link speed";
+    }
+    if (r.network.rdma) nt += "  rdma";
+    o += "     " + nt + "\n";
+  }
 
   {
     std::string pk;
