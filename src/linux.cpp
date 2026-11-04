@@ -325,6 +325,31 @@ std::vector<PciDev> drm_cards() {
   return out;
 }
 
+/* ---- PCIe link state: a card can train below its slot and its own spec ---- */
+unsigned speed_to_gen(const std::string& s) {
+  /* 2.5 GT/s is gen1, 5 gen2, 8 gen3, 16 gen4, 32 gen5, 64 gen6. */
+  double v = std::atof(s.c_str());
+  if (v <= 2.5) return 1;
+  if (v <= 5.0) return 2;
+  if (v <= 8.0) return 3;
+  if (v <= 16.0) return 4;
+  if (v <= 32.0) return 5;
+  return 6;
+}
+
+void read_pcie_link(const std::string& devdir, Gpu& g) {
+  std::string dir = devdir;
+  if (!dir.empty() && dir.back() != '/') dir += '/';
+  std::string cs = one_line(dir + "current_link_speed");
+  std::string cw = one_line(dir + "current_link_width");
+  std::string ms = one_line(dir + "max_link_speed");
+  std::string mw = one_line(dir + "max_link_width");
+  if (!cw.empty()) g.pcie_lanes = (unsigned)std::strtoul(cw.c_str(), nullptr, 10);
+  if (!cs.empty()) g.pcie_gen = speed_to_gen(cs);
+  if (!mw.empty()) g.pcie_lanes_max = (unsigned)std::strtoul(mw.c_str(), nullptr, 10);
+  if (!ms.empty()) g.pcie_gen_max = speed_to_gen(ms);
+}
+
 /* ---- NVIDIA via libcuda: the only way to get SM count without a context */
 typedef int (*cuInit_t)(unsigned);
 typedef int (*cuDeviceGetCount_t)(int*);
@@ -332,6 +357,7 @@ typedef int (*cuDeviceGet_t)(int*, int);
 typedef int (*cuDeviceGetName_t)(char*, int, int);
 typedef int (*cuDeviceGetAttribute_t)(int*, int, int);
 typedef int (*cuDeviceTotalMem_t)(unsigned long long*, int);
+typedef int (*cuDeviceGetPCIBusId_t)(char*, int, int);
 
 enum {
   ATTR_CLOCK_RATE = 13,
@@ -354,6 +380,7 @@ void probe_nvidia_cuda(Report& r) {
   auto attr_ = (cuDeviceGetAttribute_t)dlsym(h, "cuDeviceGetAttribute");
   auto mem_ = (cuDeviceTotalMem_t)dlsym(h, "cuDeviceTotalMem_v2");
   if (!mem_) mem_ = (cuDeviceTotalMem_t)dlsym(h, "cuDeviceTotalMem");
+  auto pciid_ = (cuDeviceGetPCIBusId_t)dlsym(h, "cuDeviceGetPCIBusId");
   if (!init_ || !count_ || !get_ || !name_ || !attr_) return;
   if (init_(0) != 0) return;
 
@@ -399,6 +426,18 @@ void probe_nvidia_cuda(Report& r) {
       unsigned long long total = 0;
       if (mem_(&total, dev) == 0 && total > 0)
         g.vram_bytes = Num{(double)total, true, false};
+    }
+
+    /* The bus id lets us ask the kernel what the link actually trained to,
+     * which libcuda itself will not say. */
+    if (pciid_) {
+      char busid[32] = {0};
+      if (pciid_(busid, (int)sizeof busid, dev) == 0 && busid[0]) {
+        std::string s(busid);
+        for (auto& ch : s) ch = (char)std::tolower((unsigned char)ch);
+        g.pci_id = s;
+        read_pcie_link("/sys/bus/pci/devices/" + s, g);
+      }
     }
     r.gpus.push_back(std::move(g));
   }
@@ -710,6 +749,43 @@ void probe_cpu(Cpu& c, Report& r) {
   }
 }
 
+/* ================================================================ NUMA */
+void probe_numa(Report& r) {
+  std::vector<std::string> nodes;
+  for (int i = 0; i < 64; ++i) {
+    std::string d = "/sys/devices/system/node/node" + std::to_string(i);
+    if (::access((d + "/cpulist").c_str(), R_OK) != 0) continue;
+    nodes.push_back(d);
+  }
+  if (nodes.empty()) return;
+  r.numa.nodes = (unsigned)nodes.size();
+
+  /* Count CPUs per node from cpulist ("0-47" or "0-23,48-71"). */
+  std::string cols;
+  for (const auto& d : nodes) {
+    std::string list = one_line(d + "/cpulist");
+    unsigned n = 0;
+    size_t p = 0;
+    while (p < list.size()) {
+      size_t comma = list.find(',', p);
+      std::string tok = list.substr(p, comma == std::string::npos ? std::string::npos : comma - p);
+      size_t dash = tok.find('-');
+      if (dash != std::string::npos) {
+        unsigned a = (unsigned)std::strtoul(tok.c_str(), nullptr, 10);
+        unsigned b = (unsigned)std::strtoul(tok.c_str() + dash + 1, nullptr, 10);
+        if (b >= a) n += b - a + 1;
+      } else if (!tok.empty()) {
+        ++n;
+      }
+      if (comma == std::string::npos) break;
+      p = comma + 1;
+    }
+    if (!cols.empty()) cols += "+";
+    cols += std::to_string(n);
+  }
+  r.numa.layout = std::to_string(r.numa.nodes) + " nodes: " + cols + " cores";
+}
+
 /* ================================================================ GPU */
 void probe_gpu(Report& r) {
   probe_nvidia_cuda(r);
@@ -743,6 +819,7 @@ void probe_gpu(Report& r) {
       double mhz = std::atof(gt.c_str());
       if (mhz > 0) g.clock_ghz = Num{mhz / 1000.0, true, false};
     }
+    read_pcie_link(d.path, g);
     r.gpus.push_back(std::move(g));
   }
 }

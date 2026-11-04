@@ -240,6 +240,10 @@ struct NvmlApi {
   int (*clock)(unsigned*, int, unsigned*);
   int (*meminfo)(unsigned*, void*);
   int (*cc)(unsigned*, int*, int*);
+  int (*pcie_gen)(unsigned*, unsigned*);
+  int (*pcie_gen_max)(unsigned*, unsigned*);
+  int (*pcie_width)(unsigned*, unsigned*);
+  int (*pcie_width_max)(unsigned*, unsigned*);
   bool ok() const { return lib && init && count && handle; }
 };
 
@@ -260,6 +264,10 @@ NvmlApi load_nvml() {
   a.clock  = (decltype(a.clock))GetProcAddress(m, "nvmlDeviceGetClockInfo");
   a.meminfo = (decltype(a.meminfo))GetProcAddress(m, "nvmlDeviceGetMemoryInfo");
   a.cc     = (decltype(a.cc))GetProcAddress(m, "nvmlDeviceGetCudaComputeCapability");
+  a.pcie_gen       = (decltype(a.pcie_gen))GetProcAddress(m, "nvmlDeviceGetCurrPcieLinkGeneration");
+  a.pcie_gen_max   = (decltype(a.pcie_gen_max))GetProcAddress(m, "nvmlDeviceGetMaxPcieLinkGeneration");
+  a.pcie_width     = (decltype(a.pcie_width))GetProcAddress(m, "nvmlDeviceGetCurrPcieLinkWidth");
+  a.pcie_width_max = (decltype(a.pcie_width_max))GetProcAddress(m, "nvmlDeviceGetMaxPcieLinkWidth");
   return a;
 }
 
@@ -377,6 +385,13 @@ void probe_gpu(Report& r) {
             NvmlMem mi{};
             if (nv.meminfo && nv.meminfo(&dev, &mi) == 0 && mi.total > 0)
               g.vram_bytes = Num{(double)mi.total, true, false};
+            /* NVML reports both the negotiated and the capable link; the
+             * capable one is what the slot allows and is the useful figure. */
+            unsigned v = 0;
+            if (nv.pcie_gen && nv.pcie_gen(&dev, &v) == 0) g.pcie_gen = v;
+            if (nv.pcie_gen_max && nv.pcie_gen_max(&dev, &v) == 0) g.pcie_gen_max = v;
+            if (nv.pcie_width && nv.pcie_width(&dev, &v) == 0) g.pcie_lanes = v;
+            if (nv.pcie_width_max && nv.pcie_width_max(&dev, &v) == 0) g.pcie_lanes_max = v;
             int major = 0, minor = 0;
             if (nv.cc && nv.cc(&dev, &major, &minor) == 0 && major > 0) {
               char cc[16];
@@ -464,6 +479,28 @@ void probe_limits(Report& r) {
                            std::to_string(r.cpu.logical) + " logical CPUs");
     }
   }
+}
+
+/* ================================================================ NUMA */
+void probe_numa(Report& r) {
+  ULONG highest = 0;
+  if (!GetNumaHighestNodeNumber(&highest) || highest == 0) return;  /* one node */
+
+  r.numa.nodes = (unsigned)highest + 1;
+  std::string cols;
+  for (ULONG n = 0; n <= highest; ++n) {
+    GROUP_AFFINITY ga{};
+    unsigned cpus = 0;
+    if (GetNumaNodeProcessorMaskEx((USHORT)n, &ga)) {
+      /* One group's worth of CPUs per call. A node spanning groups is rare on
+       * client hardware and would undercount here rather than overcount. */
+      for (unsigned b = 0; b < 64; ++b)
+        if (ga.Mask & (KAFFINITY(1) << b)) ++cpus;
+    }
+    if (!cols.empty()) cols += "+";
+    cols += std::to_string(cpus);
+  }
+  r.numa.layout = std::to_string(r.numa.nodes) + " nodes: " + cols + " cores";
 }
 
 /* ---------------------------------------------------------------- NPU */

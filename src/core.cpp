@@ -705,6 +705,10 @@ void collect_accels(Report& r) {
  * process sees is the machine it gets. */
 #if defined(__APPLE__)
 void probe_limits(Report& r) { (void)r; }
+
+/* Apple Silicon is a single NUMA domain: the CPU and GPU share one memory
+ * pool, and there is no second socket to be remote from. */
+void probe_numa(Report& r) { (void)r; }
 #endif
 
 /* ============================================================ environment */
@@ -1021,6 +1025,7 @@ Report probe(uint32_t flags) {
   /* Before anything is derived from the core count: inside a container the
    * number CPUID reports is the host's, not the schedulable one. */
   probe_limits(r);
+  probe_numa(r);
 
   collect_accels(r);
 

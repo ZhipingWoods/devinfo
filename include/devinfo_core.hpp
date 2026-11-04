@@ -46,6 +46,10 @@ struct Gpu {
       fp16_tflops, fp8_tflops, int8_tops, fp16_tflops_sparse;
   std::string method;
   std::string pci_id;                  /* "8086:4c8a", when the OS tells us */
+  /* Negotiated PCIe link. A card in an x8 slot, or one that trained down a
+   * generation, is a host-to-device bottleneck that no spec sheet shows. */
+  unsigned pcie_gen = 0, pcie_lanes = 0;
+  unsigned pcie_gen_max = 0, pcie_lanes_max = 0;
 };
 
 struct Npu {
@@ -73,6 +77,14 @@ struct Limits {
   Num mem_bytes;           /* effective memory ceiling */
 };
 
+/* Multi-socket boxes put a GPU closer to one CPU than the other. Training
+ * across that boundary costs more than most people expect, and it does not
+ * show up anywhere except here. */
+struct Numa {
+  unsigned nodes = 0;
+  std::string layout;      /* "2 nodes: 48+48 cores" */
+};
+
 struct Report {
   std::string os, os_version, kernel, arch, model_id, env, host;
   std::string level;
@@ -80,6 +92,7 @@ struct Report {
 
   Cpu cpu;
   Limits limits;
+  Numa numa;
   std::vector<Gpu> gpus;
   std::vector<Npu> npus;
   std::vector<Accel> accels;
@@ -95,6 +108,7 @@ void probe_npu(Report& r);
 void collect_accels(Report& r);        /* dlopen/LoadLibrary scanning */
 void probe_environment(Report& r);
 void probe_limits(Report& r);   /* cgroup / job object ceilings */
+void probe_numa(Report& r);     /* socket/memory-node topology */
 void canonical_features(std::vector<std::string>& feats, const std::string& arch);
 void derive_cpu_peaks(Cpu& c);
 void derive_gpu_peaks(Gpu& g);

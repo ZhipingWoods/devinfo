@@ -150,6 +150,16 @@ std::string to_json(const Report& r) {
 
   /* What this process may actually use. Absent means "no tighter than the
    * machine"; present means the machine numbers above are not schedulable. */
+  if (r.numa.nodes > 1 && !r.numa.layout.empty()) {
+    o += ",\"numa\":{";
+    {
+      W n(o);
+      n.u32("nodes", r.numa.nodes);
+      n.str("layout", r.numa.layout);
+    }
+    o += '}';
+  }
+
   if (r.limits.container) {
     std::vector<std::string> lim_est;
     o += ",\"limits\":{";
@@ -270,6 +280,17 @@ std::string to_json(const Report& r) {
 
       x.str("method", g.method);
       if (!g.pci_id.empty()) x.str("pci", g.pci_id);
+      if (g.pcie_lanes) {
+        o += ",\"pcie\":{";
+        {
+          W l(o);
+          if (g.pcie_gen) l.u32("gen", g.pcie_gen);
+          l.u32("lanes", g.pcie_lanes);
+          if (g.pcie_gen_max) l.u32("gen_max", g.pcie_gen_max);
+          if (g.pcie_lanes_max) l.u32("lanes_max", g.pcie_lanes_max);
+        }
+        o += '}';
+      }
     }
     if (!est.empty()) {
       o += ",\"estimated\":";
@@ -417,6 +438,11 @@ std::string to_table(const Report& r) {
     }
   }
 
+  /* Only worth a line when there is more than one node: a single-socket box
+   * has nothing to place. */
+  if (r.numa.nodes > 1 && !r.numa.layout.empty())
+    o += "     numa " + r.numa.layout + "\n";
+
   {
     std::string pk;
     auto push = [&pk](const std::string& s) { if (!pk.empty()) pk += "  "; pk += s; };
@@ -466,6 +492,21 @@ std::string to_table(const Report& r) {
     auto mpush = [&mem](const std::string& s) { if (!mem.empty()) mem += "  "; mem += s; };
     if (g.vram_bytes.has) mpush((g.unified ? "unified " : "vram ") + fmt_bytes(g.vram_bytes.v));
     if (g.clock_ghz.has)  mpush("clock " + fmt_num(g.clock_ghz.v, " GHz") + mark(g.clock_ghz));
+    if (g.pcie_lanes || g.pcie_lanes_max) {
+      /* Quote the link's capability, not the instantaneous state: idle GPUs
+       * drop to gen1 to save power, so current_link_speed at rest says more
+       * about the power policy than about the slot. */
+      const unsigned gen = g.pcie_gen_max ? g.pcie_gen_max : g.pcie_gen;
+      const unsigned lanes = g.pcie_lanes_max ? g.pcie_lanes_max : g.pcie_lanes;
+      std::string l = "pcie ";
+      if (gen) l += "gen" + std::to_string(gen) + " ";
+      l += "x" + std::to_string(lanes);
+      /* Width is not power-managed the way speed is, so a narrow link really
+       * is a narrow slot - that one is worth calling out. */
+      if (g.pcie_lanes_max && g.pcie_lanes && g.pcie_lanes < g.pcie_lanes_max)
+        l += " (running x" + std::to_string(g.pcie_lanes) + ")";
+      mpush(l);
+    }
     if (g.mem_bw_gbs.has) mpush("bw " + fmt_num(g.mem_bw_gbs.v, " GB/s") + mark(g.mem_bw_gbs));
     if (!mem.empty()) o += "     " + mem + "\n";
 
