@@ -306,7 +306,11 @@ void collect_accels(Report& r) {
       if (fn) {
         size_t v = fn();
         a.available = true;
-        a.version = fmt_version((unsigned)(v / 1000), (unsigned)((v % 1000) / 100), (unsigned)(v % 100));
+        /* cudnn encodes its version as major*10000 + minor*100 + patch, so
+         * 9.20.0 arrives as 92000. Dividing by 1000 says "92.0", which is
+         * what an earlier version of this line did. */
+        a.version = fmt_version((unsigned)(v / 10000), (unsigned)((v % 10000) / 100),
+                                (unsigned)(v % 100));
         a.detail = std::string("lib=") + h.lib;
       }
     }
@@ -820,6 +824,20 @@ void probe_environment(Report& r) {
  * the same names Windows and macOS produce, in a fixed order, so a report from
  * a Linux box and a report from a Windows box can be diffed directly. */
 void canonical_features(std::vector<std::string>& feats, const std::string& arch) {
+  /* Several kernel flags name the same capability from different angles:
+   * aarch64 reports both fphp (half-precision conversion) and asimdhp (half
+   * precision arithmetic), and both map to FP16. Emit each name once. */
+  auto dedupe = [](std::vector<std::string>& v) {
+    std::vector<std::string> out;
+    for (const auto& s : v) {
+      bool seen = false;
+      for (const auto& o : out)
+        if (o == s) { seen = true; break; }
+      if (!seen) out.push_back(s);
+    }
+    v.swap(out);
+  };
+  (void)dedupe;
   struct Entry { const char* key; const char* name; };
   /* Split by architecture on purpose: x86 and ARM reuse the same word for
    * different things. "sme" on x86 is Secure Memory Encryption, on ARM it is
@@ -883,6 +901,7 @@ void canonical_features(std::vector<std::string>& feats, const std::string& arch
     if (taken[i]) continue;
     if (feats[i].find('=') != std::string::npos) out.push_back(feats[i]);
   }
+  dedupe(out);
   feats.swap(out);
 }
 
@@ -1058,15 +1077,32 @@ void derive_deploy(Report& r) {
   {
     const Gpu* g = nullptr;
     for (const auto& x : r.gpus)
-      if (x.fp32_tflops.has && x.mem_bw_gbs.has) { g = &x; break; }
-    if (g) {
-      const double ridge = g->fp32_tflops.v * 1e12 / (g->mem_bw_gbs.v * 1e9);
-      char buf[256];
+      if (x.fp32_tflops.has) { g = &x; break; }
+
+    /* On a unified-memory part the GPU has no bandwidth of its own to read,
+     * but the measured figure for system RAM is the same silicon, so lending
+     * it over is a measurement rather than a guess. */
+    double bw = 0;
+    bool borrowed = false;
+    if (g && g->mem_bw_gbs.has) {
+      bw = g->mem_bw_gbs.v;
+    } else if (g && g->unified && r.cpu.mem_bw_measured_gbs.has) {
+      bw = r.cpu.mem_bw_measured_gbs.v;
+      borrowed = true;
+    }
+
+    if (g && bw > 0) {
+      const double ridge = g->fp32_tflops.v * 1e12 / (bw * 1e9);
+      char buf[288];
       std::snprintf(buf, sizeof buf,
-                    "ridge point %.0f FLOP/byte (%.1f TFLOPS / %.0f GB/s): "
+                    "ridge point %.0f FLOP/byte (%.1f TFLOPS / %.0f GB/s%s): "
                     "kernels below it are bandwidth-bound",
-                    ridge, g->fp32_tflops.v, g->mem_bw_gbs.v);
+                    ridge, g->fp32_tflops.v, bw,
+                    borrowed ? ", measured on the shared pool" : "");
       d.lines.push_back(buf);
+    } else if (g && !bw) {
+      d.lines.push_back("ridge point unavailable: no honest bandwidth figure for this GPU"
+                        + std::string(r.cpu.mem_bw_measured_gbs.has ? "" : " (run --bench)"));
     } else if (r.cpu.peak_fp32_tflops.has && r.cpu.mem_bw_gbs.has) {
       const double ridge = r.cpu.peak_fp32_tflops.v * 1e12 / (r.cpu.mem_bw_gbs.v * 1e9);
       char buf[256];
@@ -1193,9 +1229,6 @@ Report probe(uint32_t flags) {
 
   collect_accels(r);
 
-  /* Last, so it can read everything above. */
-  derive_deploy(r);
-
   if (flags & DEVINFO_BENCH) {
     uint64_t hint = r.cpu.mem_bytes.has ? (uint64_t)(r.cpu.mem_bytes.v / 128) : (64ull << 20);
     if (hint < (8ull << 20)) hint = 8ull << 20;
@@ -1215,8 +1248,16 @@ Report probe(uint32_t flags) {
     }
 #endif
     if (hint > (64ull << 20)) hint = 64ull << 20;
+    /* Kept apart from mem_bw_gbs on purpose: that field may hold a spec-table
+     * peak (153 GB/s on an M5) and a copy benchmark reads lower, so writing
+     * over it would replace a correct figure with a pessimistic one. */
     r.cpu.mem_bw_measured_gbs = measure_memory_bandwidth(hint, 0);
   }
+
+  /* Last of all, so it reads the benchmark too: the ridge point needs the
+   * measured bandwidth, and before this sat above the bench it silently used
+   * the spec-table figure or nothing at all. */
+  derive_deploy(r);
 
   r.probe_ms = std::chrono::duration<double, std::milli>(clk::now() - t0).count();
   return r;

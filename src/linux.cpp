@@ -369,6 +369,9 @@ enum {
   ATTR_GLOBAL_MEMORY_BUS_WIDTH = 37,
   ATTR_CC_MAJOR = 75,
   ATTR_CC_MINOR = 76,
+  /* "Device is integrated with the host memory subsystem" - the documented
+   * way to tell a Jetson or an iGPU from a card with its own VRAM. */
+  ATTR_INTEGRATED = 18,
 };
 
 void probe_nvidia_cuda(Report& r) {
@@ -408,6 +411,10 @@ void probe_nvidia_cuda(Report& r) {
     if (attr_(&v, ATTR_CLOCK_RATE, dev) == 0 && v > 0)
       g.clock_ghz = Num{(double)v / 1e6, true, false};      /* kHz -> GHz */
 
+    int integrated = 0;
+    if (attr_(&integrated, ATTR_INTEGRATED, dev) == 0 && integrated)
+      g.unified = true;
+
     int major = 0, minor = 0;
     attr_(&major, ATTR_CC_MAJOR, dev);
     attr_(&minor, ATTR_CC_MINOR, dev);
@@ -417,12 +424,21 @@ void probe_nvidia_cuda(Report& r) {
       g.arch = cc;
     }
 
+    /* Bus width times clock times two works for GDDR, where the reported
+     * clock is half the data rate: a 4090 comes out at 1008 GB/s, which is
+     * its spec. It does not work for shared LPDDR. An AGX Orin reports
+     * 256 bit at 1300 MHz, which this formula turns into 83 GB/s when the
+     * part is rated at 204.8, so the multiplier for that memory is not two.
+     * Rather than publish a number that is wrong by 2.5x, an integrated GPU
+     * gets no bandwidth and says why. */
     unsigned bus = 0, memclk = 0;
     if (attr_(&v, ATTR_GLOBAL_MEMORY_BUS_WIDTH, dev) == 0 && v > 0) bus = (unsigned)v;
     if (attr_(&v, ATTR_MEMORY_CLOCK_RATE, dev) == 0 && v > 0) memclk = (unsigned)v;
-    if (bus && memclk) {
+    if (bus && memclk && !g.unified) {
       double gbs = (double)bus / 8.0 * (double)memclk * 1000.0 * 2.0 / 1e9;
       g.mem_bw_gbs = Num{gbs, true, false};
+    } else if (bus && memclk && g.unified) {
+      g.method += " (bandwidth withheld: LPDDR data rate is not clock x2)";
     }
 
     if (mem_) {
@@ -432,8 +448,9 @@ void probe_nvidia_cuda(Report& r) {
     }
 
     /* The bus id lets us ask the kernel what the link actually trained to,
-     * which libcuda itself will not say. */
-    if (pciid_) {
+     * which libcuda itself will not say. An integrated GPU has no PCIe link
+     * of its own and reports 0000:00:00.0, which is not a device. */
+    if (pciid_ && !g.unified) {
       char busid[32] = {0};
       if (pciid_(busid, (int)sizeof busid, dev) == 0 && busid[0]) {
         std::string s(busid);
