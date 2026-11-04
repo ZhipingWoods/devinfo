@@ -47,6 +47,17 @@ devinfo --bench         add the memory bandwidth measurement
 it the probe is a few milliseconds because it only reads what the OS already
 knows.
 
+## Virtual displays
+
+Windows boxes running remote-desktop tools (ToDesk, 向日葵, GameViewer and
+friends) get extra display adapters, and those adapters report the name of the
+GPU they extend. Counting them naively makes one Intel iGPU look like four.
+
+devinfo counts the real PCI display devices with SetupAPI and lets each
+(vendor, device) pair account for at most that many adapters, so a single iGPU
+shadowed by three virtual monitors reports one, while eight identical RTX 4090s
+still report eight. Every GPU carries its PCI id in both outputs.
+
 ## What the numbers mean
 
 Values printed with `~` are estimated from a chip specification table, not read

@@ -373,12 +373,22 @@ std::string to_table(const Report& r) {
   }
 
   if (!c.features.empty()) {
-    std::string fl = "     isa ";
-    for (size_t i = 0; i < c.features.size(); ++i) {
-      fl += c.features[i];
-      if (i + 1 < c.features.size()) fl += ' ';
+    /* Wrap rather than truncate: the interesting extensions (VNNI, AMX, SVE)
+     * sort late in the list and a "..." would hide exactly the ones that
+     * decide which kernel you can call. */
+    const std::string indent = "     isa ";
+    const size_t width = 76;
+    std::string fl = indent;
+    bool first = true;
+    for (const auto& f : c.features) {
+      if (!first && fl.size() + 1 + f.size() > width) {
+        o += fl + "\n";
+        fl = std::string(indent.size(), ' ');
+      }
+      if (!first) fl += ' ';
+      fl += f;
+      first = false;
     }
-    if (fl.size() > 76) fl = fl.substr(0, 73) + "...";
     o += fl + "\n";
   }
 

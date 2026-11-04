@@ -99,21 +99,83 @@ std::string cpu_brand_string() {
   return b == std::string::npos ? s : s.substr(b);
 }
 
+/* Linux hands us a ready-made flag list from /proc/cpuinfo; Windows does not,
+ * so decode CPUID here. Every vector extension is gated on its parent: a CPU
+ * that lacks AVX512F cannot be claimed to have AVX512_VNNI no matter what a
+ * stray bit says, which keeps a mistyped bit from inventing hardware. */
 void cpu_features(Cpu& c) {
-  int r[4] = {0};
-  cpuid(r, 1, 0);
-  bool sse2 = (r[3] & (1 << 26)) != 0;
-  bool avx = (r[2] & (1 << 28)) != 0;
-  if (sse2) c.features.push_back("SSE2");
-  if (avx) c.features.push_back("AVX");
+  auto bit = [](const int r[4], int reg, int n) { return (r[reg] >> n) & 1; };
 
-  cpuid(r, 7, 0);
-  if (r[1] & (1 << 5))  c.features.push_back("AVX2");
-  if (r[1] & (1 << 16)) c.features.push_back("AVX512F");
-  if (r[1] & (1 << 30)) c.features.push_back("AVX512BW");
-  if (r[3] & (1 << 3))  c.features.push_back("BMI1");
-  if (r[3] & (1 << 8))  c.features.push_back("BMI2");
-  if (r[1] & (1 << 3))  c.features.push_back("FMA");
+  int lv[4] = {0};
+  cpuid(lv, 0, 0);
+  const unsigned max_leaf = (unsigned)lv[0];
+
+  int r1[4] = {0};
+  cpuid(r1, 1, 0);
+  const bool sse2  = bit(r1, 3, 26);
+  const bool sse41 = bit(r1, 2, 19);
+  const bool avx   = bit(r1, 2, 28);
+  const bool fma   = bit(r1, 2, 12);
+  const bool popcnt = bit(r1, 2, 23);
+
+  int r7[4] = {0}, r71[4] = {0};
+  bool have7 = max_leaf >= 7;
+  bool have71 = false;
+  if (have7) {
+    cpuid(r7, 7, 0);
+    have71 = ((unsigned)r7[0]) >= 1;   /* EAX holds the highest subleaf */
+    if (have71) cpuid(r71, 7, 1);
+  }
+
+  const bool avx2      = have7 && bit(r7, 1, 5);
+  const bool avx512f   = have7 && bit(r7, 1, 16);
+
+  if (sse2)   c.features.push_back("SSE2");
+  if (sse41)  c.features.push_back("SSE4.1");
+  if (popcnt) c.features.push_back("POPCNT");
+  if (avx)    c.features.push_back("AVX");
+  if (fma)    c.features.push_back("FMA");
+  if (avx2)   c.features.push_back("AVX2");
+
+  if (have7) {
+    /* leaf 7 EBX */
+    if (bit(r7, 1, 3))  c.features.push_back("BMI1");
+    if (bit(r7, 1, 8))  c.features.push_back("BMI2");
+    if (bit(r7, 1, 29)) c.features.push_back("SHA");
+    /* leaf 7 ECX - need no AVX512 */
+    if (bit(r7, 2, 8))  c.features.push_back("GFNI");
+    if (bit(r7, 2, 9))  c.features.push_back("VAES");
+    if (bit(r7, 2, 10)) c.features.push_back("VPCLMULQDQ");
+  }
+
+  if (avx512f) {
+    c.features.push_back("AVX512F");
+    if (bit(r7, 1, 17)) c.features.push_back("AVX512DQ");
+    if (bit(r7, 1, 21)) c.features.push_back("AVX512IFMA");
+    if (bit(r7, 1, 28)) c.features.push_back("AVX512CD");
+    if (bit(r7, 1, 30)) c.features.push_back("AVX512BW");
+    if (bit(r7, 1, 31)) c.features.push_back("AVX512VL");
+    if (bit(r7, 2, 1))  c.features.push_back("AVX512_VBMI");
+    if (bit(r7, 2, 6))  c.features.push_back("AVX512_VBMI2");
+    if (bit(r7, 2, 11)) c.features.push_back("AVX512_VNNI");
+    if (bit(r7, 2, 12)) c.features.push_back("AVX512_BITALG");
+    if (bit(r7, 2, 14)) c.features.push_back("AVX512_VPOPCNTDQ");
+  }
+
+  if (have71) {
+    /* 256-bit VNNI and the BF16/FP16 AVX512 forms live in subleaf 1 */
+    if (bit(r71, 0, 4))  c.features.push_back("AVX_VNNI");
+    if (avx512f && bit(r71, 0, 5))  c.features.push_back("AVX512_BF16");
+    if (avx512f && bit(r71, 0, 21)) c.features.push_back("AVX_IFMA");
+    if (avx512f && bit(r71, 3, 23)) c.features.push_back("AVX512_FP16");
+  }
+
+  /* AMX is independent of AVX-512: it feeds a separate matrix unit. */
+  if (have7 && bit(r7, 3, 23)) {
+    c.features.push_back("AMX_TILE");
+    if (bit(r7, 3, 24)) c.features.push_back("AMX_INT8");
+    if (bit(r7, 3, 22)) c.features.push_back("AMX_BF16");
+  }
 }
 #endif
 

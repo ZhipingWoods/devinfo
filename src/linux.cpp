@@ -11,6 +11,9 @@
 #include <dlfcn.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#if defined(__aarch64__) && defined(__linux__)
+#include <sys/prctl.h>   /* SVE vector length */
+#endif
 
 #include <cstdio>
 #include <cstdlib>
@@ -449,6 +452,29 @@ void probe_cpu(Cpu& c, Report& r) {
   c.arch = r.arch;
   c.model = ci.model;
   c.features = ci.features;
+
+#if defined(__linux__) && defined(__aarch64__)
+  /* On ARM the ISA flag list is not enough: SVE kernels are written against a
+   * specific vector width, and it is 128 bits on one part and 256 on the next.
+   * The kernel reports the width the thread would actually get. */
+  {
+    long vl = prctl(PR_SVE_GET_VL);
+    if (vl > 0) {
+      unsigned bits = (unsigned)(vl & PR_SVE_VL_LEN_MASK) * 8u;
+      if (bits >= 128) c.features.push_back("SVE_VL=" + std::to_string(bits));
+    }
+  }
+#endif
+#if defined(__linux__) && defined(__aarch64__)
+  {
+    /* SME uses a different vector register file; report its width too. */
+    std::string svl = read_file("/proc/sys/abi/sme_default_vector_length", 64);
+    if (!svl.empty()) {
+      long bits = std::atol(svl.c_str());
+      if (bits >= 128) c.features.push_back("SME_VL=" + std::to_string(bits));
+    }
+  }
+#endif
 
   /* arm64 SoCs usually have no "model name"; the device tree does. */
   if (c.model.empty()) {
