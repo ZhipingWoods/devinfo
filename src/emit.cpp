@@ -171,6 +171,7 @@ std::string to_json(const Report& r) {
     o += '}';
 
     x.num("clock_ghz", c.clock_ghz, est, "");
+    x.num("clock_max_ghz", c.clock_max_ghz, est, "");
 
     o += ",\"cache_bytes\":{";
     {
@@ -187,6 +188,8 @@ std::string to_json(const Report& r) {
     {
       W m(o);
       if (c.mem_bytes.has) m.u64("total_bytes", c.mem_bytes.v);
+      m.num("speed_mts", c.mem_speed_mts, est, "");
+      if (c.mem_modules) m.u32("modules", c.mem_modules);
       m.num("bandwidth_gbs", c.mem_bw_gbs, est, "memory");
       m.num("bandwidth_measured_gbs", c.mem_bw_measured_gbs, est, "memory");
     }
@@ -342,6 +345,8 @@ std::string to_table(const Report& r) {
   }
   if (c.clock_ghz.has) {
     o += "clock " + fmt_num(c.clock_ghz.v, " GHz") + (c.clock_ghz.estimated ? "~" : "");
+    if (c.clock_max_ghz.has && c.clock_max_ghz.v > c.clock_ghz.v)
+      o += " (max " + fmt_num(c.clock_max_ghz.v, ")");
   }
   o += "  " + c.arch + "\n";
 
@@ -357,8 +362,16 @@ std::string to_table(const Report& r) {
 
   {
     std::string mem;
-    if (c.mem_bytes.has) mem += "RAM " + fmt_bytes(c.mem_bytes.v) + "  ";
-    if (c.mem_bw_gbs.has) mem += "bw " + fmt_num(c.mem_bw_gbs.v, " GB/s") + (c.mem_bw_gbs.estimated ? "~" : "");
+    if (c.mem_bytes.has) mem += "RAM " + fmt_bytes(c.mem_bytes.v);
+    /* Module count and the speed the board actually runs at: the two numbers
+     * that turn a datasheet bandwidth into the real one. */
+    if (c.mem_speed_mts.has) {
+      mem += "  " + std::to_string((int)c.mem_speed_mts.v) + " MT/s";
+      /* Say DIMMs, not channels: sixteen modules on an eight-channel part
+       * would otherwise read as sixteen channels and double the bandwidth. */
+      if (c.mem_modules) mem += " in " + std::to_string(c.mem_modules) + " DIMMs";
+    }
+    if (c.mem_bw_gbs.has) mem += "  bw " + fmt_num(c.mem_bw_gbs.v, " GB/s") + (c.mem_bw_gbs.estimated ? "~" : "");
     if (c.mem_bw_measured_gbs.has) mem += "  measured " + fmt_num(c.mem_bw_measured_gbs.v, " GB/s");
     o += "     " + mem + "\n";
   }

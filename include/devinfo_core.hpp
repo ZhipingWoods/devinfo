@@ -20,8 +20,11 @@ struct Cpu {
   unsigned physical = 0, logical = 0;
   unsigned p_cores = 0, e_cores = 0;
   std::string p_name, e_name;
-  Num clock_ghz;                       /* WARNING: unreadable on Apple Silicon */
+  Num clock_ghz;                       /* nominal / base, as the vendor quotes */
+  Num clock_max_ghz;                   /* turbo ceiling, when the OS knows it */
   unsigned l1i = 0, l1d = 0, l2 = 0, l3 = 0, line = 0;  /* bytes, totals */
+  unsigned mem_modules = 0;            /* populated DIMMs, 0 = unknown */
+  Num mem_speed_mts;                   /* speed the board actually runs at */
   Num mem_bytes;
   Num mem_bw_gbs;                      /* theoretical */
   Num mem_bw_measured_gbs;             /* DEVINFO_BENCH only */

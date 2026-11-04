@@ -55,7 +55,7 @@ elseif(WIN32)
   # CPU Sets (hybrid P/E topology) need the Windows 10 SDK surface. Set for
   # every Windows toolchain, not just MSVC, or mingw compiles the block out.
   target_compile_definitions(devinfo_core PUBLIC _WIN32_WINNT=0x0A00)
-  target_link_libraries(devinfo_core PUBLIC dxgi setupapi version)
+  target_link_libraries(devinfo_core PUBLIC dxgi setupapi version powrprof)
   if(MSVC)
     target_compile_options(devinfo_core PRIVATE /W3 /utf-8)
   else()

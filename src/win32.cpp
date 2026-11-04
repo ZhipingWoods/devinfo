@@ -14,6 +14,7 @@
 #include <setupapi.h>
 
 #include <devguid.h>
+#include <powerbase.h>   /* CallNtPowerInformation */
 
 #include <cctype>
 #include <cstdio>
@@ -532,6 +533,74 @@ void detect_hybrid(Cpu& c) {
 #endif
 }
 
+/* ------------------------------------------------------- clock and memory */
+/* The brand string carries the guaranteed base clock ("@ 2.50GHz"), which is
+ * what a datasheet quotes and roughly half of what the part actually reaches.
+ * ACPI knows the ceiling; without it every roofline number is off by the turbo
+ * ratio. */
+struct DevPowerInfo {
+  ULONG Number;
+  ULONG MaxMhz;
+  ULONG CurrentMhz;
+  ULONG MhzLimit;
+  ULONG MaxIdleState;
+  ULONG CurrentIdleState;
+};
+
+void read_clock_ceiling(Cpu& c) {
+  std::vector<DevPowerInfo> ppi(64);
+  if (CallNtPowerInformation(ProcessorInformation, nullptr, 0, ppi.data(),
+                             (ULONG)(ppi.size() * sizeof(ppi[0]))) != 0)
+    return;
+  unsigned best = 0;
+  for (const auto& p : ppi)
+    if (p.MaxMhz > best) best = p.MaxMhz;
+  if (best > 0) c.clock_max_ghz = Num{(double)best / 1000.0, true, false};
+}
+
+/* SMBIOS type 17 describes each installed DIMM. The board's configured speed
+ * is often below the module's rated speed, which is exactly the difference
+ * between the bandwidth on the box and the bandwidth on the datasheet. */
+void read_memory_speed(Cpu& c) {
+  const DWORD size = GetSystemFirmwareTable('RSMB', 0, nullptr, 0);
+  if (size < 8) return;
+  std::vector<unsigned char> buf(size);
+  const DWORD got = GetSystemFirmwareTable('RSMB', 0, buf.data(), size);
+  if (got < 8) return;
+
+  unsigned modules = 0, best_configured = 0, best_rated = 0;
+  size_t off = 8;                                  /* past "RSMB" + length */
+  while (off + 4 <= got) {
+    const unsigned char type = buf[off];
+    const unsigned char len = buf[off + 1];
+    if (len < 4) break;
+    if (type == 0x7F) break;                       /* end-of-table */
+
+    if (type == 17 && off + len <= got) {
+      auto u16 = [&](size_t at) -> unsigned {
+        if (at + 1 >= len) return 0;
+        return (unsigned)buf[off + at] | ((unsigned)buf[off + at + 1] << 8);
+      };
+      const unsigned msize = u16(0x08);            /* MB, 0 = empty slot */
+      if (msize != 0 && msize != 0xFFFF) {
+        ++modules;
+        const unsigned rated = u16(0x15);
+        const unsigned configured = u16(0x20);
+        if (rated > best_rated) best_rated = rated;
+        if (configured > best_configured) best_configured = configured;
+      }
+    }
+
+    size_t p = off + len;                          /* skip the string area */
+    while (p + 1 < got && !(buf[p] == 0 && buf[p + 1] == 0)) ++p;
+    off = p + 2;
+  }
+
+  c.mem_modules = modules;
+  const unsigned speed = best_configured ? best_configured : best_rated;
+  if (speed) c.mem_speed_mts = Num{(double)speed, true, false};
+}
+
 void probe_cpu(Cpu& c, Report& r) {
   c.arch = r.arch;
 
@@ -569,6 +638,9 @@ void probe_cpu(Cpu& c, Report& r) {
     if (mhz) ghz = (double)mhz / 1000.0;
   }
   if (ghz > 0) c.clock_ghz = Num{ghz, true, false};
+
+  read_clock_ceiling(c);
+  read_memory_speed(c);
 }
 
 }  /* namespace devinfo */

@@ -479,6 +479,59 @@ void probe_cpu(Cpu& c, Report& r) {
   /* The raw kernel list carries cpu-vendor trivia; keep what a runtime uses. */
   canonical_features(c.features, c.arch);
 
+  /* Turbo ceiling. The brand string only ever gives the base clock, and on a
+   * core-limited part the gap between the two is most of the performance. */
+  {
+    static const char* kMax[] = {
+      "/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq",
+      "/sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq",
+    };
+    for (const char* p : kMax) {
+      std::string v = read_file(p, 64);
+      if (v.empty()) continue;
+      long khz = std::atol(v.c_str());
+      if (khz > 0) { c.clock_max_ghz = Num{(double)khz / 1e6, true, false}; break; }
+    }
+  }
+
+  /* DIMM speed and population. The DMI table is root-only on most distros, so
+   * this is best-effort and stays unset rather than guessed when unreadable. */
+  {
+    std::string dmi = read_file("/sys/firmware/dmi/tables/DMI", 1 << 20);
+    if (!dmi.empty()) {
+      unsigned modules = 0, best_configured = 0, best_rated = 0;
+      size_t off = 0;
+      const size_t n = dmi.size();
+      while (off + 4 <= n) {
+        const unsigned char type = (unsigned char)dmi[off];
+        const unsigned char len = (unsigned char)dmi[off + 1];
+        if (len < 4) break;
+        if (type == 0x7F) break;
+        if (type == 17 && off + len <= n) {
+          auto u16 = [&](size_t at) -> unsigned {
+            if (at + 1 >= len) return 0;
+            return (unsigned)(unsigned char)dmi[off + at] |
+                   ((unsigned)(unsigned char)dmi[off + at + 1] << 8);
+          };
+          const unsigned msize = u16(0x08);
+          if (msize != 0 && msize != 0xFFFF) {
+            ++modules;
+            const unsigned rated = u16(0x15);
+            const unsigned configured = u16(0x20);
+            if (rated > best_rated) best_rated = rated;
+            if (configured > best_configured) best_configured = configured;
+          }
+        }
+        size_t p = off + len;
+        while (p + 1 < n && !(dmi[p] == 0 && dmi[p + 1] == 0)) ++p;
+        off = p + 2;
+      }
+      c.mem_modules = modules;
+      const unsigned speed = best_configured ? best_configured : best_rated;
+      if (speed) c.mem_speed_mts = Num{(double)speed, true, false};
+    }
+  }
+
   /* arm64 SoCs usually have no "model name"; the device tree does. */
   if (c.model.empty()) {
     c.model = trim(read_file("/sys/firmware/devicetree/base/model", 256));
