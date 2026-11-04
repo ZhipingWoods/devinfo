@@ -20,6 +20,10 @@
 #include <utility>
 #include <vector>
 
+#if !defined(_WIN32)
+#include <dirent.h>
+#endif
+
 #if defined(_WIN32)
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -63,6 +67,35 @@ std::string read_small_file(const char* p, size_t cap = 4096) {
 
 bool contains(const std::string& s, const char* needle) {
   return s.find(needle) != std::string::npos;
+}
+
+/* Names only, no stat of each entry: enough to spot versioned install dirs. */
+std::vector<std::string> list_dir(const std::string& dir) {
+  std::vector<std::string> out;
+#if defined(_WIN32)
+  std::string pat = dir + "\\*";
+  WIN32_FIND_DATAA fd{};
+  HANDLE h = FindFirstFileA(pat.c_str(), &fd);
+  if (h == INVALID_HANDLE_VALUE) return out;
+  do {
+    if (!(fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) continue;
+    if (fd.cFileName[0] == '.') continue;
+    out.push_back(fd.cFileName);
+  } while (FindNextFileA(h, &fd));
+  FindClose(h);
+#else
+  void* d = nullptr;
+  DIR* dp = nullptr;
+  (void)d;
+  dp = opendir(dir.c_str());
+  if (!dp) return out;
+  while (struct dirent* e = readdir(dp)) {
+    if (e->d_name[0] == '.') continue;
+    out.push_back(e->d_name);
+  }
+  closedir(dp);
+#endif
+  return out;
 }
 
 [[maybe_unused]] std::string slurp_lower(const char* p) {
@@ -478,16 +511,14 @@ void collect_accels(Report& r) {
     add_accel(r, Accel{"metal", "runtime", true, "", "system framework"});
 #endif
 
-  /* -------- compile toolchains: cheap stat() calls, never exec -------- */
+  /* -------- compile toolchains: stat() and read files, never exec -------- */
   {
     struct Tool { const char* name; const char* path; };
     static const Tool kTools[] = {
 #if defined(_WIN32)
-      {"nvcc", "C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v12.4\\bin\\nvcc.exe"},
       {"hipcc", "C:\\Program Files\\AMD\\ROCm\\bin\\hipcc.exe"},
       {"npu-smi", "C:\\Program Files\\Huawei\\Ascend\\tools\\npu-smi.exe"},
 #else
-      {"nvcc", "/usr/local/cuda/bin/nvcc"},
       {"hipcc", "/opt/rocm/bin/hipcc"},
       {"npu-smi", "/usr/local/Ascend/driver/tools/npu-smi"},
 #endif
@@ -496,6 +527,174 @@ void collect_accels(Report& r) {
     for (int i = 0; kTools[i].name; ++i) {
       if (!file_exists(kTools[i].path)) continue;
       add_accel(r, Accel{kTools[i].name, "toolchain", true, "", kTools[i].path});
+    }
+  }
+
+  /* -------- CUDA toolkit: the version that actually decides nvcc ---- */
+  {
+    static const char* kRoots[] = {
+#if defined(_WIN32)
+      "C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA",
+#else
+      "/usr/local",
+#endif
+      nullptr,
+    };
+    for (int i = 0; kRoots[i]; ++i) {
+      for (const auto& name : list_dir(kRoots[i])) {
+#if defined(_WIN32)
+        if (name.size() < 2 || name[0] != 'v') continue;
+        std::string dir = std::string(kRoots[i]) + "\\" + name;
+        std::string nvcc = dir + "\\bin\\nvcc.exe";
+        if (!file_exists(nvcc.c_str())) continue;
+        add_accel(r, Accel{"cuda_toolkit", "toolkit", true, name.substr(1), dir});
+#else
+        if (name.compare(0, 4, "cuda") != 0) continue;
+        std::string dir = std::string(kRoots[i]) + "/" + name;
+        std::string nvcc = dir + "/bin/nvcc";
+        if (!file_exists(nvcc.c_str())) continue;
+        /* version.json is authoritative; fall back to the directory suffix. */
+        std::string ver;
+        std::string js = read_small_file((dir + "/version.json").c_str(), 4096);
+        size_t vp = js.find("\"version\"");
+        if (vp != std::string::npos) {
+          size_t q1 = js.find('"', js.find(':', vp));
+          size_t q2 = (q1 == std::string::npos) ? std::string::npos : js.find('"', q1 + 1);
+          if (q2 != std::string::npos) ver = js.substr(q1 + 1, q2 - q1 - 1);
+        }
+        if (!ver.empty()) {
+          /* version.json carries the build string ("13.0.20250728"); the
+           * toolkit version people quote is the first two fields. */
+          size_t d1 = ver.find('.');
+          if (d1 != std::string::npos) {
+            size_t d2 = ver.find('.', d1 + 1);
+            if (d2 != std::string::npos) ver = ver.substr(0, d2);
+          }
+        }
+        if (ver.empty() && name.size() > 4 && name[4] == '-') ver = name.substr(5);
+        /* /usr/local/cuda is a symlink to /usr/local/cuda-13.0, so the same
+         * toolkit would otherwise be reported twice. */
+        bool dup = false;
+        for (const auto& a : r.accels)
+          if (a.name == "cuda_toolkit" && a.version == ver) { dup = true; break; }
+        if (!dup) add_accel(r, Accel{"cuda_toolkit", "toolkit", true, ver, dir});
+#endif
+      }
+    }
+  }
+
+  /* -------- python frameworks: read site-packages, never import ------ */
+  /* torch/version.py is a plain module of assignments. Reading it beats
+   * spawning an interpreter, and works on a box where python is not on PATH. */
+  {
+    static const char* kSites[] = {
+#if defined(_WIN32)
+      nullptr,   /* enumerated per-interpreter below */
+#else
+      "/usr/lib/python3/dist-packages",
+      "/usr/local/lib/python3.12/dist-packages",
+      "/usr/local/lib/python3.11/dist-packages",
+      "/usr/local/lib/python3.10/dist-packages",
+      "/usr/local/lib/python3.9/dist-packages",
+#endif
+      nullptr,
+    };
+    std::vector<std::string> roots;
+    for (int i = 0; kSites[i]; ++i) roots.push_back(kSites[i]);
+
+#if !defined(_WIN32)
+    /* Python lives in too many places to hardcode: system, home, conda,
+     * and virtualenvs. Enumerate the parents instead of guessing layouts. */
+    {
+      std::vector<std::string> bases;
+      if (const char* home = std::getenv("HOME")) {
+        bases.push_back(std::string(home) + "/.local/lib");
+      }
+      bases.push_back("/usr/lib");
+      bases.push_back("/usr/local/lib");
+      bases.push_back("/opt/conda/lib");
+      bases.push_back("/opt/miniconda3/lib");
+      for (const auto& b : bases) {
+        for (const auto& py : list_dir(b)) {
+          if (py.compare(0, 7, "python3") != 0) continue;
+          roots.push_back(b + "/" + py + "/site-packages");
+          roots.push_back(b + "/" + py + "/dist-packages");
+        }
+      }
+    }
+#endif
+
+#if defined(_WIN32)
+    for (const char* base : {"C:\\Python312", "C:\\Python311", "C:\\Python310",
+                             "C:\\ProgramData\\miniconda3", "C:\\ProgramData\\anaconda3",
+                             "C:\\Users\\Public\\miniconda3", "C:\\Users\\Public\\anaconda3"}) {
+      std::string sp = std::string(base) + "\\Lib\\site-packages";
+      if (file_exists((sp + "\\torch\\version.py").c_str())) roots.push_back(sp);
+      std::string lsp = std::string(base) + "\\Lib\\site-packages";
+      (void)lsp;
+      std::string en = std::string(base) + "\\envs";
+      for (const auto& env : list_dir(en)) {
+        std::string ep = en + "\\" + env + "\\Lib\\site-packages";
+        if (file_exists((ep + "\\torch\\version.py").c_str())) roots.push_back(ep);
+      }
+    }
+#endif
+
+#if defined(_WIN32)
+    const char kSep = '\\';
+#else
+    const char kSep = '/';
+#endif
+    for (const auto& sp : roots) {
+      const std::string path = sp + kSep + "torch" + kSep + "version.py";
+      if (!file_exists(path.c_str())) continue;
+      std::string txt = read_small_file(path.c_str(), 8192);
+      if (txt.empty()) continue;
+      /* Anchor on the start of a line: __all__ lists the same names as quoted
+       * strings, so a plain find() lands inside the list. Both quote styles
+       * occur in the wild - 2.8.0 writes '...' where 2.5 wrote "...". */
+      auto grab = [&txt](const char* key) -> std::string {
+        const std::string anchored = std::string("\n") + key;
+        size_t p = txt.find(anchored);
+        if (p == std::string::npos) {
+          if (txt.compare(0, std::strlen(key), key) != 0) return std::string();
+          p = 0;
+        }
+        size_t q = txt.find_first_of("'\"", p);
+        if (q == std::string::npos) return std::string();
+        const char quote = txt[q];
+        size_t e = txt.find(quote, q + 1);
+        if (e == std::string::npos) return std::string();
+        return txt.substr(q + 1, e - q - 1);
+      };
+      const std::string ver = grab("__version__");
+      const std::string cu = grab("cuda");
+      if (ver.empty()) continue;
+      std::string detail = sp;
+      if (!cu.empty()) detail += " cuda=" + cu;
+      add_accel(r, Accel{"pytorch", "framework", true, ver, detail});
+      break;
+    }
+  }
+
+  /* -------- does the installed runtime outrun the driver? ------------ */
+  /* The single most common reason a compiled extension refuses to load. */
+  {
+    const Accel* drv = nullptr;
+    const Accel* rt = nullptr;
+    for (const auto& a : r.accels) {
+      if (a.name == "cuda") drv = &a;
+      else if (a.name == "cuda_runtime") rt = &a;
+    }
+    if (drv && rt && drv->available && rt->available &&
+        !drv->version.empty() && !rt->version.empty()) {
+      auto major = [](const std::string& v) {
+        return (unsigned)std::strtoul(v.c_str(), nullptr, 10);
+      };
+      if (major(rt->version) > major(drv->version))
+        r.warnings.push_back("cuda runtime " + rt->version +
+                             " is newer than the driver supports (" +
+                             drv->version + "); kernels built against it will not load");
     }
   }
 }
