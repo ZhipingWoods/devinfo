@@ -2,8 +2,16 @@ devinfo for Windows
 ===================
 
 Four files, all self-contained. No installer, no Visual C++ redistributable,
-no DLLs to copy alongside them. The only imports are libraries that ship with
-Windows 10 and 11.
+no DLLs to copy alongside them. Every imported library is part of the OS:
+
+  KERNEL32, ADVAPI32, dxgi, SETUPAPI, POWRPROF   (all present since Windows 7)
+  api-ms-win-crt-*                               (the Universal CRT)
+
+The Universal CRT ships with Windows 10 and 11, so on those there is nothing
+to install at all. On Windows 7 and 8 it arrives with Windows Update KB2999226;
+without that update the exe will not start. That is a Windows component, not
+something this tool asks you to install, but on a stripped-down Windows 7 image
+it is worth knowing before you copy the file over.
 
   devinfo-x64.exe   64-bit command line  (most machines)
   devinfo-x86.exe   32-bit command line
@@ -61,5 +69,27 @@ this file arrive over the network or email. That is a signature issue, not a
 dependency issue; there is nothing to install.
 
 Numbers marked with ~ are estimated from a chip spec table rather than read
-from the hardware. Everything else came from CPUID, DXGI, SetupAPI, NVML or
-the kernel.
+from the hardware. Everything else came from CPUID, DXGI, SetupAPI, NVML,
+SMBIOS, ACPI, sysfs or the kernel.
+
+Reading the report
+------------------
+  CPU      model, cores, base and turbo clock, caches, ISA extensions
+  RAM      total, module speed and count (SMBIOS type 17)
+  GPU      SM count, Tensor Cores, VRAM, clock, PCIe link, peak throughput
+  accels   CUDA / cuDNN / TensorRT / ROCm / CANN / oneAPI, plus toolkit and
+           PyTorch versions, read from files rather than by running anything
+  deploy   what all of the above implies for running a model here
+
+The deploy block is derived, not measured, and says so on its own line. It
+gives the parameter count that fits at each precision, the precision the
+hardware actually supports, a parallel strategy, and the ridge point -- the
+arithmetic intensity above which a kernel is compute-bound instead of
+bandwidth-bound. Its memory figures assume weights only for inference and
+16 bytes per parameter for Adam training; neither includes activations or KV
+cache, which depend on batch size and sequence length that this tool cannot
+know.
+
+Clocks are reported as base and turbo separately, because they answer
+different questions. Memory reports the speed the board actually runs at,
+which is often below the module's rating.

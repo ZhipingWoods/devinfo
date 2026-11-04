@@ -558,16 +558,31 @@ std::string to_table(const Report& r) {
     if (g.mem_bw_gbs.has) mpush("bw " + fmt_num(g.mem_bw_gbs.v, " GB/s") + mark(g.mem_bw_gbs));
     if (!mem.empty()) o += "     " + mem + "\n";
 
-    std::string pk;
-    auto push = [&pk](const std::string& s) { if (!pk.empty()) pk += "  "; pk += s; };
-    if (g.fp32_tflops.has)        push("FP32 " + fmt_num(g.fp32_tflops.v, " TF") + mark(g.fp32_tflops));
-    if (g.fp16_tflops.has)        push("FP16 " + fmt_num(g.fp16_tflops.v, " TF") + mark(g.fp16_tflops));
-    if (g.bf16_tflops.has)        push("BF16 " + fmt_num(g.bf16_tflops.v, " TF") + mark(g.bf16_tflops));
-    if (g.int8_tops.has)          push("INT8 " + fmt_num(g.int8_tops.v, " TOPS") + mark(g.int8_tops));
-    if (g.fp8_tflops.has)         push("FP8 " + fmt_num(g.fp8_tflops.v, " TF") + mark(g.fp8_tflops));
+    /* One peak per precision, wrapped: a 4090 fills a single line four
+     * times over once FP8 and INT8 are included. */
+    std::vector<std::string> pk;
+    if (g.fp32_tflops.has) pk.push_back("FP32 " + fmt_num(g.fp32_tflops.v, " TF") + mark(g.fp32_tflops));
+    if (g.fp16_tflops.has) pk.push_back("FP16 " + fmt_num(g.fp16_tflops.v, " TF") + mark(g.fp16_tflops));
+    if (g.bf16_tflops.has) pk.push_back("BF16 " + fmt_num(g.bf16_tflops.v, " TF") + mark(g.bf16_tflops));
+    if (g.int8_tops.has)   pk.push_back("INT8 " + fmt_num(g.int8_tops.v, " TOPS") + mark(g.int8_tops));
+    if (g.fp8_tflops.has)  pk.push_back("FP8 " + fmt_num(g.fp8_tflops.v, " TF") + mark(g.fp8_tflops));
+    /* Say which precision the sparse figure belongs to: on Ada it lands on
+     * the same number as FP8 by coincidence, which reads as a bug otherwise. */
     if (g.fp16_tflops_sparse.has)
-      push("(sparse " + fmt_num(g.fp16_tflops_sparse.v, " TF") + ")" + mark(g.fp16_tflops_sparse));
-    if (!pk.empty()) o += "     peak " + pk + "\n";
+      pk.push_back("FP16-sparse " + fmt_num(g.fp16_tflops_sparse.v, " TF") + mark(g.fp16_tflops_sparse));
+    if (!pk.empty()) {
+      std::string line = "peak ";
+      for (const auto& item : pk) {
+        const bool first = (line == "peak ");
+        if (!first && line.size() + 2 + item.size() > 76) {
+          o += "     " + line + "\n";
+          line = "     " + item;   /* continuation aligns under "peak " */
+        } else {
+          line += (first ? "" : "  ") + item;
+        }
+      }
+      o += "     " + line + "\n";
+    }
   }
 
   /* ---- NPUs ---- */
