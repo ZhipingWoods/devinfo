@@ -150,6 +150,11 @@ std::string to_json(const Report& r) {
 
   /* What this process may actually use. Absent means "no tighter than the
    * machine"; present means the machine numbers above are not schedulable. */
+  if (!r.deploy.lines.empty()) {
+    o += ",\"deploy\":";
+    strlist(o, r.deploy.lines);
+  }
+
   if (r.storage.free_bytes.has) {
     o += ",\"storage\":{";
     {
@@ -596,6 +601,27 @@ std::string to_table(const Report& r) {
         missing += a.name + " ";
     }
     if (!missing.empty()) o += "     -- not present: " + missing + "--\n";
+  }
+
+  /* The section this whole tool exists for: what the numbers above imply for
+   * actually running a model here. Labelled as derived, not measured. */
+  if (!r.deploy.lines.empty()) {
+    o += "\n";
+    o += "deploy (derived from the measurements above, not measured)\n";
+    for (const auto& l : r.deploy.lines) {
+      /* Wrap long derived lines to the same width as the feature list. */
+      const size_t width = 76;
+      std::string rest = l;
+      bool first = true;
+      while (rest.size() > width) {
+        size_t cut = rest.rfind(' ', width);
+        if (cut == std::string::npos || cut == 0) cut = width;
+        o += (first ? "     " : "       ") + rest.substr(0, cut) + "\n";
+        rest = rest.substr(cut + (rest[cut] == ' ' ? 1 : 0));
+        first = false;
+      }
+      o += (first ? "     " : "       ") + rest + "\n";
+    }
   }
 
   if (!r.warnings.empty()) {

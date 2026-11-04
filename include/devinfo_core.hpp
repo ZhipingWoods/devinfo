@@ -101,6 +101,12 @@ struct Numa {
   std::string layout;      /* "2 nodes: 48+48 cores" */
 };
 
+/* Everything below is derived from the measurements above, not measured.
+ * Each line states the rule it applied so the assumption stays visible. */
+struct Deploy {
+  std::vector<std::string> lines;
+};
+
 struct Report {
   std::string os, os_version, kernel, arch, model_id, env, host;
   std::string level;
@@ -115,6 +121,7 @@ struct Report {
   std::vector<Npu> npus;
   std::vector<Accel> accels;
   std::vector<std::string> warnings;
+  Deploy deploy;
 };
 
 /* ---- implemented once per platform (src/apple.cpp / linux.cpp / win32.cpp) */
@@ -129,6 +136,7 @@ void probe_limits(Report& r);   /* cgroup / job object ceilings */
 void probe_numa(Report& r);     /* socket/memory-node topology */
 void probe_storage(Report& r);  /* free space and media type */
 void probe_network(Report& r);  /* link speed, when one exists */
+void derive_deploy(Report& r);  /* what the numbers above imply */
 void canonical_features(std::vector<std::string>& feats, const std::string& arch);
 void derive_cpu_peaks(Cpu& c);
 void derive_gpu_peaks(Gpu& g);

@@ -939,6 +939,154 @@ void derive_gpu_peaks(Gpu& g) {
       g.fp16_tflops = E(g.cores.v * tc * ghz / 1000.0);
       g.bf16_tflops = g.fp16_tflops;
       g.fp16_tflops_sparse = E(g.fp16_tflops.v * 2.0);
+
+      /* Every Tensor Core generation since Ampere runs INT8 at twice the FP16
+       * rate; FP8 arrived with Ada and Hopper at the same 2x. These are
+       * architecture ratios, not datasheet lookups, so they stay marked
+       * estimated. Ampere has no FP8 at all and is left unset. */
+      g.int8_tops = E(g.fp16_tflops.v * 2.0);
+      if (maj >= 9 || (maj == 8 && minr == 9))
+        g.fp8_tflops = E(g.fp16_tflops.v * 2.0);
+    }
+  }
+}
+
+/* ============================================================== deploy */
+/* Turns the measurements into the four things someone about to deploy a model
+ * actually asks: how big, at what precision, split how, and what will bind it.
+ * Every line names its rule; none of this is read from hardware. */
+void derive_deploy(Report& r) {
+  Deploy& d = r.deploy;
+
+  /* ---- memory ceiling ---- */
+  double vram = 0;
+  unsigned gpu_count = 0;
+  for (const auto& g : r.gpus) {
+    if (!g.vram_bytes.has) continue;
+    vram += g.vram_bytes.v;
+    ++gpu_count;
+  }
+  double mem_gib = 0;
+  bool unified = false;
+  for (const auto& g : r.gpus)
+    if (g.unified) unified = true;
+
+  if (gpu_count > 0 && !unified) {
+    mem_gib = vram / (1024.0 * 1024 * 1024);
+  } else if (r.cpu.mem_bytes.has) {
+    /* Unified memory is the system pool; summing GPU and RAM would count the
+     * same bytes twice. */
+    mem_gib = r.cpu.mem_bytes.v / (1024.0 * 1024 * 1024);
+    if (unified && gpu_count > 0) unified = true;
+  } else if (gpu_count > 0) {
+    mem_gib = vram / (1024.0 * 1024 * 1024);
+  }
+  if (mem_gib > 0) {
+    /* Bytes per parameter, the only part of this that is a judgement:
+     * inference at a given dtype is just the weights, so 2 bytes for fp16;
+     * training with Adam holds weights, gradients and two moments, which is
+     * 16 bytes at fp32 and about the same in mixed precision once the fp32
+     * master copy is added. No allowance for activations or KV cache, both
+     * of which scale with batch and sequence length and neither of which this
+     * tool knows. */
+    char buf[320];
+    std::snprintf(buf, sizeof buf,
+                  "memory %.1f GiB%s -> inference ~%.0fb params int4, ~%.0fb int8, "
+                  "~%.0fb fp16; training ~%.0fb (16 B/param, Adam, no activations)",
+                  mem_gib,
+                  unified ? (gpu_count ? " of unified memory shared with the GPU"
+                                       : " of system RAM")
+                          : (gpu_count ? " over all GPUs" : " of system RAM"),
+                  mem_gib * 1024.0 / 0.5 / 1000.0, mem_gib * 1024.0 / 1.0 / 1000.0,
+                  mem_gib * 1024.0 / 2.0 / 1000.0, mem_gib * 1024.0 / 16.0 / 1000.0);
+    d.lines.push_back(buf);
+  }
+
+  /* ---- precision ---- */
+  {
+    std::vector<std::string> p;
+    bool tc = false;
+    for (const auto& g : r.gpus) {
+      if (!g.tensor_cores.has) continue;
+      tc = true;
+      if (g.fp8_tflops.has) p.push_back("fp8");
+      if (g.bf16_tflops.has) p.push_back("bf16");
+      if (g.fp16_tflops.has) p.push_back("fp16");
+      if (g.int8_tops.has) p.push_back("int8");
+      break;
+    }
+    if (!tc && has_feature(r.cpu, "neon")) p.push_back("fp16");
+    if (p.empty() && has_feature(r.cpu, "avx512bf16")) p.push_back("bf16");
+    if (!p.empty())
+      d.lines.push_back(std::string("precision ") +
+                        (tc ? "tensor cores: " : "vector units: ") +
+                        [&p] {
+                          std::string s;
+                          for (const auto& x : p) {
+                            if (!s.empty()) s += ' ';
+                            s += x;
+                          }
+                          return s;
+                        }() +
+                        "  (from the hardware's own capability bits)");
+  }
+
+  /* ---- parallelism ---- */
+  {
+    if (gpu_count == 1) {
+      d.lines.push_back("parallel single GPU, no cross-device link in the path");
+    } else if (gpu_count > 1) {
+      /* Width is not power-managed, so it is a usable signal for whether the
+       * cards share a fast backplane. */
+      unsigned narrow = 0, linked = 0;
+      for (const auto& g : r.gpus) {
+        if (!g.pcie_lanes_max) continue;
+        ++linked;
+        if (g.pcie_lanes_max < 16) ++narrow;
+      }
+      std::string s = std::to_string(gpu_count) + " GPUs";
+      if (linked == gpu_count && narrow == 0)
+        s += ", all x16: tensor parallel fits within PCIe";
+      else if (narrow > 0)
+        s += ", " + std::to_string(narrow) + " on a narrow link: prefer data or "
+             "pipeline parallel over tensor parallel across those";
+      d.lines.push_back("parallel " + s);
+    }
+  }
+
+  /* ---- what binds it ---- */
+  {
+    const Gpu* g = nullptr;
+    for (const auto& x : r.gpus)
+      if (x.fp32_tflops.has && x.mem_bw_gbs.has) { g = &x; break; }
+    if (g) {
+      const double ridge = g->fp32_tflops.v * 1e12 / (g->mem_bw_gbs.v * 1e9);
+      char buf[256];
+      std::snprintf(buf, sizeof buf,
+                    "ridge point %.0f FLOP/byte (%.1f TFLOPS / %.0f GB/s): "
+                    "kernels below it are bandwidth-bound",
+                    ridge, g->fp32_tflops.v, g->mem_bw_gbs.v);
+      d.lines.push_back(buf);
+    } else if (r.cpu.peak_fp32_tflops.has && r.cpu.mem_bw_gbs.has) {
+      const double ridge = r.cpu.peak_fp32_tflops.v * 1e12 / (r.cpu.mem_bw_gbs.v * 1e9);
+      char buf[256];
+      std::snprintf(buf, sizeof buf,
+                    "ridge point %.0f FLOP/byte (%.1f TFLOPS / %.0f GB/s), CPU only",
+                    ridge, r.cpu.peak_fp32_tflops.v, r.cpu.mem_bw_gbs.v);
+      d.lines.push_back(buf);
+    }
+  }
+
+  /* ---- does the disk fit the checkpoint ---- */
+  if (r.storage.free_bytes.has && mem_gib > 0) {
+    const double free_gib = r.storage.free_bytes.v / (1024.0 * 1024 * 1024);
+    if (free_gib < mem_gib * 2.0) {
+      char buf[192];
+      std::snprintf(buf, sizeof buf,
+                    "disk %.1f GiB free vs %.1f GiB of memory: a half-precision "
+                    "checkpoint needs about %.1f GiB to stage, so space is tight",
+                    free_gib, mem_gib, mem_gib);
+      d.lines.push_back(buf);
     }
   }
 }
@@ -1044,6 +1192,9 @@ Report probe(uint32_t flags) {
   probe_network(r);
 
   collect_accels(r);
+
+  /* Last, so it can read everything above. */
+  derive_deploy(r);
 
   if (flags & DEVINFO_BENCH) {
     uint64_t hint = r.cpu.mem_bytes.has ? (uint64_t)(r.cpu.mem_bytes.v / 128) : (64ull << 20);
