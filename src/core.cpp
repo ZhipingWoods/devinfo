@@ -10,6 +10,7 @@
 
 #include "devinfo.h"
 
+#include <algorithm>
 #include <chrono>
 #include <cctype>
 #include <cstdio>
@@ -370,7 +371,15 @@ void collect_accels(Report& r) {
 #endif
     };
     AccelHit h = load_accel(kLib);
+    /* amdhip64.dll is the HIP runtime and it turns up on Windows with the
+     * graphics driver alone, where the rest of ROCm does not exist and no
+     * Polaris part is supported anyway. Calling that "rocm" claims a stack
+     * that cannot run; "hip" is what was actually found. */
+#if defined(_WIN32)
+    Accel a{"hip", "runtime", false, "", ""};
+#else
     Accel a{"rocm", "runtime", false, "", ""};
+#endif
     if (h.handle) {
       int v = 0;
       auto fn = (ver_intptr_fn)lib_sym(h.handle, "hipRuntimeGetVersion");
@@ -919,12 +928,23 @@ void derive_cpu_peaks(Cpu& c) {
     return;
   }
 
-  unsigned lanes = 8;  /* SSE baseline */
-  if (has_feature(c, "avx512f")) lanes = 32;
-  else if (has_feature(c, "avx2") || has_feature(c, "avx")) lanes = 16;
+  /* FLOPs per cycle per core. Two vector pipes, each doing a fused multiply
+   * add on a full register: 2 x lanes x 2. Every x86 part that has AVX at all
+   * has two FP pipes (Intel ports 0 and 5, AMD FP0 and FP1), and NEON cores
+   * from Cortex-A75 on have two 128-bit pipes as well. Counting one pipe, as
+   * this used to, reported exactly half the peak on every machine: a 48-core
+   * EPYC 7402 came out at 2.15 TFLOPS against a real 4.3, and an i7-11700 at
+   * 0.64 against 1.28. */
+  unsigned flops_per_cycle = 16;                        /* SSE:     2 x 4  x 2 */
+  if (has_feature(c, "avx512f")) flops_per_cycle = 64;  /* AVX-512: 2 x 16 x 2 */
+  else if (has_feature(c, "avx2") || has_feature(c, "avx"))
+    flops_per_cycle = 32;                               /* AVX2:    2 x 8  x 2 */
+  else if (has_feature(c, "neon"))
+    flops_per_cycle = 16;                               /* NEON:    2 x 4  x 2 */
 
   double ghz = c.clock_ghz.has ? c.clock_ghz.v : parse_ghz_from_brand(c.model);
-  if (ghz > 0) c.peak_fp32_tflops = E((double)c.physical * ghz * (double)lanes / 1000.0);
+  if (ghz > 0)
+    c.peak_fp32_tflops = E((double)c.physical * ghz * (double)flops_per_cycle / 1000.0);
 }
 
 void derive_gpu_peaks(Gpu& g) {
@@ -978,26 +998,56 @@ void derive_deploy(Report& r) {
   Deploy& d = r.deploy;
 
   /* ---- memory ceiling ---- */
+  /* Only same-model cards actually pool their memory, and an integrated GPU
+   * owns no pool at all: its "vram" is a carve-out of system RAM. Adding a
+   * discrete card to an iGPU therefore invents addressable memory that no
+   * kernel can reach across -- the first Windows run reported "4.1 GiB over
+   * all GPUs" for a 4.0 GiB card plus 128 MiB of shared carve-out. Report the
+   * largest single homogeneous pool instead, and say when others exist. */
   double vram = 0;
-  unsigned gpu_count = 0;
-  for (const auto& g : r.gpus) {
-    if (!g.vram_bytes.has) continue;
-    vram += g.vram_bytes.v;
-    ++gpu_count;
+  unsigned gpu_count = 0, pooled = 0;
+  std::string pool_note;
+  {
+    struct Group { std::string name; double bytes; unsigned n; };
+    std::vector<Group> groups;
+    for (const auto& g : r.gpus) {
+      if (!g.vram_bytes.has) continue;
+      ++gpu_count;
+      if (g.unified) continue;
+      auto it = std::find_if(groups.begin(), groups.end(),
+                             [&](const Group& x) { return x.name == g.name; });
+      if (it == groups.end()) groups.push_back(Group{g.name, g.vram_bytes.v, 1});
+      else { it->bytes += g.vram_bytes.v; ++it->n; }
+    }
+    const Group* best = nullptr;
+    for (const auto& x : groups)
+      if (!best || x.bytes > best->bytes) best = &x;
+    if (best) {
+      vram = best->bytes;
+      pooled = best->n;
+      const unsigned others = gpu_count > pooled ? gpu_count - pooled : 0;
+      if (others > 0)
+        pool_note = ", the largest pool: " + std::to_string(others) +
+                    " other GPU" + (others == 1 ? " is a different model and "
+                                                 "cannot be pooled with it"
+                                               : "s are different models and "
+                                                 "cannot be pooled with it");
+      else if (pooled > 1)
+        pool_note = " across " + std::to_string(pooled) + " identical GPUs";
+    }
   }
   double mem_gib = 0;
   bool unified = false;
   for (const auto& g : r.gpus)
     if (g.unified) unified = true;
 
-  if (gpu_count > 0 && !unified) {
+  if (vram > 0 && !unified) {
     mem_gib = vram / (1024.0 * 1024 * 1024);
   } else if (r.cpu.mem_bytes.has) {
     /* Unified memory is the system pool; summing GPU and RAM would count the
      * same bytes twice. */
     mem_gib = r.cpu.mem_bytes.v / (1024.0 * 1024 * 1024);
-    if (unified && gpu_count > 0) unified = true;
-  } else if (gpu_count > 0) {
+  } else if (vram > 0) {
     mem_gib = vram / (1024.0 * 1024 * 1024);
   }
   if (mem_gib > 0) {
@@ -1008,17 +1058,30 @@ void derive_deploy(Report& r) {
      * master copy is added. No allowance for activations or KV cache, both
      * of which scale with batch and sequence length and neither of which this
      * tool knows. */
-    char buf[320];
-    std::snprintf(buf, sizeof buf,
-                  "memory %.1f GiB%s -> inference ~%.0fb params int4, ~%.0fb int8, "
-                  "~%.0fb fp16; training ~%.0fb (16 B/param, Adam, no activations)",
-                  mem_gib,
-                  unified ? (gpu_count ? " of unified memory shared with the GPU"
-                                       : " of system RAM")
-                          : (gpu_count ? " over all GPUs" : " of system RAM"),
-                  mem_gib * 1024.0 / 0.5 / 1000.0, mem_gib * 1024.0 / 1.0 / 1000.0,
-                  mem_gib * 1024.0 / 2.0 / 1000.0, mem_gib * 1024.0 / 16.0 / 1000.0);
-    d.lines.push_back(buf);
+    /* %.0f turned a 256 million parameter budget into "0b", which reads as a
+     * bug rather than as "too small to train". Keep a decimal until the number
+     * is big enough that one does not help. */
+    auto params = [](double gib, double bytes_each) {
+      char b[32];
+      const double n = gib * 1024.0 / bytes_each / 1000.0;
+      if (n >= 10.0)      std::snprintf(b, sizeof b, "%.0fb", n);
+      else if (n >= 1.0)  std::snprintf(b, sizeof b, "%.1fb", n);
+      else if (n >= 0.01) std::snprintf(b, sizeof b, "%.2fb", n);
+      else                std::snprintf(b, sizeof b, "<0.01b");
+      return std::string(b);
+    };
+    char head[64];
+    std::snprintf(head, sizeof head, "memory %.1f GiB", mem_gib);
+    std::string line = head;
+    if (unified)
+      line += gpu_count ? " of unified memory shared with the GPU" : " of system RAM";
+    else
+      line += pool_note.empty() ? " of system RAM" : pool_note;
+    line += " -> inference ~" + params(mem_gib, 0.5) + " params int4, ~" +
+            params(mem_gib, 1.0) + " int8, ~" + params(mem_gib, 2.0) +
+            " fp16; training ~" + params(mem_gib, 16.0) +
+            " (16 B/param, Adam, no activations)";
+    d.lines.push_back(line);
   }
 
   /* ---- precision ---- */
@@ -1063,8 +1126,23 @@ void derive_deploy(Report& r) {
         ++linked;
         if (g.pcie_lanes_max < 16) ++narrow;
       }
+      /* Tensor parallel needs identical devices: the same kernel, the same
+       * register file and the same memory per rank. Mixing an iGPU with a
+       * discrete card, or two different architectures, does not distribute
+       * anything -- each device runs its own independent job. */
+      unsigned distinct = 0;
+      for (size_t i = 0; i < r.gpus.size(); ++i) {
+        bool seen = false;
+        for (size_t j = 0; j < i; ++j)
+          if (r.gpus[j].name == r.gpus[i].name) { seen = true; break; }
+        if (!seen) ++distinct;
+      }
       std::string s = std::to_string(gpu_count) + " GPUs";
-      if (linked == gpu_count && narrow == 0)
+      if (distinct > 1)
+        s += " of " + std::to_string(distinct) +
+             " different models: no tensor parallel across them, each runs its "
+             "own job";
+      else if (linked == gpu_count && narrow == 0)
         s += ", all x16: tensor parallel fits within PCIe";
       else if (narrow > 0)
         s += ", " + std::to_string(narrow) + " on a narrow link: prefer data or "

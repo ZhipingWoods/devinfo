@@ -115,6 +115,7 @@ void cpu_features(Cpu& c) {
   cpuid(r1, 1, 0);
   const bool sse2  = bit(r1, 3, 26);
   const bool sse41 = bit(r1, 2, 19);
+  const bool sse42 = bit(r1, 2, 20);
   const bool avx   = bit(r1, 2, 28);
   const bool fma   = bit(r1, 2, 12);
   const bool popcnt = bit(r1, 2, 23);
@@ -133,6 +134,9 @@ void cpu_features(Cpu& c) {
 
   if (sse2)   c.features.push_back("SSE2");
   if (sse41)  c.features.push_back("SSE4.1");
+  /* ECX bit 20. It sat missing here for a while: every x86 part since Nehalem
+   * has it, so its absence read as "this CPU does not do SSE4.2". */
+  if (sse42)  c.features.push_back("SSE4.2");
   if (popcnt) c.features.push_back("POPCNT");
   if (avx)    c.features.push_back("AVX");
   if (fma)    c.features.push_back("FMA");
