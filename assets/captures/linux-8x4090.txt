@@ -1,0 +1,73 @@
+devinfo - 142.39 ms  (fast)
+linux Ubuntu 22.04.5 LTS | x86_64 | native
+------------------------------------------------------------------
+CPU  AMD EPYC 7402 24-Core Processor
+     48 cores / 96 threads         clock 2.800 GHz  x86_64
+     L1i 1.5 MiB  L1d 1.5 MiB  L2 24.0 MiB  L3 256.0 MiB  line 64B
+     RAM 501.3 GiB
+     numa 8 nodes: 12+12+12+12+12+12+12+12 cores
+     disk 39.0 GiB free of 873.7 GiB  ssd  /
+     net 25.00 Gb/s ens8f0np0  rdma
+     peak FP32 4.301 TFLOPS~
+     isa SSE2 SSE4.1 SSE4.2 POPCNT AVX AVX2 FMA F16C BMI1 BMI2 AES SHA
+GPU0 NVIDIA GeForce RTX 4090
+     0000:01:00.0  128 SM(s)  512 Tensor Cores  sm_8.9
+     vram 23.5 GiB  clock 2.520 GHz  pcie gen4 x16  bw 1008.1 GB/s
+     peak FP32 82.58 TF~  FP16 330.3 TF~  BF16 330.3 TF~  INT8 660.6 TOPS~
+          FP8 660.6 TF~  FP16-sparse 660.6 TF~
+GPU1 NVIDIA GeForce RTX 4090
+     0000:23:00.0  128 SM(s)  512 Tensor Cores  sm_8.9
+     vram 23.5 GiB  clock 2.520 GHz  pcie gen4 x16  bw 1008.1 GB/s
+     peak FP32 82.58 TF~  FP16 330.3 TF~  BF16 330.3 TF~  INT8 660.6 TOPS~
+          FP8 660.6 TF~  FP16-sparse 660.6 TF~
+GPU2 NVIDIA GeForce RTX 4090
+     0000:41:00.0  128 SM(s)  512 Tensor Cores  sm_8.9
+     vram 23.5 GiB  clock 2.520 GHz  pcie gen4 x16  bw 1008.1 GB/s
+     peak FP32 82.58 TF~  FP16 330.3 TF~  BF16 330.3 TF~  INT8 660.6 TOPS~
+          FP8 660.6 TF~  FP16-sparse 660.6 TF~
+GPU3 NVIDIA GeForce RTX 4090
+     0000:61:00.0  128 SM(s)  512 Tensor Cores  sm_8.9
+     vram 23.5 GiB  clock 2.520 GHz  pcie gen4 x16  bw 1008.1 GB/s
+     peak FP32 82.58 TF~  FP16 330.3 TF~  BF16 330.3 TF~  INT8 660.6 TOPS~
+          FP8 660.6 TF~  FP16-sparse 660.6 TF~
+GPU4 NVIDIA GeForce RTX 4090
+     0000:81:00.0  128 SM(s)  512 Tensor Cores  sm_8.9
+     vram 23.5 GiB  clock 2.520 GHz  pcie gen4 x16  bw 1008.1 GB/s
+     peak FP32 82.58 TF~  FP16 330.3 TF~  BF16 330.3 TF~  INT8 660.6 TOPS~
+          FP8 660.6 TF~  FP16-sparse 660.6 TF~
+GPU5 NVIDIA GeForce RTX 4090
+     0000:a1:00.0  128 SM(s)  512 Tensor Cores  sm_8.9
+     vram 23.5 GiB  clock 2.520 GHz  pcie gen4 x16  bw 1008.1 GB/s
+     peak FP32 82.58 TF~  FP16 330.3 TF~  BF16 330.3 TF~  INT8 660.6 TOPS~
+          FP8 660.6 TF~  FP16-sparse 660.6 TF~
+GPU6 NVIDIA GeForce RTX 4090
+     0000:c1:00.0  128 SM(s)  512 Tensor Cores  sm_8.9
+     vram 22.0 GiB  clock 2.520 GHz  pcie gen4 x16  bw 1008.1 GB/s
+     peak FP32 82.58 TF~  FP16 330.3 TF~  BF16 330.3 TF~  INT8 660.6 TOPS~
+          FP8 660.6 TF~  FP16-sparse 660.6 TF~
+GPU7 NVIDIA GeForce RTX 4090
+     0000:e1:00.0  128 SM(s)  512 Tensor Cores  sm_8.9
+     vram 23.5 GiB  clock 2.520 GHz  pcie gen4 x16  bw 1008.1 GB/s
+     peak FP32 82.58 TF~  FP16 330.3 TF~  BF16 330.3 TF~  INT8 660.6 TOPS~
+          FP8 660.6 TF~  FP16-sparse 660.6 TF~
+NPU  none detected
+------------------------------------------------------------------
+accelerators
+     cuda          13.0          driver
+     cuda_runtime  13.0          runtime
+     nvml          580.119.02    lib
+     vulkan                      runtime
+     opencl                      runtime
+     cuda_toolkit  13.0          toolkit
+
+deploy (derived from the measurements above, not measured)
+     memory 186.6 GiB across 8 identical GPUs -> inference ~382b params int4,
+       ~191b int8, ~96b fp16; training ~12b (16 B/param, Adam, no activations)
+     precision tensor cores: fp8 bf16 fp16 int8  (from the hardware's own
+       capability bits)
+     parallel 8 GPUs, all x16: tensor parallel fits within PCIe
+     ridge point 82 FLOP/byte (82.6 TFLOPS / 1008 GB/s): kernels below it are
+       bandwidth-bound
+     disk 39.0 GiB free vs 186.6 GiB of memory: a half-precision checkpoint needs
+       about 186.6 GiB to stage, so space is tight
+     ~ = estimated from chip spec table, not read from hardware

@@ -1,0 +1,40 @@
+devinfo - 29.65 ms  (fast)
+linux Ubuntu 22.04.5 LTS | aarch64 | native
+------------------------------------------------------------------
+CPU  ARMv8 Processor rev 1 (v8l)
+     12 cores                      clock 2.202 GHz  aarch64
+     L1i 768 KiB  L1d 768 KiB  L2 3.0 MiB  L3 6.0 MiB  line 64B
+     RAM 61.4 GiB
+     disk 12.1 GiB free of 274.5 GiB  nvme  /
+     peak FP32 0.423 TFLOPS~
+     isa NEON FP FP16 DotProd PMULL SHA1 SHA256 CRC32 LSE RDM LRCPC DCPOP
+GPU0 Orin
+     16 SM(s)  64 Tensor Cores  sm_8.7
+     unified 61.4 GiB  clock 1.300 GHz
+     peak FP32 5.325 TF~  FP16 10.65 TF~  BF16 10.65 TF~  INT8 21.30 TOPS~
+          FP16-sparse 21.30 TF~
+NPU  none detected
+------------------------------------------------------------------
+accelerators
+     cuda          12.6          driver
+     cuda_runtime  12.6          runtime
+     nvml          540.4.0       lib
+     cudnn         9.20          lib
+     tensorrt      10.7          lib
+     vulkan                      runtime
+     opencl                      runtime
+     cuda_toolkit  12.6          toolkit
+     pytorch       2.5.0a0+872d972e41.nv24.08 framework
+
+deploy (derived from the measurements above, not measured)
+     memory 61.4 GiB of unified memory shared with the GPU -> inference ~126b
+       params int4, ~63b int8, ~31b fp16; training ~3.9b (16 B/param, Adam, no
+       activations)
+     precision tensor cores: bf16 fp16 int8  (from the hardware's own capability
+       bits)
+     parallel single GPU, no cross-device link in the path
+     ridge point unavailable: no honest bandwidth figure for this GPU (run
+       --bench)
+     disk 12.1 GiB free vs 61.4 GiB of memory: a half-precision checkpoint needs
+       about 61.4 GiB to stage, so space is tight
+     ~ = estimated from chip spec table, not read from hardware

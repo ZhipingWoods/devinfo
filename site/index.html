@@ -1,0 +1,359 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="dark" data-lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="devinfo — 一个二进制，读出任何机器的芯片、核心数、带宽和算力。C++17，零依赖，不调用任何子进程。">
+<title>devinfo · 一台机器，一次探针</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='15' fill='%234f9dff'/%3E%3Ctext x='32' y='43' text-anchor='middle' font-size='26' font-family='monospace' font-weight='700' fill='%2304121f'%3Edi%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="ambient" aria-hidden="true">
+  <div class="orb orb-a"></div><div class="orb orb-b"></div><div class="grid-fade"></div>
+</div>
+
+<header class="nav">
+  <a class="brand" href="#top" aria-label="devinfo">
+    <span class="brand-mark">di</span>
+    <span class="brand-copy"><b>devinfo</b><small data-zh="硬件探针" data-en="hardware probe"></small></span>
+  </a>
+  <nav class="nav-links" aria-label="Primary">
+    <a href="#features" data-zh="能力" data-en="Features"></a>
+    <a href="#output" data-zh="输出" data-en="Output"></a>
+    <a href="#results" data-zh="实测结果" data-en="Results"></a>
+    <a href="#fast" data-zh="为什么快" data-en="Why fast"></a>
+    <a href="#quickstart" data-zh="快速开始" data-en="Quick start"></a>
+  </nav>
+  <div class="nav-actions">
+    <div class="seg lang-switch" aria-label="Language">
+      <button class="on" data-set-lang="zh">中文</button>
+      <button data-set-lang="en">EN</button>
+    </div>
+    <button class="icon-btn" id="theme-btn" aria-label="Toggle theme" title="Theme">
+      <span class="theme-sun">☀</span><span class="theme-moon">◐</span>
+    </button>
+  </div>
+</header>
+
+<main id="top">
+  <section class="hero wrap">
+    <div class="hero-copy reveal">
+      <span class="pill"><i></i><span data-zh="一个二进制 · 任何机器 · 3 毫秒" data-en="One binary · any machine · 3 ms"></span></span>
+      <h1>
+        <span data-zh="问一台黑盒机器：" data-en="Ask a black box:"></span><br>
+        <span class="grad" data-zh="你的芯片是什么，跑多快" data-en="what silicon, how fast"></span>
+      </h1>
+      <p class="lede" data-zh="devinfo 是一个 C++17 小程序，跑一次就告诉你：CPU 核心与缓存、ISA 扩展、GPU 的 SM 数和架构、NPU 算力、显存与带宽、PCIe 链路、装了哪些加速栈（CUDA / cuDNN / TensorRT / CANN / ROCm），以及这块机器能跑多大的模型。" data-en="devinfo is a small C++17 program. One run tells you the CPU cores and caches, ISA extensions, GPU SM count and architecture, NPU throughput, VRAM and bandwidth, PCIe link, which acceleration stacks are installed (CUDA / cuDNN / TensorRT / CANN / ROCm), and what size model this box can hold."></p>
+      <div class="cta-row">
+        <a class="btn primary" href="#results" data-zh="看实测结果" data-en="See measured results"></a>
+        <a class="btn" href="#quickstart" data-zh="快速开始" data-en="Quick start"></a>
+        <a class="btn quiet" href="results.html" data-zh="完整结果页 →" data-en="Full results →"></a>
+      </div>
+      <div class="hero-meta">
+        <span>Linux</span><span>macOS</span><span>Windows</span><span>x86_64</span><span>arm64</span>
+        <span data-zh="龙芯 / 鲲鹏 / 昇腾 / 寒武纪" data-en="LoongArch / Kunpeng / Ascend / Cambricon"></span>
+      </div>
+    </div>
+    <div class="hero-shot reveal delay-1">
+      <div class="term-shot">
+        <button class="shot" data-full="assets/macos-m5.png" aria-label="Open screenshot">
+          <img src="assets/macos-m5.png" alt="devinfo output on Apple M5">
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <section class="stats wrap reveal">
+    <div><b>3.4 <span class="u">ms</span></b><span data-zh="macOS 探针耗时" data-en="macOS probe time"></span></div>
+    <div><b>4</b><span data-zh="类平台已实测" data-en="platform classes verified"></span></div>
+    <div><b>0</b><span data-zh="第三方依赖" data-en="third-party dependencies"></span></div>
+    <div><b>0</b><span data-zh="子进程调用" data-en="subprocess calls"></span></div>
+    <div><b>8</b><span data-zh="单机 GPU 实测上限" data-en="GPUs enumerated in one run"></span></div>
+  </section>
+
+  <section class="section wrap" id="features">
+    <div class="section-head reveal">
+      <span class="eyebrow">WHAT IT READS</span>
+      <h2 data-zh="六类信息，全部来自硬件本身" data-en="Six kinds of facts, all read from the hardware"></h2>
+      <p data-zh="不用驱动命令行、不用厂商 SDK、不用管理员权限（少数项除外，会明确标注）。缺什么就少报什么，绝不猜一个数字填上去。" data-en="No driver CLIs, no vendor SDKs, no admin rights (with a few clearly labelled exceptions). Missing data is reported as missing, never filled in with a guess."></p>
+    </div>
+    <div class="feature-grid">
+      <article class="feature reveal">
+        <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><rect x="7" y="7" width="10" height="10" rx="1.5"/><rect x="10.5" y="10.5" width="3" height="3" rx="0.5"/><path d="M10 7V4M14 7V4M10 20v-3M14 20v-3M7 10H4M7 14H4M20 10h-3M20 14h-3"/></svg></span>
+        <h3 data-zh="CPU 与缓存" data-en="CPU and caches"></h3>
+        <p data-zh="物理核 / 逻辑线程、L1i / L1d / L2 / L3、缓存行、NUMA 节点、频率，以及 SSE4.2 到 AVX-512、NEON 到 SME2 的完整 ISA 位图。" data-en="Physical cores and threads, L1i / L1d / L2 / L3, cache line, NUMA nodes, clocks, and the full ISA bitmap from SSE4.2 to AVX-512, NEON to SME2."></p>
+        <span class="mono-tag">CPUID · sysctl · /proc</span>
+      </article>
+      <article class="feature reveal delay-1">
+        <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><rect x="3" y="7.5" width="18" height="9" rx="2"/><circle cx="8" cy="12" r="1.6"/><circle cx="13" cy="12" r="1.6"/><path d="M17.5 10.5v3"/><path d="M6 16.5V19M18 16.5V19"/></svg></span>
+        <h3 data-zh="GPU 与 NPU" data-en="GPU and NPU"></h3>
+        <p data-zh="显卡型号、PCI ID、SM 数量、Tensor Core 数、计算能力（sm_89 / sm_87）、显存、统一内存标记，以及昇腾 / 寒武纪 / ANE 的算力。" data-en="Model, PCI ID, SM count, tensor cores, compute capability (sm_89 / sm_87), VRAM, unified-memory flag, plus Ascend / Cambricon / ANE throughput."></p>
+        <span class="mono-tag">CUDA · NVML · DXGI · IOKit</span>
+      </article>
+      <article class="feature reveal delay-2">
+        <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M12 3.5 21 8l-9 4.5L3 8l9-4.5Z"/><path d="m3 12.2 9 4.5 9-4.5"/><path d="m3 16.4 9 4.5 9-4.5"/></svg></span>
+        <h3 data-zh="加速栈" data-en="Acceleration stacks"></h3>
+        <p data-zh="CUDA、cuDNN、TensorRT、NCCL、ROCm、CANN、OpenVINO、OpenCL、Metal、DirectML、Vulkan；每个都带版本和来源（驱动 / 运行时 / 库）。" data-en="CUDA, cuDNN, TensorRT, NCCL, ROCm, CANN, OpenVINO, OpenCL, Metal, DirectML, Vulkan; each with its version and provenance (driver / runtime / lib)."></p>
+        <span class="mono-tag">dlopen / LoadLibrary</span>
+      </article>
+      <article class="feature reveal">
+        <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h11M17 8h4"/><path d="m14 5.2 3 2.8-3 2.8"/><path d="M21 15.5H10M7 15.5H3"/><path d="m10 12.7-3 2.8 3 2.8"/></svg></span>
+        <h3 data-zh="带宽与链路" data-en="Bandwidth and links"></h3>
+        <p data-zh="显存带宽按总线和等效频率算，PCIe 报代数和宽度（不是被省电降频的当前值），还能用 --bench 实测一次内存拷贝带宽。" data-en="VRAM bandwidth from bus width and effective clock, PCIe generation and width (capability, not the idle-downclocked value), and a real memcpy bandwidth measurement with --bench."></p>
+        <span class="mono-tag">NVML · sysfs · bench</span>
+      </article>
+      <article class="feature reveal delay-1">
+        <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M4 20h16"/><rect x="5" y="13" width="3.2" height="5" rx="0.8"/><rect x="10.4" y="9.5" width="3.2" height="8.5" rx="0.8"/><rect x="15.8" y="5.5" width="3.2" height="12.5" rx="0.8"/></svg></span>
+        <h3 data-zh="部署容量推导" data-en="Deployment capacity"></h3>
+        <p data-zh="从测到的显存、精度能力和带宽推出：能放多大的模型、哪个精度、几张卡能并行、roofline 拐点在哪、磁盘够不够 stage checkpoint。" data-en="From measured memory, precision support and bandwidth: how large a model fits, at which precision, how many cards can run in parallel, where the roofline knee sits, whether the disk can stage a checkpoint."></p>
+        <span class="mono-tag">derive · deploy</span>
+      </article>
+      <article class="feature reveal delay-2">
+        <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><rect x="3.5" y="4.5" width="17" height="15" rx="2.2"/><rect x="7.6" y="8.6" width="8.8" height="6.8" rx="1.2"/></svg></span>
+        <h3 data-zh="容器与限额" data-en="Containers and limits"></h3>
+        <p data-zh="cgroup v1 / v2 的 CPU 配额与内存上限、Windows Job Object 限额、cpuset 亲和、NUMA 布局；容器里看到的核数和物理机不是一回事。" data-en="cgroup v1 / v2 CPU quotas and memory caps, Windows job object limits, cpuset affinity, NUMA layout; the core count inside a container is not the core count of the box."></p>
+        <span class="mono-tag">cgroup · Job Object</span>
+      </article>
+    </div>
+  </section>
+
+  <section class="section wrap" id="output">
+    <div class="section-head reveal">
+      <span class="eyebrow">REAL OUTPUT</span>
+      <h2 data-zh="真实运行截图，来自三台不同架构的机器" data-en="Real output, from three different architectures"></h2>
+      <p data-zh="下面每一张都是程序真实 stdout 的渲染，文字逐字节来自采集文件，没有手写内容。带 ~ 的数字是推算值，统一标成琥珀色。" data-en="Each frame below is a render of real stdout, byte for byte from the captured file -- nothing is hand-written. Derived numbers carry a ~ and are painted amber."></p>
+    </div>
+    <div class="screen-tabs reveal">
+      <button class="on" data-screen="assets/macos-m5.png" data-url="Apple M5 · macOS · arm64"
+        data-caption-zh="Apple M5 · 10 核 (4P+6E) · 8 GPU 核 · ANE 40 TOPS" data-caption-en="Apple M5 · 10 cores (4P+6E) · 8 GPU cores · ANE 40 TOPS"
+        data-zh="macOS · M5" data-en="macOS · M5"></button>
+      <button data-screen="assets/linux-8x4090.png" data-url="2x EPYC 7402 + 8x RTX 4090 · Linux"
+        data-caption-zh="2× EPYC 7402 (48C/96T) + 8× RTX 4090 · 501 GiB · 25 Gb/s RDMA" data-caption-en="2x EPYC 7402 (48C/96T) + 8x RTX 4090 · 501 GiB · 25 Gb/s RDMA"
+        data-zh="Linux · 8×4090" data-en="Linux · 8x4090"></button>
+      <button data-screen="assets/jetson-orin.png" data-url="Jetson AGX Orin · Linux arm64"
+        data-caption-zh="Jetson AGX Orin · 12 核 · 16 SM / 64 Tensor Core · 统一内存 61 GiB" data-caption-en="Jetson AGX Orin · 12 cores · 16 SM / 64 tensor cores · 61 GiB unified"
+        data-zh="Jetson · Orin" data-en="Jetson · Orin"></button>
+    </div>
+    <div class="screen-stage reveal delay-1">
+      <div class="term-shot">
+        <button class="shot" id="screen-shot" data-full="assets/macos-m5.png">
+          <img id="screen-img" src="assets/macos-m5.png" alt="devinfo screenshot">
+        </button>
+      </div>
+      <p class="caption" id="screen-caption" data-zh="Apple M5 · 10 核 (4P+6E) · 8 GPU 核 · ANE 40 TOPS" data-en="Apple M5 · 10 cores (4P+6E) · 8 GPU cores · ANE 40 TOPS"></p>
+      <div class="legend">
+        <span><i class="k-real"></i><span data-zh="实测 / 直接读到" data-en="measured / read directly"></span></span>
+        <span><i class="k-est"></i><span data-zh="~ 由规格表推算" data-en="~ derived from a spec table"></span></span>
+        <span><i class="k-abs"></i><span data-zh="未检测到" data-en="not present"></span></span>
+      </div>
+    </div>
+  </section>
+
+  <section class="section wrap" id="results">
+    <div class="section-head reveal">
+      <span class="eyebrow">MEASURED</span>
+      <h2 data-zh="同一份代码，四台完全不同的机器" data-en="One binary, four very different machines"></h2>
+      <p data-zh="不是跑分榜，是「这个程序在陌生机器上能读出什么」的验证记录。这四台机器的架构、厂商、操作系统各不相同。" data-en="Not a benchmark leaderboard -- a record of what the program could read on machines it had never seen. Different architectures, vendors and operating systems."></p>
+    </div>
+    <div class="table-wrap reveal">
+      <table class="data">
+        <thead>
+          <tr>
+            <th data-zh="机器" data-en="Machine"></th>
+            <th>CPU</th>
+            <th>GPU</th>
+            <th data-zh="内存" data-en="Memory"></th>
+            <th data-zh="探针" data-en="Probe"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Apple M5 · macOS 26.6</td>
+            <td>10 <span data-zh="核" data-en="cores"></span> <span class="num">4P+6E</span></td>
+            <td>8 <span data-zh="GPU 核" data-en="GPU cores"></span></td>
+            <td class="num">16.0 GiB</td>
+            <td class="num ok">3.43 ms</td>
+          </tr>
+          <tr>
+            <td>2× EPYC 7402 + 8× RTX 4090</td>
+            <td><span class="num">48C/96T</span></td>
+            <td><span class="num">8</span> × 23.5 GiB</td>
+            <td class="num">501.3 GiB</td>
+            <td class="num">142 ms</td>
+          </tr>
+          <tr>
+            <td>Jetson AGX Orin 64GB</td>
+            <td><span class="num">12</span> <span data-zh="核" data-en="cores"></span></td>
+            <td><span class="num">16</span> SM / 64 TC</td>
+            <td class="num">61.4 GiB</td>
+            <td class="num">29.7 ms</td>
+          </tr>
+          <tr>
+            <td>i7-11700 · UHD 750 + RX 640</td>
+            <td><span class="num">8C/16T</span></td>
+            <td>2 <span data-zh="块（异构）" data-en="(heterogeneous)"></span></td>
+            <td class="num">63.7 GiB</td>
+            <td class="num">199 ms</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="cta-row reveal">
+      <a class="btn" href="results.html" data-zh="完整实测记录与原始输出 →" data-en="Full record and raw output →"></a>
+    </div>
+  </section>
+
+  <section class="section wrap" id="fast">
+    <div class="section-head reveal">
+      <span class="eyebrow">WHY IT IS FAST</span>
+      <h2 data-zh="快不是优化出来的，是把慢的东西删掉了" data-en="Speed here is subtraction, not optimization"></h2>
+      <p data-zh="常见的硬件探测要 200 到 800 毫秒，几乎全花在启动子进程和链接厂商 SDK 上。把这两件事去掉，剩下的就是几毫秒的系统调用。" data-en="Typical hardware probes take 200 to 800 ms, almost all of it spent spawning subprocesses and loading vendor SDKs. Remove both and what is left is a few milliseconds of system calls."></p>
+    </div>
+    <div class="table-wrap reveal">
+      <table class="data">
+        <thead>
+          <tr>
+            <th data-zh="规则" data-en="Rule"></th>
+            <th data-zh="后果" data-en="Consequence"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td data-zh="绝不启动子进程" data-en="Never spawn a process"></td>
+            <td data-zh="nvidia-smi / npu-smi / lspci / wmic 全部排除。每一个要 200–800 ms，还依赖 PATH 和权限" data-en="nvidia-smi / npu-smi / lspci / wmic are all excluded. Each costs 200-800 ms and needs a PATH and permissions"></td>
+          </tr>
+          <tr>
+            <td data-zh="绝不链接厂商 SDK" data-en="Never link a vendor SDK"></td>
+            <td data-zh="CUDA / NVML / cuDNN / TensorRT / NCCL / ROCm / CANN / OpenCL 全部运行时 dlopen。没装驱动的机器是正常机器，不是崩溃" data-en="CUDA / NVML / cuDNN / TensorRT / NCCL / ROCm / CANN / OpenCL are resolved with dlopen at run time. A box without drivers is a normal box, not a crash"></td>
+          </tr>
+          <tr>
+            <td data-zh="绝不创建设备上下文" data-en="Never create a device context"></td>
+            <td data-zh="CUDA 只问 cuDeviceGetAttribute，不建 context；不开 Metal 设备，不开 D3D12 设备。cuInit 那一次就要 100 ms" data-en="CUDA is asked only for cuDeviceGetAttribute, no context; no Metal device, no D3D12 device. cuInit alone costs around 100 ms"></td>
+          </tr>
+          <tr>
+            <td data-zh="一遍采集，不轮询" data-en="One pass, no polling"></td>
+            <td data-zh="这是快照，不是监控。没有采样线程，没有定时器，没有后台任务" data-en="This is a snapshot, not a monitor. No sampling thread, no timers, no background work"></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="section wrap" id="architecture">
+    <div class="section-head reveal">
+      <span class="eyebrow">ARCHITECTURE</span>
+      <h2 data-zh="采集、标注、推导、输出，四层分离" data-en="Collect, label, derive, emit -- four separate layers"></h2>
+      <p data-zh="每个数字都带着出处：来自硬件、来自规格表、还是没有。这一层标注是 C ABI 的一部分，不是渲染时补的。" data-en="Every number carries its provenance: read from hardware, derived from a spec table, or absent. That labelling is part of the C ABI, not something added at render time."></p>
+    </div>
+    <div class="arch-grid">
+      <article class="arch reveal">
+        <small>collect</small>
+        <h3 data-zh="平台采集" data-en="Per-platform collection"></h3>
+        <p>CPUID · sysfs · sysctl · IOKit · DXGI · SMBIOS</p>
+      </article>
+      <article class="arch reveal delay-1">
+        <small>normalise</small>
+        <h3 data-zh="统一标注" data-en="Provenance"></h3>
+        <p>Num { value, has, estimated }</p>
+      </article>
+      <article class="arch reveal delay-2">
+        <small>derive</small>
+        <h3 data-zh="推导" data-en="Derivation"></h3>
+        <p>peak · roofline · deploy · limits</p>
+      </article>
+      <article class="arch reveal">
+        <small>emit</small>
+        <h3 data-zh="三种出口" data-en="Three exits"></h3>
+        <p>table · json · C ABI</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="section wrap split" id="provenance">
+    <div class="split-copy reveal">
+      <span class="eyebrow">NO INVENTION</span>
+      <h2 data-zh="测不到的东西，就不给数字" data-en="If it cannot be read, it does not get a number"></h2>
+      <p data-zh="这是这个项目最硬的一条规则。把「拿不到」伪装成「估算」比不报更坏：下游拿它去算显存预算，就会算错。" data-en="This is the hardest rule in the project. Dressing up 'could not read it' as 'estimated' is worse than saying nothing: downstream code budgets VRAM with it and gets the wrong answer."></p>
+      <ul class="checks">
+        <li data-html data-zh="<b>~ 标记</b>：来自内置芯片规格表，不是从硬件读的，JSON 里同时出现在 estimated 列表" data-en="<b>~ marker</b>: from the built-in chip spec table, not read from hardware, and listed in the JSON estimated array"></li>
+        <li data-html data-zh="<b>读不到就不报</b>：核显没有独立显存，就不编一个带宽；没有权限读 SMBIOS，就不报内存速率" data-en="<b>Unreadable means unreported</b>: an iGPU has no dedicated VRAM, so no bandwidth is invented; without SMBIOS permission the memory speed is simply absent"></li>
+        <li data-html data-zh="<b>退化是设计</b>：缺驱动、缺权限、缺 GPU，都只是少几行，不会崩，也不会变成 0" data-en="<b>Degrading is designed</b>: no driver, no permission, no GPU just means fewer lines -- never a crash, never a zero"></li>
+      </ul>
+    </div>
+    <div class="term-shot reveal delay-1">
+      <button class="shot" data-full="assets/jetson-orin.png">
+        <img src="assets/jetson-orin.png" alt="devinfo output on Jetson Orin">
+      </button>
+    </div>
+  </section>
+
+  <section class="section wrap quick" id="quickstart">
+    <div class="quick-copy reveal">
+      <span class="eyebrow">QUICK START</span>
+      <h2 data-zh="三步：编、跑、拿走" data-en="Three steps: build, run, embed"></h2>
+      <div class="path-list">
+        <div><b data-zh="命令行" data-en="CLI"></b><code>./devinfo --table</code><span data-zh="给人看；不带参数时，终端出表格，重定向出 JSON" data-en="For humans; with no arguments a terminal gets the table and a pipe gets JSON"></span></div>
+        <div><b data-zh="JSON" data-en="JSON"></b><code>./devinfo --json</code><span data-zh="给程序看；带 estimated 列表，标出哪些是推算" data-en="For programs; carries an estimated array naming the derived values"></span></div>
+        <div><b data-zh="插件" data-en="Plugin"></b><code>libdevinfo.so</code><span data-zh="C ABI，4 个导出符号，可直接给 Python / Go / Rust 用" data-en="C ABI, four exported symbols, callable from Python / Go / Rust"></span></div>
+      </div>
+    </div>
+    <div class="code-card reveal delay-1">
+      <div class="code-head">
+        <span>terminal</span>
+        <button data-copy="#code" data-zh="复制" data-en="Copy"></button>
+      </div>
+      <pre id="code"><code><span class="c"># build (no dependencies beyond a C++17 compiler)</span>
+cmake -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build -j
+
+<span class="c"># run</span>
+./build/devinfo --table
+./build/devinfo --json | jq .cpu
+
+<span class="c"># measured bandwidth instead of the spec-table figure</span>
+./build/devinfo --bench
+
+<span class="c"># the shared library from Python, no bindings needed</span>
+python3 - &lt;&lt;'PY'
+import ctypes
+lib = ctypes.CDLL("./build/libdevinfo.so")
+lib.devinfo_probe_json.restype = ctypes.c_void_p
+lib.devinfo_probe_json.argtypes = [ctypes.c_uint]
+p = lib.devinfo_probe_json(0)
+print(ctypes.string_at(p, 400).decode())
+lib.devinfo_free.argtypes = [ctypes.c_void_p]
+lib.devinfo_free(p)
+PY</code></pre>
+    </div>
+  </section>
+
+  <section class="final-cta wrap reveal">
+    <div>
+      <span class="eyebrow">SHIP IT</span>
+      <h2 data-zh="丢到任何一台机器上，它自己会说" data-en="Drop it on any box and it talks"></h2>
+      <p data-zh="静态链接，不装驱动也能跑；有驱动就多读几行。Windows / macOS / Linux，x86_64 与 arm64 都有现成二进制。" data-en="Statically linked, runs without drivers and reads more when they are present. Windows / macOS / Linux, with prebuilt x86_64 and arm64 binaries."></p>
+    </div>
+    <div class="cta-row">
+      <a class="btn primary" href="results.html" data-zh="看实测记录" data-en="Read the results"></a>
+      <a class="btn" href="#quickstart" data-zh="自己编一个" data-en="Build it yourself"></a>
+    </div>
+  </section>
+</main>
+
+<footer class="footer wrap">
+  <div class="brand">
+    <span class="brand-mark small">di</span>
+    <span><b>devinfo</b><br><small class="mono-tag" style="color:var(--dim);font-family:var(--mono);font-size:10.5px">C++17 · zero dependencies</small></span>
+  </div>
+  <p><span data-zh="MIT 许可证 · 2026" data-en="MIT License · 2026"></span> · <a href="results.html" data-zh="实测结果" data-en="Results"></a> · <a href="#top" data-zh="回到顶部" data-en="Top"></a></p>
+</footer>
+
+<div class="lightbox" id="lightbox">
+  <button aria-label="Close">✕</button>
+  <img id="lightbox-img" src="" alt="Screenshot">
+</div>
+
+<script src="main.js"></script>
+</body>
+</html>

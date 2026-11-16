@@ -1,257 +1,282 @@
-# devinfo
+<p align="center">
+  <b>devinfo</b><br>
+  一个二进制，读出任何机器的真实硬件<br>
+  <sub>one binary · any machine · no subprocess · 3 ms</sub>
+</p>
 
-One binary. Any machine. Answers: **what silicon is in this box, how fast is it,
-how many cores, how much bandwidth.**
+<p align="center">
+  <a href="README_EN.md">English</a> &nbsp;｜&nbsp; <b>中文</b>
+</p>
 
-C++17, zero third-party dependencies, no subprocesses.
+<p align="center">
+  <img src="https://img.shields.io/badge/C%2B%2B-17-00599C?logo=cplusplus" alt="C++17">
+  <img src="https://img.shields.io/badge/dependencies-0-brightgreen" alt="zero dependencies">
+  <img src="https://img.shields.io/badge/subprocess_calls-0-brightgreen" alt="no subprocess">
+  <img src="https://img.shields.io/badge/Linux%20%7C%20macOS%20%7C%20Windows-4f9dff" alt="Linux macOS Windows">
+  <img src="https://img.shields.io/badge/x86__64%20%7C%20arm64%20%7C%20%E5%9B%BD%E4%BA%A7%E8%8A%AF%E7%89%87-2ee6a8" alt="x86_64 arm64">
+  <img src="https://img.shields.io/badge/License-MIT-green" alt="MIT">
+</p>
 
-`~
-$ devinfo
-devinfo - 1.94 ms  (fast)
-macos 26.6.2 | arm64 | native
-------------------------------------------------------------------
-CPU  Apple M5
-     10 cores (4P + 6E)            clock 4.610 GHz~  arm64
-     L1i 1.5 MiB  L1d 896 KiB  L2 22.0 MiB  line 128B
-     RAM 16.0 GiB  bw 153.0 GB/s~
-     peak FP32 0.878 TFLOPS~
-     isa NEON FP16 AES PMULL SHA1 SHA256 SHA512 SHA3 CRC32 DotProd I8MM BF16...
-GPU0 Apple M5
-     8 GPU core(s)
-     unified 16.0 GiB  clock 1.620 GHz~
-     peak FP32 3.318 TF~  FP16 3.318 TF~
-NPU0 Apple Neural Engine (ANE)  16 cores  40.00 TOPS~
-------------------------------------------------------------------
-accelerators
-     opencl                      runtime
-     metal                       runtime
-     -- not present: cuda --
-     ~ = estimated from chip spec table, not read from hardware
-`~
+> 把一个静态链接的 C++17 二进制丢到任何一台陌生机器上跑一次，它就告诉你：CPU 有几个核、缓存多大、支持哪些指令集，GPU 有多少 SM 和 Tensor Core、什么架构、显存和带宽多少，NPU 算力多少，装了哪些加速栈，PCIe 跑在第几代，以及**这块机器能跑多大的模型**。
+>
+> 3 毫秒。零第三方依赖。不调用任何子进程。
 
-## Why it is fast
+## 🖼️ 输出预览
 
-| rule | consequence |
+| Apple M5 · macOS arm64 | Jetson AGX Orin · Linux aarch64 |
+|:---:|:---:|
+| ![M5](site/assets/macos-m5.png) | ![Orin](site/assets/jetson-orin.png) |
+
+| 2× EPYC 7402 + 8× RTX 4090 · Linux x86_64 |
+|:---:|
+| ![8x4090](site/assets/linux-8x4090.png) |
+
+图中带 `~» 的数字是**从芯片规格表推算的**，不是从硬件读出来的，统一显示为琥珀色。没有任何数字是凭空填的。
+
+### 静态展示页
+
+仓库里有一个不依赖任何 CDN 的静态站点，包含完整实测记录、原始输出和截图：
+
+```bash
+python3 -m http.server 19090 --directory site
+# 打开 http://127.0.0.1:19090/
+```
+
+`site/index.html» 是产品页，`site/results.html» 是四台真实机器的实测记录（由 `tools/build_results.py» 从 `assets/captures/*.txt» 生成，原始输出逐字节注入，不会和程序实际打印的内容脱节）。
+
+## 📝 简介
+
+devinfo 不是"又一个硬件信息脚本"。它回答的是**部署前必须知道的那些问题**，而且只回答它真的能读到的部分：
+
+- 这块卡是 **sm_89** 还是 **sm_87**？能不能吃 FP8？
+- 显存是 **23.5 GiB 独立内存** 还是 **61.4 GiB 统一内存**？后者不能当显存单独算。
+- 8 张卡是**同型号可合并成 186.6 GiB 内存池**，还是**两种不同型号只能各跑各的**？
+- 带宽是 **1008 GB/s** 还是根本没读到？roofline 拐点在 82 FLOP/byte 还是算不出来？
+- 这台机器装了 **CUDA 13.0 + cuDNN 9.20 + TensorRT 10.7**，还是只有驱动？
+- 我在容器里，看到的 96 个核里有 **多少是我能用的**？
+
+输出只有三种：给人看的表（`--table»）、给程序看的 JSON（`--json»）、给别的语言调用的 C ABI（`libdevinfo.so» / `.dylib» / `devinfo.dll»）。
+
+## ✨ 能读到什么
+
+### 1. CPU 与缓存
+
+- 物理核 / 逻辑线程、性能核与能效核拆分（Apple Silicon、Intel 12 代以后的混合架构）；
+- L1i / L1d / L2 / L3、缓存行大小；
+- 频率：能读到就报实测值，读不到才用规格表推算并标 `~»；
+- 完整 ISA 位图：x86 从 SSE2 / SSE4.1 / **SSE4.2** / AVX / AVX2 / AVX-512 / FMA / AES / SHA，ARM 从 NEON / FP16 / DotProd / I8MM / BF16 / SVE / SME / SME2；
+- NUMA 节点划分。
+
+峰值算力由**核心数 × 频率 × 每周期浮点操作数**算出，其中每周期浮点数按 ISA 决定（AVX-512 = 64、AVX2 = 32、SSE/NEON = 16 FLOP/cycle），所以不会出现"只有一半"这种经典错误。
+
+### 2. GPU 与 NPU
+
+- 型号、PCI 地址、PCI ID（`1002:6987» 这种，能对上驱动支持列表）；
+- **SM 数量**、**Tensor Core 数量**、计算能力（`sm_8.9»）；
+- 显存容量，以及它到底是**独立显存**还是**统一内存**（CUDA 的 `integrated» 属性判定，不是靠型号猜）；
+- 显存频率、总线宽度、由此算出的带宽；
+- 各精度峰值：FP32 / FP16 / BF16 / INT8 / FP8 / FP16-sparse，按架构的 Tensor Core 规格推导；
+- NPU：Apple ANE 的核心数与 TOPS、昇腾 / 寒武纪通过 CANN dlopen 读取。
+
+### 3. 加速栈
+
+只 `dlopen»，不链接、不执行：
+
+| 栈 | 探测方式 |
 |---|---|
-| never spawn a process | `nvidia-smi`, `npu-smi`, `lspci`, `wmic` are excluded by design; each costs 200-800 ms and needs a PATH |
-| never link a vendor SDK | CUDA / NVML / cuDNN / TensorRT / NCCL / ROCm / CANN / OpenCL are resolved with `dlopen` / `LoadLibrary` at run time. A box without a driver is a normal box, not a crash |
-| never create a device context | CUDA is asked only for `cuDeviceGetAttribute`; no context, no Metal device, no D3D12 device |
-| one pass, no polling | this is a snapshot, not a monitor |
+| CUDA / cuDNN / TensorRT / NCCL / NVML | `libcudart» / `libcudnn» / `libnvinfer» / `libnccl» / `libnvidia-ml»，版本从符号或文件读 |
+| ROCm / HIP | `libamdhip64»、`librocblas» |
+| CANN（昇腾） | `libascendcl»、`libcann» |
+| 寒武纪 | `libcnrt»、`libcndev» |
+| OpenVINO / OpenCL / Vulkan / Metal / DirectML | 平台 API |
+| PyTorch / Conda 环境 | 只读文件，解析已安装版本 |
 
-Typical run: **2-7 ms**. Binary: **~110 KB**.
+每一条都带**来源**：`driver» / `runtime» / `lib» / `toolkit» / `framework»，看得出这是驱动带起来的还是 pip 装的。
 
-## Build
+### 4. 带宽与链路
 
-`
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+- 显存带宽 = 总线宽度 ÷ 8 × 等效频率 × 2（GDDR 双沿），只有独立显存才算；
+- **PCIe 报的是最大能力，不是当前省电降频值**——空闲的 4090 会掉到 gen1，报 gen1 是错的；
+- `--bench» 会用真实的 memcpy 测一次内存带宽，把"估算"换成"实测"；
+- roofline 拐点 = 峰值算力 ÷ 带宽，低于这个值的算子都是带宽受限。
+
+### 5. 部署推导（derive）
+
+从测到的显存 / 精度 / 带宽推出来的结论，明确标为推导而非实测：
+
+- 能装多大的模型：`int4» / `int8» / `fp16» 三档；
+- 训练容量（16 B/param，Adam 优化器状态，不含激活）；
+- **是否可合并内存池**：只有同型号才算池，异构卡会明确写"不能合并"；
+- 并行方式：是否 8 卡全部 x16、tensor parallel 能不能放进 PCIe；
+- 磁盘够不够：stage 一个半精度 checkpoint 需要多少空间。
+
+### 6. 容器与限额
+
+- cgroup v1 / v2：`cpu.max»、`memory.max»、`cpuset.cpus.effective»；
+- Windows Job Object 的 CPU 与内存限额；
+- 磁盘可用空间（按真实挂载点解析，容器里 `/» 在 overlay 上也能对上）。
+
+## ⚡ 为什么快
+
+| 规则 | 后果 |
+|---|---|
+| **绝不启动子进程** | `nvidia-smi»、`npu-smi»、`lspci»、`wmic» 全部排除。每一个要 200–800 ms，还依赖 PATH 和权限 |
+| **绝不链接厂商 SDK** | CUDA / NVML / cuDNN / TensorRT / NCCL / ROCm / CANN / OpenCL 全部运行时 `dlopen» / `LoadLibrary»。没装驱动的机器是正常机器，不是崩溃 |
+| **绝不创建设备上下文** | CUDA 只问 `cuDeviceGetAttribute»，不建 context；不开 Metal 设备，不开 D3D12 设备。`cuInit» 那一次就要 100 ms 以上 |
+| **一遍采集，不轮询** | 这是快照，不是监控。没有采样线程，没有定时器，没有后台任务 |
+
+结果就是：macOS 上 **3.43 ms**，Jetson Orin **29.65 ms**，双 EPYC + 8 卡 4090 **142 ms**（时间几乎全花在 `cuInit» 初始化 8 个设备上）。
+
+## 🧪 实测记录
+
+同一个二进制，跑在四类完全不同的机器上：
+
+| 机器 | 架构 | CPU | GPU | 内存 | 探针耗时 |
+|---|---|---|---|---|---|
+| Apple M5 · macOS 26.6 | arm64 | 10 核（4P+6E） | 8 GPU 核 · ANE 40 TOPS | 16.0 GiB 统一 | **3.43 ms** |
+| 2× EPYC 7402 + 8× RTX 4090 | x86_64 | 48C/96T | 8 × 23.5 GiB · sm_8.9 | 501.3 GiB | 142 ms |
+| Jetson AGX Orin 64GB | aarch64 | 12 核 | 16 SM / 64 TC · sm_8.7 | 61.4 GiB 统一 | 29.65 ms |
+| Dell OptiPlex 7090 · Win11 | x86_64 | i7-11700 8C/16T | UHD 750 + RX 640 | 63.7 GiB | 199 ms |
+
+完整记录、每台的原始输出和已知边界见 [site/results.html](site/results.html)。
+
+## 🎯 不编造
+
+这是整个项目最硬的一条规则，也是最难坚持的一条。
+
+**测不到的东西就不给数字。** 把"拿不到"伪装成"估算"比不报更坏——下游拿它去算显存预算，就会算错。
+
+| 场景 | 处理 |
+|---|---|
+| 集成显卡 | 不给"显存带宽"，因为核显和内存共享总线，没有这个量 |
+| Jetson 的 LPDDR5 带宽 | 不抄规格表，deploy 段直接写 `ridge point unavailable: no honest bandwidth figure for this GPU (run --bench)» |
+| Linux 非 root | SMBIOS 表读不到，就不报内存速率（`/sys/firmware/dmi/tables/DMI» 只有 root 可读） |
+| Windows 睿频 | `CallNtPowerInformation» 只返回基频，就不补一个"估算睿频" |
+| 非 NVIDIA 的 PCIe | 没有可靠来源，宁可空着 |
+
+所有推算值在 JSON 里都同时出现在 `estimated» 数组里，程序化消费时一眼能分清哪些是实测。
+
+## 🚀 快速开始
+
+### 构建
+
+只需要一个 C++17 编译器和 CMake ≥ 3.16，没有任何第三方依赖：
+
+```bash
+cmake -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build -j
-`
+```
 
-Produces three artifacts:
+产物：
 
-| target | artifact | use |
-|---|---|---|
-| `devinfo_core` | static library | embed the C++ model directly |
-| `devinfo` | `devinfo.dll` / `libdevinfo.dylib` / `libdevinfo.so` | the plugin, a C ABI |
-| `devinfo-cli` | `devinfo` | the command line |
+| 文件 | 说明 |
+|---|---|
+| `build/devinfo»（Windows 为 `devinfo.exe»） | 命令行程序，静态链接 |
+| `build/libdevinfo.so» / `.dylib» / `devinfo.dll» | C ABI 插件 |
 
-## CLI
+macOS 默认构建 **universal binary**（`arm64 + x86_64»），Windows 支持 32 位与 64 位两套构建。
 
-`
-devinfo            # table on a tty, JSON when piped
-devinfo --json     # force JSON
-devinfo --table    # force the table
-devinfo --bench    # add a memory bandwidth micro-benchmark
-devinfo --version
-`
+### 运行
 
-## The plugin ABI
+```bash
+./build/devinfo              # 终端 → 表格，重定向 → JSON
+./build/devinfo --table      # 强制表格
+./build/devinfo --json       # 强制 JSON
+./build/devinfo --bench      # 加测一次真实内存带宽
+./build/devinfo --version
+```
 
-Four functions. The JSON document is the contract, so the header never has to
-change:
+双重链接（Windows 上直接双击）时会自己写一份 `devinfo-report.txt» 和 `.json» 到当前目录，然后退出——不会闪一下就没了。
 
-`c
-#include "devinfo.h"
+### C ABI
 
-char* j = devinfo_probe_json(DEVINFO_FAST);   /* or DEVINFO_BENCH */
-puts(j);
-devinfo_free(j);                              /* not free(): on Windows they differ */
-`
+四个导出符号，头文件 `include/devinfo.h»：
 
-From Python, no bindings required:
+```c
+#define DEVINFO_ABI_VERSION 1u
+#define DEVINFO_VERSION_STRING "1.0.0"
+#define DEVINFO_FAST  0u   /* 只读结构，不做测量 */
+#define DEVINFO_BENCH 1u   /* 加内存带宽微基准 */
 
-`python
+uint32_t    devinfo_abi_version(void);
+const char* devinfo_version(void);
+char*       devinfo_probe_json(uint32_t flags);   /* malloc 出的 JSON，失败返回 NULL */
+void        devinfo_free(char* p);                /* Windows 上必须用这个，不能用 free */
+```
+
+JSON 文档本身就是 ABI 契约，所以头文件可以永远冻结：没有结构体跨边界，也就没有版本冲突。
+
+Python 直接调用，不需要写 bindings：
+
+```python
 import ctypes, json
-lib = ctypes.CDLL("./build/libdevinfo.dylib")
+
+lib = ctypes.CDLL("./build/libdevinfo.so")
 lib.devinfo_probe_json.restype = ctypes.c_void_p
+lib.devinfo_probe_json.argtypes = [ctypes.c_uint]
 lib.devinfo_free.argtypes = [ctypes.c_void_p]
+
 p = lib.devinfo_probe_json(0)
-print(json.dumps(json.loads(ctypes.string_at(p)), indent=2))
+data = json.loads(ctypes.string_at(p).decode("utf-8"))
 lib.devinfo_free(p)
-`
 
-## Output schema
-
-`
-devinfo/1
-  level          "fast" | "bench"
-  probe_ms       wall time of the probe itself
-  host           os, os_version, kernel, arch, model, env, hostname
-                   env = native | container | vm | wsl
-  cpu            vendor, model, arch
-                 cores{physical, logical, p, e, p_tier, e_tier}
-                 clock_ghz, cache_bytes{l1i,l1d,l2,l3,line}
-                 memory{total_bytes, bandwidth_gbs, bandwidth_measured_gbs}
-                 peak{fp32_tflops, fp64_tflops, int8_tops}
-                 features[]           NEON / AVX512F / I8MM / SME ...
-                 estimated[]          which of the above are table guesses
-  gpus[]         vendor, name, arch, core_unit (SM/CU/GPU core/EU)
-                 cores, tensor_cores, tensor_cores_per_SM
-                 clock_ghz, vram_bytes, unified_memory, mem_bandwidth_gbs
-                 peak{fp64,fp32,tf32,bf16,fp16,fp16_sparse,fp8,int8}
-                 method, estimated[]
-  npus[]         vendor, name, arch, cores, peak{int8_tops,fp16_tflops}
-  accelerators{} cuda, cuda_runtime, nvml, cudnn, tensorrt, nccl, rocm,
-                 cann, openvino, onnxruntime, directml, vulkan, opencl,
-                 sycl, metal, nvcc, hipcc, npu-smi
-                 -> {available, version?, category?, detail?}
-  warnings[]     anything the probe could not resolve
-`
-
-### estimated
-
-The single most important field. Vendors do not publish Tensor Core counts or
-NPU TOPS through any API, so those are **derived**:
-
-`
-cores        read from hardware (IOKit / DXGI / CUDA / sysfs)
-clock        read when available, table otherwise
-fp32 peak    cores x lanes-per-core x 2 x clock
-Tensor Core  cores x TC-per-core x flops-per-TC-per-clock x clock
-bandwidth    PCIe bus width x memory clock, or chip table
-`
-
-Everything that came from the builtin table is listed in `estimated[]`.
-Nothing is presented as measured when it is not.
-
-## Platform coverage
-
-| | CPU | GPU | NPU | accelerators |
-|---|---|---|---|---|
-| **macOS** | `sysctlbyname` (perflevel P/E split, caches) | IOKit `IOAccelerator` | IOKit ANE class | dlopen + Metal |
-| **Linux** | `/proc/cpuinfo`, sysfs topology/cache/cpufreq | sysfs DRM + `libcuda` attributes | `/dev/davinci*`, `/dev/accel*` | dlopen + `/proc/driver/nvidia` + CANN cfg |
-| **Windows** | CPUID + `GetLogicalProcessorInformationEx` + registry | DXGI + NVML | SetupAPI PCI scan | LoadLibrary |
-
-x86_64 and arm64 on all three.
-
-## Verification status
-
-| platform | status | hardware |
-|---|---|---|
-| macOS arm64 | **built and run** | Apple M5, macOS 26.6 |
-| Linux x86_64 (big) | **built and run** | 2x EPYC 7402 (96 threads), 8x RTX 4090, Ubuntu 22.04, driver 580.119.02 |
-| Linux x86_64 (hybrid) | **built and run** | Intel i5-1335U (2P + 8E), Ubuntu 24.04 |
-| Windows win64 | written, CI-compiled | CI runner |
-| Windows win32 | written, CI-compiled | CI runner |
-
-The Linux run is a real acceptance, not a smoke test: it reported 48 cores /
-96 threads, L1d 1.5 MiB, L2 24 MiB, L3 256 MiB, and all eight GPUs at 128 SM /
-512 Tensor Cores / 1008 GB/s with `sm_8.9`. Those are the datasheet numbers,
-which is the point.
-
-`.github/workflows/ci.yml` builds ubuntu-latest, macos-latest, macos-13 and
-windows-latest in both bitnesses (`-A x64` and `-A Win32`), and validates
-the JSON schema on each.
-
-## Hybrid CPUs (P/E cores and split caches)
-
-A 13th-gen mobile part is not a uniform machine, and the naive approach gets
-it wrong twice.
-
-**Core counts.** `/sys/devices/cpu_core/cpus` holds *logical* CPUs, so an
-i5-1335U lists `0-3` for two hyperthreaded P cores. Counting entries reports
-4 P cores. The fix is to resolve each CPU's `(physical_package_id, core_id)`
-and count distinct pairs:
-
-```
- 10 cores (2P + 8E) / 12 threads     <- 2 physical P + 8 physical E
+for gpu in data["gpus"]:
+    print(gpu["name"], gpu.get("vram_gib"), gpu.get("sm_count"))
 ```
 
-**Caches.** P cores and E cores ship different L1 and L2 sizes, so scaling
-one core's cache by the core count is wrong. Instead every cache *instance*
-is summed once, keyed by `indexN + shared_cpu_list`:
+C 的完整例子见 `examples/ffi_c.c»，Python 见 `examples/ffi_python.py»。
 
-| | P core | E core | total |
+## 📊 支持矩阵
+
+| 项 | Linux | macOS | Windows |
 |---|---|---|---|
-| L1d | 48 KiB x2 | 32 KiB x8 | 352 KiB |
-| L1i | 32 KiB x2 | 64 KiB x8 | 576 KiB |
-| L2 | 1280 KiB x2 | 2048 KiB x2 clusters | 6.5 MiB |
-| L3 | shared by all 12 | | 12 MiB |
+| CPU 型号 / 核心 / 缓存 | `/proc» + CPUID | `sysctl» | CPUID + `GetLogicalProcessorInformationEx» |
+| 混合架构 P/E 核 | — | ✅ | ✅ CPU Sets |
+| ISA 位图 | CPUID | `sysctl» | CPUID |
+| 内存容量 | `/proc/meminfo» | `sysctl» | `GlobalMemoryStatusEx» |
+| 内存速率 / 通道 | SMBIOS（需 root） | — | SMBIOS（无需管理员） |
+| NVIDIA GPU | NVML / CUDA `dlopen» | ✅ | ✅ |
+| Apple GPU | — | IOKit + Metal | — |
+| 其他 GPU | sysfs PCI | — | DXGI |
+| NPU | CANN / 寒武纪 `dlopen» | ANE | 未检测 |
+| PCIe 链路 | NVML / sysfs | — | NVML（仅 NVIDIA） |
+| 磁盘 | `statvfs» + `/sys/block» | `statfs» | `GetDiskFreeSpaceEx» |
+| 网络 | 枚举 `/sys/class/net» | — | 未实现 |
+| 容器限额 | cgroup v1 / v2 | — | Job Object |
 
-Verified against `sysfs` on both the hybrid laptop and a 2-socket EPYC.
+## 📁 目录
 
-On Windows the same split comes from `GetSystemCpuSetInformation`, which
-tags each logical CPU with an `EfficiencyClass`.
+| 路径 | 内容 |
+|---|---|
+| `src/core.cpp» | 平台无关的归一化、峰值推导、deploy 推导、JSON 组装 |
+| `src/linux.cpp» / `apple.cpp» / `win32.cpp» | 三套平台采集，各自独立 |
+| `src/capi.cpp» | C ABI 薄封装（4 个符号） |
+| `src/emit.cpp» / `table.cpp» | 表格渲染、NV 架构规格表 |
+| `src/main.cpp» | CLI 参数与双重链接处理 |
+| `include/devinfo.h» | **公开的 C ABI 头文件**（冻结） |
+| `include/devinfo_core.hpp» | 内部数据模型（`Num» 带出处标记） |
+| `site/» | 静态展示页与实测记录 |
+| `assets/captures/» | 各机器真实 stdout 捕获，截图与结果页都从这里生成 |
+| `tools/» | 截图渲染器、结果页生成器 |
+| `dist/» | 各平台预编译二进制 |
 
-A non-hybrid CPU reports no P/E split at all: inventing "48 P cores" on a
-homogeneous EPYC would be a fiction.
+## 🔍 已知限制
 
-## Measured against a second machine
+这些不是待办事项，是明确读不到或读不全的地方，列出来是为了让人知道哪一列可以信、哪一列要自己复核：
 
-    # 2x AMD EPYC 7402, 8x RTX 4090, 501 GiB, Ubuntu 22.04
-    devinfo - 139 ms  (fast)
-    linux Ubuntu 22.04.5 LTS | x86_64 | native
-    CPU  AMD EPYC 7402 24-Core Processor
-         48 cores / 96 threads         clock 2.800 GHz  x86_64
-         L1i 1.5 MiB  L1d 1.5 MiB  L2 24.0 MiB  L3 256.0 MiB  line 64B
-         RAM 501.3 GiB
-         peak FP32 2.150 TFLOPS~
-    GPU0 NVIDIA GeForce RTX 4090
-         128 SM(s)  512 Tensor Cores  sm_8.9
-         vram 23.5 GiB  clock 2.520 GHz  bw 1008.1 GB/s
-         peak FP32 82.58 TF~  FP16 330.3 TF~  BF16 330.3 TF~  (sparse 660.6 TF)~
-    ...
-    accelerators
-         cuda          13.0          driver
-         cuda_runtime  13.0          runtime
-         nvml          580.119.02    lib
-         vulkan                      runtime
-         opencl                      runtime
-         nvcc                        toolchain
+- **Linux 非 root 读不到内存速率**：SMBIOS 表在 `/sys/firmware/dmi/tables/DMI»，只有 root 可读；
+- **Windows 只有基频**：`CallNtPowerInformation» 在该机器上不返回睿频；
+- **非 NVIDIA 的 PCIe 链路未报**：只有 NVML 能可靠给出代数与宽度；
+- **集成显卡不给带宽**：核显与内存共享总线；
+- **Windows 网络与磁盘介质未实现**：需要 SetupAPI + IOCTL 组合；
+- **Windows 复测待完成**：第一轮实机测试暴露的六个问题（SSE4.2 漏报、CPU 峰值减半、异构显存被加总、训练容量显示 `~0b»、异构并行措辞、HIP 被误标为 ROCm）已全部修复，但那台机器暂时无法连接，修复后的数字尚未验证。
 
-Note which values lack the `~`: GPU clock, VRAM, bandwidth, SM and Tensor
-Core counts and the CUDA driver/toolkit versions all came off the machine.
-Only the throughput peaks are derived.
+## 📌 状态
 
-### Why Linux takes ~140 ms and macOS ~5 ms
+devinfo 已经在四类真实机器上跑通过（Apple Silicon、双路 EPYC + 8 卡、Jetson、Intel 办公机），所有平台 0 警告编译。
 
-Enumerating an NVIDIA GPU through the driver costs `cuInit`: measured
-**139 ms** on this 8-GPU node versus **28 ms** for `nvmlInit`. But NVML cannot
-report SM counts on this driver, and SM count is what Tensor Core figures come
-from, so the CUDA driver is the price of the headline number. For comparison,
-shelling out to `nvidia-smi` costs 200-800 ms and returns less.
+尚未验证的：MSVC 工具链构建（目前 Windows 二进制由 llvm-mingw 交叉编译），以及上面"Windows 复测待完成"一项。
 
-On macOS there is no driver to initialise, hence single-digit milliseconds.
+## 📄 许可证
 
-## What this deliberately is not
-
-- **not a benchmark suite** - peaks are theoretical. `--bench` measures a
-  4-thread copy bandwidth. Four is deliberate: an EPYC sweep at 1/2/4/8
-  threads gives 29.5 / 40.2 / 44.2 / 33.7 GB/s, so scaling with the core count
-  makes the number *worse*. Expect roughly 70-80% of theoretical peak.
-  First touch of the buffers costs ~60 ms per 128 MB; that happens before the
-  clock starts, so it makes `--bench` slower, not wrong.
-- **the measured number is a snapshot, and the machine's state is part of it.**
-  A 15 W laptop with 29 of 31 GB in use reports ~20 GB/s; an independent
-  pthread memcpy implementation built for comparison reports 19.2-20.8 GB/s on
-  the same box at the same time. Agreeing to 1% is the point - the tool is
-  reporting the machine, not flattering it.
-- **not a monitor** - no sampling, no daemon, no utilisation.
-- **not 100% precise** - a chip missing from `table.cpp` yields a warning
-  and omitted fields rather than invented numbers.
-
-## Adding a chip
-
-`src/table.cpp` holds two small arrays: `kApple[]` (per-SoC clock,
-bandwidth, ANE) and `kNv[]` (per compute-capability lanes, Tensor Cores,
-throughput). One line each.
+MIT。

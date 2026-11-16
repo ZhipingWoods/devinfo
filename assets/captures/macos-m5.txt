@@ -1,0 +1,32 @@
+devinfo - 3.43 ms  (fast)
+macos 26.6.2 | arm64 | native
+------------------------------------------------------------------
+CPU  Apple M5
+     10 cores (4P + 6E)            clock 4.610 GHz~  arm64
+     L1i 1.5 MiB  L1d 896 KiB  L2 22.0 MiB  line 128B
+     RAM 16.0 GiB  bw 153.0 GB/s~
+     disk 87.9 GiB free of 460.4 GiB  ssd  /
+     peak FP32 0.878 TFLOPS~
+     isa NEON FP16 AES PMULL SHA1 SHA256 SHA512 SHA3 CRC32 DotProd I8MM BF16
+          EBF16 FHM FCMA JSCVT RDM LSE LSE2 LRCPC LRCPC2 SME SME2 PAuth SB
+          HBC CSSC AFP CSV2 CSV3
+GPU0 Apple M5
+     8 GPU core(s)  AGXMetalG17G
+     unified 16.0 GiB  clock 1.620 GHz~  bw 153.0 GB/s~
+     peak FP32 3.318 TF~  FP16 3.318 TF~
+NPU0 Apple Neural Engine (ANE)  16 cores  40.00 TOPS~
+------------------------------------------------------------------
+accelerators
+     opencl                      runtime
+     metal                       runtime
+     -- not present: cuda --
+
+deploy (derived from the measurements above, not measured)
+     memory 16.0 GiB of unified memory shared with the GPU -> inference ~33b
+       params int4, ~16b int8, ~8.2b fp16; training ~1.0b (16 B/param, Adam, no
+       activations)
+     precision vector units: fp16  (from the hardware's own capability bits)
+     parallel single GPU, no cross-device link in the path
+     ridge point 22 FLOP/byte (3.3 TFLOPS / 153 GB/s): kernels below it are
+       bandwidth-bound
+     ~ = estimated from chip spec table, not read from hardware

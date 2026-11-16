@@ -5,3 +5,7 @@ build/
 
 # local-only cross toolchain used for Windows builds, ~1 GB of binaries
 .toolchain/
+
+# python bytecode from the site generators
+__pycache__/
+*.pyc
