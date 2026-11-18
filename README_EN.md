@@ -139,6 +139,8 @@ The same binary, on four very different machines:
 
 Full record, raw output per machine, and the known limits: [site/results.html](site/results.html).
 
+The 8-GPU figure moves with machine load (117-163 ms observed): nearly all of it is `cuInit» bringing up 8 devices, which cannot be parallelised. The per-card queries can: 13-22 ms serially, about 3 ms across threads. The table quotes the run behind the capture file, not the best result.
+
 ## 🎯 No invention
 
 This is the hardest rule in the project, and the one most worth keeping.

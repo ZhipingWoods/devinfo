@@ -22,6 +22,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <string>
+#include <thread>
 #include <vector>
 
 namespace devinfo {
@@ -393,36 +394,48 @@ void probe_nvidia_cuda(Report& r) {
   int n = 0;
   if (count_(&n) != 0 || n <= 0) return;
 
-  for (int i = 0; i < n; ++i) {
-    int dev = 0;
-    if (get_(&dev, i) != 0) continue;
-    char name[256] = {0};
-    if (name_(name, (int)sizeof name, dev) != 0) continue;
+  /* cuInit above already paid the driver start-up, and that is the bulk of
+   * the cost. What is left is the queries, and the first time a device is
+   * touched they are not free either: on an 8-GPU box the serial loop costs
+   * 13-22 ms, while the same work spread over threads costs about 3. Cards
+   * are independent and every entry point used below is documented
+   * thread-safe, so this part - the only part that grows with card count -
+   * runs in parallel. One card stays serial: spawning a thread would cost
+   * more than the queries it runs. */
+  std::vector<Gpu> slot((size_t)n);
+  std::vector<char> filled((size_t)n, 0);
 
-    Gpu g;
-    g.vendor = "nvidia";
-    g.name = name;
-    g.core_unit = "SM";
-    g.method = "libcuda cuDeviceGetAttribute";
+  auto probe_card = [&](int i) {
+    try {
+      int dev = 0;
+      if (get_(&dev, i) != 0) return;
+      char name[256] = {0};
+      if (name_(name, (int)sizeof name, dev) != 0) return;
 
-    int v = 0;
-    if (attr_(&v, ATTR_MULTIPROCESSOR_COUNT, dev) == 0 && v > 0)
-      g.cores = Num{(double)v, true, false};
-    if (attr_(&v, ATTR_CLOCK_RATE, dev) == 0 && v > 0)
-      g.clock_ghz = Num{(double)v / 1e6, true, false};      /* kHz -> GHz */
+      Gpu g;
+      g.vendor = "nvidia";
+      g.name = name;
+      g.core_unit = "SM";
+      g.method = "libcuda cuDeviceGetAttribute";
 
-    int integrated = 0;
-    if (attr_(&integrated, ATTR_INTEGRATED, dev) == 0 && integrated)
-      g.unified = true;
+      int v = 0;
+      if (attr_(&v, ATTR_MULTIPROCESSOR_COUNT, dev) == 0 && v > 0)
+        g.cores = Num{(double)v, true, false};
+      if (attr_(&v, ATTR_CLOCK_RATE, dev) == 0 && v > 0)
+        g.clock_ghz = Num{(double)v / 1e6, true, false};      /* kHz -> GHz */
 
-    int major = 0, minor = 0;
-    attr_(&major, ATTR_CC_MAJOR, dev);
-    attr_(&minor, ATTR_CC_MINOR, dev);
-    if (major) {
-      char cc[16];
-      std::snprintf(cc, sizeof cc, "sm_%d.%d", major, minor);
-      g.arch = cc;
-    }
+      int integrated = 0;
+      if (attr_(&integrated, ATTR_INTEGRATED, dev) == 0 && integrated)
+        g.unified = true;
+
+      int major = 0, minor = 0;
+      attr_(&major, ATTR_CC_MAJOR, dev);
+      attr_(&minor, ATTR_CC_MINOR, dev);
+      if (major) {
+        char cc[16];
+        std::snprintf(cc, sizeof cc, "sm_%d.%d", major, minor);
+        g.arch = cc;
+      }
 
     /* Bus width times clock times two works for GDDR, where the reported
      * clock is half the data rate: a 4090 comes out at 1008 GB/s, which is
@@ -431,36 +444,63 @@ void probe_nvidia_cuda(Report& r) {
      * part is rated at 204.8, so the multiplier for that memory is not two.
      * Rather than publish a number that is wrong by 2.5x, an integrated GPU
      * gets no bandwidth and says why. */
-    unsigned bus = 0, memclk = 0;
-    if (attr_(&v, ATTR_GLOBAL_MEMORY_BUS_WIDTH, dev) == 0 && v > 0) bus = (unsigned)v;
-    if (attr_(&v, ATTR_MEMORY_CLOCK_RATE, dev) == 0 && v > 0) memclk = (unsigned)v;
-    if (bus && memclk && !g.unified) {
-      double gbs = (double)bus / 8.0 * (double)memclk * 1000.0 * 2.0 / 1e9;
-      g.mem_bw_gbs = Num{gbs, true, false};
-    } else if (bus && memclk && g.unified) {
-      g.method += " (bandwidth withheld: LPDDR data rate is not clock x2)";
-    }
-
-    if (mem_) {
-      unsigned long long total = 0;
-      if (mem_(&total, dev) == 0 && total > 0)
-        g.vram_bytes = Num{(double)total, true, false};
-    }
-
-    /* The bus id lets us ask the kernel what the link actually trained to,
-     * which libcuda itself will not say. An integrated GPU has no PCIe link
-     * of its own and reports 0000:00:00.0, which is not a device. */
-    if (pciid_ && !g.unified) {
-      char busid[32] = {0};
-      if (pciid_(busid, (int)sizeof busid, dev) == 0 && busid[0]) {
-        std::string s(busid);
-        for (auto& ch : s) ch = (char)std::tolower((unsigned char)ch);
-        g.pci_id = s;
-        read_pcie_link("/sys/bus/pci/devices/" + s, g);
+      unsigned bus = 0, memclk = 0;
+      if (attr_(&v, ATTR_GLOBAL_MEMORY_BUS_WIDTH, dev) == 0 && v > 0) bus = (unsigned)v;
+      if (attr_(&v, ATTR_MEMORY_CLOCK_RATE, dev) == 0 && v > 0) memclk = (unsigned)v;
+      if (bus && memclk && !g.unified) {
+        double gbs = (double)bus / 8.0 * (double)memclk * 1000.0 * 2.0 / 1e9;
+        g.mem_bw_gbs = Num{gbs, true, false};
+      } else if (bus && memclk && g.unified) {
+        g.method += " (bandwidth withheld: LPDDR data rate is not clock x2)";
       }
+
+      if (mem_) {
+        unsigned long long total = 0;
+        if (mem_(&total, dev) == 0 && total > 0)
+          g.vram_bytes = Num{(double)total, true, false};
+      }
+
+      /* The bus id lets us ask the kernel what the link actually trained to,
+       * which libcuda itself will not say. An integrated GPU has no PCIe link
+       * of its own and reports 0000:00:00.0, which is not a device. */
+      if (pciid_ && !g.unified) {
+        char busid[32] = {0};
+        if (pciid_(busid, (int)sizeof busid, dev) == 0 && busid[0]) {
+          std::string s(busid);
+          for (auto& ch : s) ch = (char)std::tolower((unsigned char)ch);
+          g.pci_id = s;
+          read_pcie_link("/sys/bus/pci/devices/" + s, g);
+        }
+      }
+      slot[(size_t)i] = std::move(g);
+      filled[(size_t)i] = 1;
+    } catch (...) {
+      /* One unreadable card must not cost the report every other card: its
+       * slot stays empty and is skipped when the results are gathered. */
     }
-    r.gpus.push_back(std::move(g));
+  };
+
+  unsigned workers = std::thread::hardware_concurrency();
+  if (workers == 0) workers = 1;
+  if (workers > (unsigned)n) workers = (unsigned)n;
+
+  if (workers <= 1) {
+    for (int i = 0; i < n; ++i) probe_card(i);
+  } else {
+    std::vector<std::thread> pool;
+    pool.reserve(workers);
+    for (unsigned w = 0; w < workers; ++w)
+      pool.emplace_back([&, w] {
+        for (int i = (int)w; i < n; i += (int)workers) probe_card(i);
+      });
+    for (auto& t : pool) t.join();
   }
+
+  /* Report order is the caller's order: slot i is card i, whichever thread
+   * finished first. */
+  for (int i = 0; i < n; ++i)
+    if (filled[(size_t)i]) r.gpus.push_back(std::move(slot[(size_t)i]));
+
   dlclose(h);
 }
 
