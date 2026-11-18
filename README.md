@@ -14,7 +14,7 @@
   <img src="https://img.shields.io/badge/subprocess_calls-0-brightgreen" alt="no subprocess">
   <img src="https://img.shields.io/badge/Linux%20%7C%20macOS%20%7C%20Windows-4f9dff" alt="Linux macOS Windows">
   <img src="https://img.shields.io/badge/x86__64%20%7C%20arm64%20%7C%20%E5%9B%BD%E4%BA%A7%E8%8A%AF%E7%89%87-2ee6a8" alt="x86_64 arm64">
-  <img src="https://img.shields.io/badge/License-MIT-green" alt="MIT">
+  <img src="https://img.shields.io/badge/License-Apache_2.0-blue" alt="Apache-2.0">
 </p>
 
 > 把一个静态链接的 C++17 二进制丢到任何一台陌生机器上跑一次，它就告诉你：CPU 有几个核、缓存多大、支持哪些指令集，GPU 有多少 SM 和 Tensor Core、什么架构、显存和带宽多少，NPU 算力多少，装了哪些加速栈，PCIe 跑在第几代，以及**这块机器能跑多大的模型**。
@@ -279,4 +279,4 @@ devinfo 已经在四类真实机器上跑通过（Apple Silicon、双路 EPYC + 
 
 ## 📄 许可证
 
-MIT。
+Apache License 2.0，完整文本见 [LICENSE](LICENSE)。

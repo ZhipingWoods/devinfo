@@ -13,7 +13,7 @@
   <img src="https://img.shields.io/badge/dependencies-0-brightgreen" alt="zero dependencies">
   <img src="https://img.shields.io/badge/subprocess_calls-0-brightgreen" alt="no subprocess">
   <img src="https://img.shields.io/badge/Linux%20%7C%20macOS%20%7C%20Windows-4f9dff" alt="Linux macOS Windows">
-  <img src="https://img.shields.io/badge/License-MIT-green" alt="MIT">
+  <img src="https://img.shields.io/badge/License-Apache_2.0-blue" alt="Apache-2.0">
 </p>
 
 > Drop one statically linked C++17 binary onto a machine nobody administered, run it once, and it reports: how many cores and how much cache the CPU has, which ISA extensions it supports, how many SMs and tensor cores the GPU has, its architecture, VRAM and bandwidth, the NPU's throughput, which acceleration stacks are installed, what PCIe generation is on the link, and **how large a model this box can hold**.
@@ -278,4 +278,4 @@ Still unverified: an MSVC build (the Windows binaries are cross-compiled with ll
 
 ## 📄 License
 
-MIT.
+Apache License 2.0. The full text is in [LICENSE](LICENSE).
