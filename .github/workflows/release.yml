@@ -1,0 +1,74 @@
+name: release
+
+# The binaries in dist/ are built and verified by hand on the machines they
+# target. This attaches them to the release so they are one click away
+# instead of buried five directories deep in the tree.
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Fail loudly if an artifact is missing rather than publish a release
+      # with nothing attached.
+      - name: Check the artifacts are present
+        run: |
+          set -e
+          missing=0
+          for f in dist/devinfo-test.zip dist/devinfo-test-mac.zip \
+                   dist/windows/devinfo-x64.exe dist/windows/devinfo-x86.exe \
+                   dist/windows/devinfo-x64.dll \
+                   dist/macos/devinfo dist/macos/libdevinfo.dylib \
+                   dist/linux/devinfo dist/linux/devinfo-arm64 \
+                   dist/linux/libdevinfo.so dist/linux/libdevinfo-arm64.so; do
+            if [ ! -f "$f" ]; then echo "missing: $f"; missing=1; fi
+          done
+          if [ "$missing" = "1" ]; then exit 1; fi
+          echo "all artifacts present"
+
+      - name: Publish
+        uses: softprops/action-gh-release@v2
+        with:
+          name: devinfo ${{ github.ref_name }}
+          generate_release_notes: true
+          body: |
+            Prebuilt binaries. No compiler and no dependencies: copy one file to
+            the machine and run it.
+
+            | Platform | File | Kind |
+            |---|---|---|
+            | Windows x64 | devinfo-x64.exe | single-file CLI |
+            | Windows x86 | devinfo-x86.exe | single-file CLI (32-bit) |
+            | Windows x64 | devinfo-x64.dll | C ABI plugin |
+            | macOS | devinfo | universal CLI (arm64 + x86_64) |
+            | macOS | libdevinfo.dylib | C ABI plugin |
+            | Linux x64 | devinfo | single-file CLI |
+            | Linux arm64 | devinfo-arm64 | single-file CLI |
+            | Linux x64 | libdevinfo.so | C ABI plugin |
+            | Linux arm64 | libdevinfo-arm64.so | C ABI plugin |
+
+            devinfo-test.zip and devinfo-test-mac.zip are the same files with a
+            short README inside.
+
+            Anything shown with a tilde is an estimate, never a datasheet copy:
+            see the "no invented numbers" section of the README.
+          files: |
+            dist/devinfo-test.zip
+            dist/devinfo-test-mac.zip
+            dist/windows/devinfo-x64.exe
+            dist/windows/devinfo-x86.exe
+            dist/windows/devinfo-x64.dll
+            dist/macos/devinfo
+            dist/macos/libdevinfo.dylib
+            dist/linux/devinfo
+            dist/linux/devinfo-arm64
+            dist/linux/libdevinfo.so
+            dist/linux/libdevinfo-arm64.so
