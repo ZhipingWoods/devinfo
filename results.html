@@ -1,0 +1,441 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="dark" data-lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="devinfo 在四台真实机器上的实测记录：Apple M5、双 EPYC 7402 + 八张 RTX 4090、Jetson AGX Orin、Dell OptiPlex 7090。">
+<title>devinfo · 实测结果</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='15' fill='%234f9dff'/%3E%3Ctext x='32' y='43' text-anchor='middle' font-size='26' font-family='monospace' font-weight='700' fill='%2304121f'%3Edi%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="ambient" aria-hidden="true">
+  <div class="orb orb-a"></div><div class="orb orb-b"></div><div class="grid-fade"></div>
+</div>
+
+<header class="nav">
+  <a class="brand" href="index.html">
+    <span class="brand-mark">di</span>
+    <span class="brand-copy"><b>devinfo</b><small>results</small></span>
+  </a>
+  <nav class="nav-links">
+    <a href="index.html" data-zh="首页" data-en="Home"></a>
+    <a href="#m5">M5</a>
+    <a href="#4090">8×4090</a>
+    <a href="#orin">Orin</a>
+    <a href="#woods924">Windows</a>
+  </nav>
+  <div class="nav-actions">
+    <div class="seg lang-switch">
+      <button class="on" data-set-lang="zh">中文</button>
+      <button data-set-lang="en">EN</button>
+    </div>
+    <button class="icon-btn" id="theme-btn" aria-label="Toggle theme">
+      <span class="theme-sun">☀</span><span class="theme-moon">◐</span>
+    </button>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="page-head">
+    <span class="eyebrow">MEASURED RECORD</span>
+    <h1 data-zh="四台机器的真实读数" data-en="Four machines, as read"></h1>
+    <p class="lede" data-zh="同一个二进制，跑在四台架构完全不同的机器上。下面是它读到的全部内容，以及每一台的原始输出。没有一项是事后填的。" data-en="The same binary, run on four completely different machines. Below is everything it read, plus the raw output of each run. Nothing here was filled in after the fact."></p>
+  </section>
+
+  <section class="table-wrap">
+    <table class="data">
+      <thead><tr>
+        <th data-zh="机器" data-en="Machine"></th>
+        <th data-zh="环境" data-en="Environment"></th>
+        <th data-zh="架构" data-en="Arch"></th>
+        <th data-zh="探针耗时" data-en="Probe"></th>
+      </tr></thead>
+      <tbody>
+<tr><td><a href="#m5">Apple M5</a></td><td>MacBook · macOS 26.6.2</td><td class="num">arm64</td><td class="num">3.43 ms</td></tr>
+<tr><td><a href="#4090">2× EPYC 7402 + 8× RTX 4090</a></td><td>训练服务器 · Ubuntu 22.04</td><td class="num">x86_64</td><td class="num">142.39 ms</td></tr>
+<tr><td><a href="#orin">Jetson AGX Orin 64GB</a></td><td>边缘设备 · L4T R36.4.7 · Ubuntu 22.04</td><td class="num">aarch64</td><td class="num">29.65 ms</td></tr>
+<tr><td><a href="#woods924">Dell OptiPlex 7090</a></td><td>办公机 · Windows 11 10.0.26200</td><td class="num">x86_64</td><td class="num">199.29 ms</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+
+    <section class="machine" id="m5">
+      <header class="machine-head">
+        <div>
+          <h2>Apple M5</h2>
+          <p>MacBook · macOS 26.6.2 · <code>arm64</code></p>
+        </div>
+        <div class="probe-time"><small>probe</small><b>3.43 ms</b></div>
+      </header>
+      <div class="machine-body">
+        <dl class="facts"><div><dt>CPU</dt><dd>Apple M5</dd></div>
+<div><dt>核心</dt><dd>10 核（4 性能 + 6 能效）</dd></div>
+<div><dt>频率</dt><dd>4.610 GHz~</dd></div>
+<div><dt>缓存</dt><dd>L1i 1.5 MiB · L1d 896 KiB · L2 22.0 MiB · 行 128 B</dd></div>
+<div><dt>内存</dt><dd>16.0 GiB 统一内存 · 带宽 153.0 GB/s~</dd></div>
+<div><dt>磁盘</dt><dd>87.9 GiB 可用 / 460.4 GiB · ssd</dd></div>
+<div><dt>GPU</dt><dd>8 GPU 核 · AGXMetalG17G · 1.620 GHz~</dd></div>
+<div><dt>显存</dt><dd>16.0 GiB 统一内存（不是独立显存）</dd></div>
+<div><dt>GPU 算力</dt><dd>FP32 3.318 TF~ · FP16 3.318 TF~</dd></div>
+<div><dt>NPU</dt><dd>Apple Neural Engine · 16 核 · 40.00 TOPS~</dd></div>
+<div><dt>CPU 峰值</dt><dd>0.878 TFLOPS~（NEON）</dd></div>
+<div><dt>加速栈</dt><dd>Metal（运行时）· OpenCL（运行时）· 无 CUDA</dd></div></dl>
+        <div class="machine-side">
+          <div class="deploy-box"><h3>部署推导（derive，不是实测）</h3><dl class="facts small"><div><dt>推理容量</dt><dd>~33b int4 · ~16b int8 · ~8.2b fp16</dd></div>
+<div><dt>训练容量</dt><dd>~1.0b（16 B/param，Adam，不含激活）</dd></div>
+<div><dt>精度单元</dt><dd>fp16（来自硬件能力位）</dd></div>
+<div><dt>并行</dt><dd>单 GPU，路径上没有跨设备链路</dd></div>
+<div><dt>Roofline</dt><dd>22 FLOP/byte —— 低于此值的算子受带宽限制</dd></div></dl></div>
+          
+      <figure class="shot-figure">
+        <button class="shot" data-full="assets/macos-m5.png"><img src="assets/macos-m5.png" alt="devinfo on Apple M5" loading="lazy"></button>
+        <figcaption>真实输出渲染 · 点击放大</figcaption>
+      </figure>
+        </div>
+      </div>
+      <p class="machine-note">统一内存是关键：16 GiB 既是系统内存也是显存，所以容量按统一池算一次，不做加总。</p>
+      <details class="raw">
+        <summary>原始输出（32 行，逐字节来自捕获文件）</summary>
+        <pre>devinfo - 3.43 ms  (fast)
+macos 26.6.2 | arm64 | native
+------------------------------------------------------------------
+CPU  Apple M5
+     10 cores (4P + 6E)            clock 4.610 GHz~  arm64
+     L1i 1.5 MiB  L1d 896 KiB  L2 22.0 MiB  line 128B
+     RAM 16.0 GiB  bw 153.0 GB/s~
+     disk 87.9 GiB free of 460.4 GiB  ssd  /
+     peak FP32 0.878 TFLOPS~
+     isa NEON FP16 AES PMULL SHA1 SHA256 SHA512 SHA3 CRC32 DotProd I8MM BF16
+          EBF16 FHM FCMA JSCVT RDM LSE LSE2 LRCPC LRCPC2 SME SME2 PAuth SB
+          HBC CSSC AFP CSV2 CSV3
+GPU0 Apple M5
+     8 GPU core(s)  AGXMetalG17G
+     unified 16.0 GiB  clock 1.620 GHz~  bw 153.0 GB/s~
+     peak FP32 3.318 TF~  FP16 3.318 TF~
+NPU0 Apple Neural Engine (ANE)  16 cores  40.00 TOPS~
+------------------------------------------------------------------
+accelerators
+     opencl                      runtime
+     metal                       runtime
+     -- not present: cuda --
+
+deploy (derived from the measurements above, not measured)
+     memory 16.0 GiB of unified memory shared with the GPU -&gt; inference ~33b
+       params int4, ~16b int8, ~8.2b fp16; training ~1.0b (16 B/param, Adam, no
+       activations)
+     precision vector units: fp16  (from the hardware&#x27;s own capability bits)
+     parallel single GPU, no cross-device link in the path
+     ridge point 22 FLOP/byte (3.3 TFLOPS / 153 GB/s): kernels below it are
+       bandwidth-bound
+     ~ = estimated from chip spec table, not read from hardware</pre>
+      </details>
+    </section>
+
+    <section class="machine" id="4090">
+      <header class="machine-head">
+        <div>
+          <h2>2× EPYC 7402 + 8× RTX 4090</h2>
+          <p>训练服务器 · Ubuntu 22.04 · <code>x86_64</code></p>
+        </div>
+        <div class="probe-time"><small>probe</small><b>142.39 ms</b></div>
+      </header>
+      <div class="machine-body">
+        <dl class="facts"><div><dt>CPU</dt><dd>AMD EPYC 7402 24-Core ×2</dd></div>
+<div><dt>核心</dt><dd>48 核 / 96 线程</dd></div>
+<div><dt>频率</dt><dd>2.800 GHz（读自硬件，非估算）</dd></div>
+<div><dt>缓存</dt><dd>L1i 1.5 MiB · L1d 1.5 MiB · L2 24.0 MiB · L3 256.0 MiB</dd></div>
+<div><dt>内存</dt><dd>501.3 GiB · NUMA 8 节点 × 12 核</dd></div>
+<div><dt>磁盘</dt><dd>39.0 GiB 可用 / 873.7 GiB · ssd</dd></div>
+<div><dt>网络</dt><dd>25.00 Gb/s · ens8f0np0 · rdma</dd></div>
+<div><dt>GPU</dt><dd>8 × RTX 4090 · 128 SM · 512 Tensor Core · sm_8.9</dd></div>
+<div><dt>显存</dt><dd>23.5 GiB × 8 = 186.6 GiB · 2.520 GHz · gen4 x16</dd></div>
+<div><dt>带宽</dt><dd>1008.1 GB/s 每卡</dd></div>
+<div><dt>GPU 算力</dt><dd>FP32 82.58 TF~ · FP16/BF16 330.3 TF~ · INT8/FP8 660.6 TOPS~</dd></div>
+<div><dt>CPU 峰值</dt><dd>4.301 TFLOPS~（AVX2）</dd></div>
+<div><dt>加速栈</dt><dd>CUDA 13.0 · NVML 580.119.02 · Vulkan · OpenCL</dd></div></dl>
+        <div class="machine-side">
+          <div class="deploy-box"><h3>部署推导（derive，不是实测）</h3><dl class="facts small"><div><dt>推理容量</dt><dd>~382b int4 · ~191b int8 · ~96b fp16（8 卡合计）</dd></div>
+<div><dt>训练容量</dt><dd>~12b（16 B/param，Adam，不含激活）</dd></div>
+<div><dt>精度单元</dt><dd>tensor cores：fp8 · bf16 · fp16 · int8</dd></div>
+<div><dt>并行</dt><dd>8 卡全部 x16：tensor parallel 可在 PCIe 内完成</dd></div>
+<div><dt>Roofline</dt><dd>82 FLOP/byte（82.6 TFLOPS / 1008 GB/s）</dd></div>
+<div><dt>磁盘告警</dt><dd>仅 39 GiB 可用，而 stage 一个半精度 checkpoint 约需 186.6 GiB</dd></div></dl></div>
+          
+      <figure class="shot-figure">
+        <button class="shot" data-full="assets/linux-8x4090.png"><img src="assets/linux-8x4090.png" alt="devinfo on 2× EPYC 7402 + 8× RTX 4090" loading="lazy"></button>
+        <figcaption>真实输出渲染 · 点击放大</figcaption>
+      </figure>
+        </div>
+      </div>
+      <p class="machine-note">8 张同型号卡被识别为一个可合并的内存池；这也是 probe 最慢的一台，因为 cuInit 要初始化 8 个设备。</p>
+      <details class="raw">
+        <summary>原始输出（73 行，逐字节来自捕获文件）</summary>
+        <pre>devinfo - 142.39 ms  (fast)
+linux Ubuntu 22.04.5 LTS | x86_64 | native
+------------------------------------------------------------------
+CPU  AMD EPYC 7402 24-Core Processor
+     48 cores / 96 threads         clock 2.800 GHz  x86_64
+     L1i 1.5 MiB  L1d 1.5 MiB  L2 24.0 MiB  L3 256.0 MiB  line 64B
+     RAM 501.3 GiB
+     numa 8 nodes: 12+12+12+12+12+12+12+12 cores
+     disk 39.0 GiB free of 873.7 GiB  ssd  /
+     net 25.00 Gb/s ens8f0np0  rdma
+     peak FP32 4.301 TFLOPS~
+     isa SSE2 SSE4.1 SSE4.2 POPCNT AVX AVX2 FMA F16C BMI1 BMI2 AES SHA
+GPU0 NVIDIA GeForce RTX 4090
+     0000:01:00.0  128 SM(s)  512 Tensor Cores  sm_8.9
+     vram 23.5 GiB  clock 2.520 GHz  pcie gen4 x16  bw 1008.1 GB/s
+     peak FP32 82.58 TF~  FP16 330.3 TF~  BF16 330.3 TF~  INT8 660.6 TOPS~
+          FP8 660.6 TF~  FP16-sparse 660.6 TF~
+GPU1 NVIDIA GeForce RTX 4090
+     0000:23:00.0  128 SM(s)  512 Tensor Cores  sm_8.9
+     vram 23.5 GiB  clock 2.520 GHz  pcie gen4 x16  bw 1008.1 GB/s
+     peak FP32 82.58 TF~  FP16 330.3 TF~  BF16 330.3 TF~  INT8 660.6 TOPS~
+          FP8 660.6 TF~  FP16-sparse 660.6 TF~
+GPU2 NVIDIA GeForce RTX 4090
+     0000:41:00.0  128 SM(s)  512 Tensor Cores  sm_8.9
+     vram 23.5 GiB  clock 2.520 GHz  pcie gen4 x16  bw 1008.1 GB/s
+     peak FP32 82.58 TF~  FP16 330.3 TF~  BF16 330.3 TF~  INT8 660.6 TOPS~
+          FP8 660.6 TF~  FP16-sparse 660.6 TF~
+GPU3 NVIDIA GeForce RTX 4090
+     0000:61:00.0  128 SM(s)  512 Tensor Cores  sm_8.9
+     vram 23.5 GiB  clock 2.520 GHz  pcie gen4 x16  bw 1008.1 GB/s
+     peak FP32 82.58 TF~  FP16 330.3 TF~  BF16 330.3 TF~  INT8 660.6 TOPS~
+          FP8 660.6 TF~  FP16-sparse 660.6 TF~
+GPU4 NVIDIA GeForce RTX 4090
+     0000:81:00.0  128 SM(s)  512 Tensor Cores  sm_8.9
+     vram 23.5 GiB  clock 2.520 GHz  pcie gen4 x16  bw 1008.1 GB/s
+     peak FP32 82.58 TF~  FP16 330.3 TF~  BF16 330.3 TF~  INT8 660.6 TOPS~
+          FP8 660.6 TF~  FP16-sparse 660.6 TF~
+GPU5 NVIDIA GeForce RTX 4090
+     0000:a1:00.0  128 SM(s)  512 Tensor Cores  sm_8.9
+     vram 23.5 GiB  clock 2.520 GHz  pcie gen4 x16  bw 1008.1 GB/s
+     peak FP32 82.58 TF~  FP16 330.3 TF~  BF16 330.3 TF~  INT8 660.6 TOPS~
+          FP8 660.6 TF~  FP16-sparse 660.6 TF~
+GPU6 NVIDIA GeForce RTX 4090
+     0000:c1:00.0  128 SM(s)  512 Tensor Cores  sm_8.9
+     vram 22.0 GiB  clock 2.520 GHz  pcie gen4 x16  bw 1008.1 GB/s
+     peak FP32 82.58 TF~  FP16 330.3 TF~  BF16 330.3 TF~  INT8 660.6 TOPS~
+          FP8 660.6 TF~  FP16-sparse 660.6 TF~
+GPU7 NVIDIA GeForce RTX 4090
+     0000:e1:00.0  128 SM(s)  512 Tensor Cores  sm_8.9
+     vram 23.5 GiB  clock 2.520 GHz  pcie gen4 x16  bw 1008.1 GB/s
+     peak FP32 82.58 TF~  FP16 330.3 TF~  BF16 330.3 TF~  INT8 660.6 TOPS~
+          FP8 660.6 TF~  FP16-sparse 660.6 TF~
+NPU  none detected
+------------------------------------------------------------------
+accelerators
+     cuda          13.0          driver
+     cuda_runtime  13.0          runtime
+     nvml          580.119.02    lib
+     vulkan                      runtime
+     opencl                      runtime
+     cuda_toolkit  13.0          toolkit
+
+deploy (derived from the measurements above, not measured)
+     memory 186.6 GiB across 8 identical GPUs -&gt; inference ~382b params int4,
+       ~191b int8, ~96b fp16; training ~12b (16 B/param, Adam, no activations)
+     precision tensor cores: fp8 bf16 fp16 int8  (from the hardware&#x27;s own
+       capability bits)
+     parallel 8 GPUs, all x16: tensor parallel fits within PCIe
+     ridge point 82 FLOP/byte (82.6 TFLOPS / 1008 GB/s): kernels below it are
+       bandwidth-bound
+     disk 39.0 GiB free vs 186.6 GiB of memory: a half-precision checkpoint needs
+       about 186.6 GiB to stage, so space is tight
+     ~ = estimated from chip spec table, not read from hardware</pre>
+      </details>
+    </section>
+
+    <section class="machine" id="orin">
+      <header class="machine-head">
+        <div>
+          <h2>Jetson AGX Orin 64GB</h2>
+          <p>边缘设备 · L4T R36.4.7 · Ubuntu 22.04 · <code>aarch64</code></p>
+        </div>
+        <div class="probe-time"><small>probe</small><b>29.65 ms</b></div>
+      </header>
+      <div class="machine-body">
+        <dl class="facts"><div><dt>CPU</dt><dd>ARMv8 Processor rev 1 (v8l)</dd></div>
+<div><dt>核心</dt><dd>12 核</dd></div>
+<div><dt>频率</dt><dd>2.202 GHz</dd></div>
+<div><dt>缓存</dt><dd>L1i 768 KiB · L1d 768 KiB · L2 3.0 MiB · L3 6.0 MiB</dd></div>
+<div><dt>内存</dt><dd>61.4 GiB 统一内存（与 GPU 共享）</dd></div>
+<div><dt>磁盘</dt><dd>12.1 GiB 可用 / 274.5 GiB · nvme</dd></div>
+<div><dt>GPU</dt><dd>Orin · 16 SM · 64 Tensor Core · sm_8.7 · 1.300 GHz</dd></div>
+<div><dt>显存</dt><dd>61.4 GiB 统一内存（由 CUDA 的 integrated 属性判定）</dd></div>
+<div><dt>GPU 算力</dt><dd>FP32 5.325 TF~ · FP16/BF16 10.65 TF~ · INT8 21.30 TOPS~</dd></div>
+<div><dt>NPU</dt><dd>未检测到（Orin 的 DLA 不走 CUDA 接口，不猜）</dd></div>
+<div><dt>CPU 峰值</dt><dd>0.423 TFLOPS~（NEON）</dd></div>
+<div><dt>加速栈</dt><dd>CUDA 12.6 · cuDNN 9.20 · TensorRT 10.7 · PyTorch 2.5.0 · Vulkan · OpenCL</dd></div></dl>
+        <div class="machine-side">
+          <div class="deploy-box"><h3>部署推导（derive，不是实测）</h3><dl class="facts small"><div><dt>推理容量</dt><dd>~126b int4 · ~63b int8 · ~31b fp16</dd></div>
+<div><dt>训练容量</dt><dd>~3.9b（16 B/param，Adam，不含激活）</dd></div>
+<div><dt>精度单元</dt><dd>tensor cores：bf16 · fp16 · int8</dd></div>
+<div><dt>并行</dt><dd>单 GPU</dd></div>
+<div><dt>Roofline</dt><dd>不给 —— 见下</dd></div></dl></div>
+          
+      <figure class="shot-figure">
+        <button class="shot" data-full="assets/jetson-orin.png"><img src="assets/jetson-orin.png" alt="devinfo on Jetson AGX Orin 64GB" loading="lazy"></button>
+        <figcaption>真实输出渲染 · 点击放大</figcaption>
+      </figure>
+        </div>
+      </div>
+      <p class="machine-note">这台机器最能说明设计原则：LPDDR5 的统一内存没有可信的带宽读法，于是 deploy 段直接写 “ridge point unavailable: no honest bandwidth figure for this GPU (run --bench)”，而不是从规格表抄一个数字。</p>
+      <details class="raw">
+        <summary>原始输出（40 行，逐字节来自捕获文件）</summary>
+        <pre>devinfo - 29.65 ms  (fast)
+linux Ubuntu 22.04.5 LTS | aarch64 | native
+------------------------------------------------------------------
+CPU  ARMv8 Processor rev 1 (v8l)
+     12 cores                      clock 2.202 GHz  aarch64
+     L1i 768 KiB  L1d 768 KiB  L2 3.0 MiB  L3 6.0 MiB  line 64B
+     RAM 61.4 GiB
+     disk 12.1 GiB free of 274.5 GiB  nvme  /
+     peak FP32 0.423 TFLOPS~
+     isa NEON FP FP16 DotProd PMULL SHA1 SHA256 CRC32 LSE RDM LRCPC DCPOP
+GPU0 Orin
+     16 SM(s)  64 Tensor Cores  sm_8.7
+     unified 61.4 GiB  clock 1.300 GHz
+     peak FP32 5.325 TF~  FP16 10.65 TF~  BF16 10.65 TF~  INT8 21.30 TOPS~
+          FP16-sparse 21.30 TF~
+NPU  none detected
+------------------------------------------------------------------
+accelerators
+     cuda          12.6          driver
+     cuda_runtime  12.6          runtime
+     nvml          540.4.0       lib
+     cudnn         9.20          lib
+     tensorrt      10.7          lib
+     vulkan                      runtime
+     opencl                      runtime
+     cuda_toolkit  12.6          toolkit
+     pytorch       2.5.0a0+872d972e41.nv24.08 framework
+
+deploy (derived from the measurements above, not measured)
+     memory 61.4 GiB of unified memory shared with the GPU -&gt; inference ~126b
+       params int4, ~63b int8, ~31b fp16; training ~3.9b (16 B/param, Adam, no
+       activations)
+     precision tensor cores: bf16 fp16 int8  (from the hardware&#x27;s own capability
+       bits)
+     parallel single GPU, no cross-device link in the path
+     ridge point unavailable: no honest bandwidth figure for this GPU (run
+       --bench)
+     disk 12.1 GiB free vs 61.4 GiB of memory: a half-precision checkpoint needs
+       about 61.4 GiB to stage, so space is tight
+     ~ = estimated from chip spec table, not read from hardware</pre>
+      </details>
+    </section>
+
+    <section class="machine" id="woods924">
+      <header class="machine-head">
+        <div>
+          <h2>Dell OptiPlex 7090</h2>
+          <p>办公机 · Windows 11 10.0.26200 · <code>x86_64</code></p>
+        </div>
+        <div class="probe-time"><small>probe</small><b>199.29 ms</b></div>
+      </header>
+      <div class="machine-body">
+        <dl class="facts"><div><dt>CPU</dt><dd>Intel Core i7-11700</dd></div>
+<div><dt>核心</dt><dd>8 核 / 16 线程</dd></div>
+<div><dt>内存</dt><dd>63.7 GiB · DDR4 2667 MT/s · 4 DIMMs（SMBIOS）</dd></div>
+<div><dt>GPU</dt><dd>Radeon RX 640 (1002:6987) 4.0 GiB</dd></div>
+<div><dt>GPU</dt><dd>Intel UHD 750 (8086:4c8a) 128 MiB 显存切分</dd></div>
+<div><dt>磁盘</dt><dd>C: 14.7 GiB 可用 / 237.7 GiB</dd></div>
+<div><dt>加速栈</dt><dd>AMD HIP 5.2（amdhip64.dll）· 无 CUDA</dd></div></dl>
+        <div class="machine-side">
+          <div class="deploy-box"><h3>部署推导（derive，不是实测）</h3><dl class="facts small"><div><dt>异构 GPU</dt><dd>两张不同型号的卡不能合并成内存池，各自跑各自的作业</dd></div></dl></div>
+
+      <figure class="shot-figure">
+        <button class="shot" data-full="assets/windows-i7.png"><img src="assets/windows-i7.png" alt="devinfo on the Dell OptiPlex 7090" loading="lazy"></button>
+        <figcaption>第一轮输出渲染 · 修复前 · 点击放大</figcaption>
+      </figure>
+        </div>
+      </div>
+      <p class="machine-note">这台机器跑出了第一轮实机测试里的六个问题，全部已修：SSE4.2 漏报、CPU 峰值只有一半、异构显存被错误加总、训练容量显示 ~0b、异构并行措辞、HIP 被误标成 ROCm 版本号。修复后尚未在这台机器上复测——这一格留空，不填推测值。</p>
+    </section>
+
+  <section class="section">
+    <div class="section-head">
+      <span class="eyebrow">LIMITS</span>
+      <h2 data-zh="已知的边界" data-en="Known limits"></h2>
+      <p data-zh="这些不是待办事项，是这台程序目前明确做不到、或者做不全的地方。列出来是为了让人知道哪一列可以信、哪一列要自己复核。" data-en="These are not a to-do list; they are places where the program currently cannot read, or cannot read fully. They are listed so you know which column to trust and which to double-check."></p>
+    </div>
+    <div class="table-wrap">
+      <table class="data">
+        <thead><tr>
+          <th data-zh="项" data-en="Item"></th>
+          <th data-zh="现状" data-en="Status"></th>
+          <th data-zh="原因" data-en="Why"></th>
+        </tr></thead>
+        <tbody>
+          <tr>
+            <td data-zh="Linux 内存速率" data-en="Linux memory speed"></td>
+            <td class="no" data-zh="非 root 时缺失" data-en="missing without root"></td>
+            <td data-zh="SMBIOS 表在 /sys/firmware/dmi/tables/DMI，只有 root 可读；读不到就不报" data-en="The SMBIOS table lives in /sys/firmware/dmi/tables/DMI and is root-only; unreadable means unreported"></td>
+          </tr>
+          <tr>
+            <td data-zh="Windows 内存速率" data-en="Windows memory speed"></td>
+            <td class="ok" data-zh="有（SMBIOS）" data-en="yes (SMBIOS)"></td>
+            <td data-zh="GetSystemFirmwareTable 不需要管理员权限，所以 Windows 反而比 Linux 全" data-en="GetSystemFirmwareTable needs no admin rights, so Windows is actually more complete than Linux here"></td>
+          </tr>
+          <tr>
+            <td data-zh="Windows 睿频" data-en="Windows turbo clock"></td>
+            <td class="no" data-zh="只有基频" data-en="base clock only"></td>
+            <td data-zh="CallNtPowerInformation 在该机器上只返回基频；不拿规格表去补" data-en="CallNtPowerInformation returned only the base clock on that machine; no spec-table top-up"></td>
+          </tr>
+          <tr>
+            <td data-zh="非 NVIDIA 的 PCIe 链路" data-en="PCIe on non-NVIDIA"></td>
+            <td class="no" data-zh="未报" data-en="not reported"></td>
+            <td data-zh="只有 NVML 能可靠给出链路代数与宽度；其他走猜测不如空着" data-en="Only NVML reliably reports link generation and width; a guess is worse than a blank"></td>
+          </tr>
+          <tr>
+            <td data-zh="集成显卡带宽" data-en="Integrated GPU bandwidth"></td>
+            <td class="no" data-zh="有意不给" data-en="deliberately withheld"></td>
+            <td data-zh="核显与内存共享总线，没有独立的“显存带宽”这一说" data-en="An iGPU shares the memory bus; there is no separate VRAM bandwidth to report"></td>
+          </tr>
+          <tr>
+            <td data-zh="Windows 网络 / 磁盘介质" data-en="Windows network / disk media"></td>
+            <td class="no" data-zh="未实现" data-en="not implemented"></td>
+            <td data-zh="需要 SetupAPI 与 IOCTL 组合，尚未做；宁缺勿假" data-en="Needs SetupAPI plus IOCTL work that is not done yet; blank beats wrong"></td>
+          </tr>
+          <tr>
+            <td data-zh="Windows 复测" data-en="Windows re-test"></td>
+            <td class="no" data-zh="待复测" data-en="pending"></td>
+            <td data-zh="六个问题已修复并重新构建，但那台机器暂时连不上，所以本页不给出修复后的 Windows 数字" data-en="Six issues were fixed and the binaries rebuilt, but that machine is currently unreachable, so no post-fix Windows numbers appear on this page"></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="final-cta">
+    <div>
+      <span class="eyebrow">BACK</span>
+      <h2 data-zh="回到首页看能读什么" data-en="Back to what it reads"></h2>
+      <p data-zh="这些数字全部来自同一个二进制。它在你自己的机器上只会做同样的事。" data-en="All of these numbers came from the same binary. On your machine it will do the same thing."></p>
+    </div>
+    <div class="cta-row">
+      <a class="btn primary" href="index.html" data-zh="返回首页" data-en="Back to home"></a>
+      <a class="btn" href="#top" data-zh="回到顶部" data-en="Top"></a>
+    </div>
+  </section>
+</main>
+
+<footer class="footer wrap">
+  <div class="brand">
+    <span class="brand-mark small">di</span>
+    <span><b>devinfo</b><br><small style="color:var(--dim);font-family:var(--mono);font-size:10.5px">C++17 · zero dependencies</small></span>
+  </div>
+  <p><span data-zh="Apache-2.0 许可证 · 2026" data-en="Apache-2.0 License · 2026"></span> · <a href="index.html" data-zh="首页" data-en="Home"></a></p>
+</footer>
+
+<div class="lightbox" id="lightbox">
+  <button aria-label="Close">✕</button>
+  <img id="lightbox-img" src="" alt="Screenshot">
+</div>
+
+<script src="main.js"></script>
+</body>
+</html>
