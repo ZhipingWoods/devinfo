@@ -43,7 +43,7 @@ python3 -m http.server 19090 --directory site
 # open http://127.0.0.1:19090/
 ```
 
-Nothing to build. `.github/workflows/pages.yml` publishes it to GitHub Pages on every change to `site/` - point the repository's Pages Source at **GitHub Actions** and it is live.
+Nothing to build. The same files also sit on the `gh-pages` branch (the site at the branch root); point **Settings -> Pages** at that branch and it is live.
 
 ## 📝 What it is
 

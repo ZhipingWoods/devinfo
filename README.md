@@ -44,7 +44,7 @@ python3 -m http.server 19090 --directory site
 # 打开 http://127.0.0.1:19090/
 ```
 
-纯静态，没有构建步骤。`.github/workflows/pages.yml` 会在 `site/` 变更时把它发布到 GitHub Pages——仓库设置里把 Pages 的 Source 指向 **GitHub Actions** 即可生效。
+纯静态，没有构建步骤。同样的内容也在 `gh-pages` 分支上（站点在分支根目录），在仓库 **Settings → Pages** 里把 Source 设为该分支即可对外访问。
 
 ## 📝 简介
 
