@@ -43,7 +43,7 @@ Built for each platform, named so the filename alone answers "will this run here
 | **Linux** | x86_64 | [devinfo-1.0.0-linux-x86_64.tar.gz](https://github.com/ZhipingWoods/devinfo/raw/main/release/devinfo-1.0.0-linux-x86_64.tar.gz) | `devinfo` + `libdevinfo.so` |
 | **Linux** | aarch64 | [devinfo-1.0.0-linux-aarch64.tar.gz](https://github.com/ZhipingWoods/devinfo/raw/main/release/devinfo-1.0.0-linux-aarch64.tar.gz) | `devinfo` + `libdevinfo.so` |
 
-Unzip, run `./devinfo` (`devinfo.exe` on Windows). Every package carries a short `README.txt`. Binaries are also on the [v1.0.0 release page](https://github.com/ZhipingWoods/devinfo/releases/tag/v1.0.0).
+Unzip, run `./devinfo` (`devinfo.exe` on Windows). Every package carries a short `README.txt`. The same files live in [`release/`](release/), so those links do not depend on a release having been published.
 
 ## 📋 Examples
 

@@ -43,7 +43,7 @@
 | **Linux** | x86_64 | [devinfo-1.0.0-linux-x86_64.tar.gz](https://github.com/ZhipingWoods/devinfo/raw/main/release/devinfo-1.0.0-linux-x86_64.tar.gz) | `devinfo` + `libdevinfo.so` |
 | **Linux** | aarch64 | [devinfo-1.0.0-linux-aarch64.tar.gz](https://github.com/ZhipingWoods/devinfo/raw/main/release/devinfo-1.0.0-linux-aarch64.tar.gz) | `devinfo` + `libdevinfo.so` |
 
-解压，直接跑 `./devinfo`（Windows 上是 `devinfo.exe`）。每个包里都有简短的 `README.txt`。二进制同时挂在 [v1.0.0 发布页](https://github.com/ZhipingWoods/devinfo/releases/tag/v1.0.0)。
+解压，直接跑 `./devinfo`（Windows 上是 `devinfo.exe`）。每个包里都有简短的 `README.txt`。同样的文件也在 [`release/`](release/)，所以上面这些链接不依赖发布页是否已经发布。
 
 ## 📋 例子
 
