@@ -14,9 +14,12 @@
   <img src="https://img.shields.io/badge/subprocess_calls-0-brightgreen" alt="no subprocess">
   <img src="https://img.shields.io/badge/Linux%20%7C%20macOS%20%7C%20Windows-4f9dff" alt="Linux macOS Windows">
   <img src="https://img.shields.io/badge/License-Apache_2.0-blue" alt="Apache-2.0">
+  <img src="https://img.shields.io/badge/PRs-welcome-brightgreen" alt="PRs welcome">
 </p>
 
-> Drop one statically linked C++17 binary onto a machine nobody administered, run it once, and it reports how many cores and how much cache the CPU has, which ISA extensions it supports, how many SMs and tensor cores the GPU has, its architecture, VRAM and bandwidth, the NPU throughput, which acceleration stacks are installed, what PCIe generation is on the link, and **how large a model this box can hold**.
+> I keep ending up in front of machines nobody documented: a borrowed GPU box, an edge module on someone else's desk, a container that has 96 cores but only lets me use 8. Answering "what is actually in here" used to take three different tools, two of which wanted root.
+>
+> So I wrote one binary. I drop it on the machine, run it once, and it tells me how many cores and how much cache the CPU has, which ISA extensions it supports, how many SMs and tensor cores the GPU has, its architecture, VRAM and bandwidth, the NPU throughput, which acceleration stacks are installed, what PCIe generation is on the link, and **how large a model the box can actually hold**.
 
 ## 🖥️ Three platforms, one binary
 
@@ -25,28 +28,26 @@
 <td width="33%" valign="top">
 <p align="center"><b>macOS</b><br><sub>11+ &middot; Apple Silicon and Intel &middot; one universal binary</sub></p>
 <p align="center"><a href="https://zhipingwoods.github.io/devinfo/#output"><img src="site/assets/macos-m5.png" width="340" alt="devinfo on an Apple M5"></a></p>
-<p><sub><code>sysctl</code> and IOKit read topology, caches and bandwidth; Metal reads the GPU; the ANE core count comes from the OS. Nothing to install.</sub></p>
+<p><sub>I read topology, caches and bandwidth through `sysctl` and IOKit, the GPU through Metal, and the ANE core count from the OS. Nothing to install.</sub></p>
 </td>
 <td width="33%" valign="top">
 <p align="center"><b>Linux</b><br><sub>x86_64 and aarch64 &middot; containers included</sub></p>
 <p align="center"><a href="https://zhipingwoods.github.io/devinfo/#output"><img src="site/assets/linux-8x4090.png" width="340" alt="devinfo on 8x RTX 4090"></a></p>
-<p><sub>sysfs and procfs, NUMA, <code>cpufreq</code>, cgroup limits; the CUDA driver API through <code>dlopen</code>; PCIe through sysfs. No root, nothing to install.</sub></p>
+<p><sub>sysfs and procfs, NUMA, `cpufreq`, cgroup limits; the CUDA driver API through `dlopen`; PCIe through sysfs. No root, nothing to install.</sub></p>
 </td>
 <td width="33%" valign="top">
 <p align="center"><b>Windows</b><br><sub>10 and 11 &middot; x64 and x86</sub></p>
 <p align="center"><a href="https://zhipingwoods.github.io/devinfo/#output"><img src="site/assets/windows-i7.png" width="340" alt="devinfo on an i7-11700"></a></p>
-<p><sub>CPUID for cores and ISA, DXGI for adapters and VRAM, SetupAPI for NPUs, NVML for NVIDIA detail. One <code>.exe</code>, no runtime, no installer.</sub></p>
+<p><sub>CPUID for cores and ISA, DXGI for adapters and VRAM, SetupAPI for NPUs, NVML for NVIDIA detail. One `.exe`, no runtime, no installer.</sub></p>
 </td>
 </tr>
 </table>
 
-Same output, same JSON on all three: no per-platform build to pick, no subprocess, no WMI, no vendor SDK on the box, no admin rights. Domestic parts - Kunpeng, Phytium, Loongson, Zhaoxin - go down the same code paths, and a Jetson Orin is just another aarch64 Linux box.
-
-<sub>The Windows frame is the first round of testing on that machine, before the six fixes [results.html](https://zhipingwoods.github.io/devinfo/results.html) lists: it still labels `amdhip64.dll` as "rocm" and misses SSE4.2. That box has not been re-tested, so the frame is labelled rather than replaced.</sub>
+Same output, same JSON on all three: no per-platform build to pick, no subprocess, no WMI, no vendor SDK on the box, no admin rights. I route domestic parts - Kunpeng, Phytium, Loongson, Zhaoxin - down the same code paths; a Jetson Orin is just another aarch64 Linux box to me.
 
 ## ⬇️ Download
 
-Built for each platform, named so the filename alone answers "will this run here":
+I build one package per os-and-architecture pair, and I name them so the filename alone answers "will this run here":
 
 | Platform | Architecture | File | Contents |
 |---|---|---|---|
@@ -57,11 +58,11 @@ Built for each platform, named so the filename alone answers "will this run here
 | **Linux** | x86_64 | [devinfo-1.0.0-linux-x86_64.tar.gz](https://github.com/ZhipingWoods/devinfo/raw/main/release/devinfo-1.0.0-linux-x86_64.tar.gz) | `devinfo` + `libdevinfo.so` |
 | **Linux** | aarch64 | [devinfo-1.0.0-linux-aarch64.tar.gz](https://github.com/ZhipingWoods/devinfo/raw/main/release/devinfo-1.0.0-linux-aarch64.tar.gz) | `devinfo` + `libdevinfo.so` |
 
-Unzip, run `./devinfo` (`devinfo.exe` on Windows). Every package carries a short `README.txt`. The same files live in [`release/`](release/), so those links do not depend on a release having been published.
+Unzip and run `./devinfo` (`devinfo.exe` on Windows); every package carries a short `README.txt`. The same files live in [`release/`](release/) if you would rather build from source.
 
 ## 📋 Examples
 
-A Mac, an 8-GPU Linux box, and an edge module. Real output, copied from the runs in [results.html](https://zhipingwoods.github.io/devinfo/results.html):
+A laptop, an 8-GPU Linux box, and an edge module. This is real output, copied from the runs in [results.html](https://zhipingwoods.github.io/devinfo/results.html):
 
 **Apple M5 · macOS 26.6 · arm64** — 3.4 ms
 
@@ -82,7 +83,7 @@ deploy (derived from the measurements above, not measured)
      memory 16.0 GiB of unified memory shared with the GPU -> inference ~33b
 ```
 
-**2× EPYC 7402 + 8× RTX 4090 · Ubuntu 22.04 · x86_64** — 8 cards, each one read separately
+**2× EPYC 7402 + 8× RTX 4090 · Ubuntu 22.04 · x86_64** — eight cards, each one queried separately
 
 ```text
 GPU0 NVIDIA GeForce RTX 4090
@@ -95,7 +96,7 @@ GPU1 NVIDIA GeForce RTX 4090
      ...
 ```
 
-**Jetson AGX Orin 64GB · L4T R36.4 · aarch64** — reports the shared-memory model, not a fake VRAM figure
+**Jetson AGX Orin 64GB · L4T R36.4 · aarch64** — reports the shared-memory model instead of inventing a VRAM figure
 
 ```text
 GPU0 Orin
@@ -109,11 +110,45 @@ deploy (derived from the measurements above, not measured)
      memory 61.4 GiB of unified memory shared with the GPU -> inference ~126b
 ```
 
-Numbers marked `~` are derived from a chip spec table rather than read from the hardware; the JSON lists them in an `estimated` array. Nothing is filled in.
+Numbers marked `~` are derived from a chip spec table rather than read from the hardware; the JSON lists them in an `estimated` array. I never fill a number in.
+## 🗺️ To do — and where I could use your help
 
-## 📝 What it is
+This is a one-person project, and these are the things I know are missing. If any of them is your kind of problem, open an issue or send a PR - I would rather review a patch than write one more platform probe alone.
 
-devinfo answers the questions you must answer **before** deploying, and it only answers the ones it can actually read:
+- [ ] **A fresh Windows run.** The Windows frame above is from the first round of testing on that box; the six fixes it turned up are in, but I have not been back to that machine. Any Windows 10/11 output - a screenshot or the JSON - tells me more than another round of code reading.
+- [ ] **Windows network and disk media.** Needs SetupAPI plus a couple of IOCTLs; it is the last place where the three platforms still disagree.
+- [ ] **An MSVC build.** The Windows binaries I ship are cross-compiled with llvm-mingw. I would like to know it compiles under MSVC too, and to hear about the warnings if it does not.
+- [ ] **Signed binaries.** SmartScreen and Gatekeeper both warn on a downloaded copy today. Authenticode and notarization would fix that; I have no certificates to test with.
+- [ ] **More rows in the spec table.** Ascend 910B, Cambricon MLU, Biren, Hygon DCU: the code paths exist, but I have never had the hardware, so those cards report less than they could.
+- [ ] **An aarch64 Windows build**, and a packaged shortcut for the C ABI - a small PyPI wheel around the four symbols would make `pip install` the entire setup.
+- [ ] **Distribution.** `brew`, `winget` and `scoop` manifests. The binaries are already static; what is missing is packaging work.
+
+## 🤝 Contributing
+
+The project is deliberately small: no third-party dependencies, no subprocesses, no vendor SDK linked, one file per platform. A few rules keep it that way, and I enforce them at review rather than in CI:
+
+1. **A number must have a provenance.** If you add a probe, show in the same patch how the value is read. If it cannot be read, leave it out - do not "estimate" it into the table. `Num` in `include/devinfo_core.hpp` carries `has` and `estimated` for exactly this reason.
+2. **Do not spawn a process.** `nvidia-smi`, `lspci`, `wmic` and friends are out, including when it is "just one call".
+3. **Do not link a vendor SDK.** `dlopen` / `LoadLibrary` at run time, always. A machine without drivers must still print a report.
+4. **Do not create a device context** unless the platform forces it. `cuInit` already costs about 100 ms; a context costs more.
+
+To get started:
+
+```bash
+git clone https://github.com/ZhipingWoods/devinfo
+cd devinfo
+cmake -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build -j
+./build/devinfo --table
+```
+
+If you add a machine to the record, put the raw stdout under `assets/captures/` and run `tools/render_shots.py`. The screenshots and the results page are generated from those files, so the site cannot drift away from what the binary actually printed.
+
+A capture from an unusual machine is worth as much as a patch: a Kunpeng box, a Cambricon card, an old Xeon, a phone, anything I do not own.
+
+## 📝 What I wanted it to answer
+
+devinfo answers the questions I have to settle **before** deploying, and only the ones it can actually read:
 
 - Is this card **sm_89** or **sm_87**? Can it do FP8?
 - Is that **23.5 GiB of dedicated VRAM** or **61.4 GiB of unified memory**? The second one cannot be counted as VRAM.
@@ -128,7 +163,7 @@ Three exits: a table for humans (`--table`), JSON for programs (`--json`), and a
 
 ### 1. CPU and caches
 
-- Physical cores and threads, with performance/efficiency split (Apple Silicon, Intel 12th gen and later);
+- Physical cores and threads, with the performance/efficiency split (Apple Silicon, Intel 12th gen and later);
 - L1i / L1d / L2 / L3 and the cache line size;
 - Clocks: the measured value when readable, otherwise a spec-table figure marked `~`;
 - Full ISA bitmap: x86 from SSE2 / SSE4.1 / **SSE4.2** / AVX / AVX2 / AVX-512 / FMA / AES / SHA; ARM from NEON / FP16 / DotProd / I8MM / BF16 / SVE / SME / SME2;
@@ -143,11 +178,11 @@ Peak FP32 is **cores × GHz × flops-per-cycle**, where flops-per-cycle follows 
 - VRAM size, and whether it is **dedicated** or **unified** (decided by CUDA's `integrated` attribute, not guessed from the model name);
 - Memory clock, bus width, and the resulting bandwidth;
 - Per-precision peaks: FP32 / FP16 / BF16 / INT8 / FP8 / FP16-sparse, derived from the architecture's tensor core spec;
-- NPU: Apple ANE core count and TOPS, Ascend / Cambricon through the CANN loader.
+- NPU: Apple ANE core count and TOPS, Ascend and Cambricon through the CANN loader.
 
 ### 3. Acceleration stacks
 
-`dlopen` only -- never linked, never executed:
+`dlopen` only - never linked, never executed:
 
 | Stack | How |
 |---|---|
@@ -163,13 +198,13 @@ Every entry carries its **provenance**: `driver` / `runtime` / `lib` / `toolkit`
 ### 4. Bandwidth and links
 
 - VRAM bandwidth = bus width ÷ 8 × effective clock × 2 (GDDR double-pumped), dedicated memory only;
-- **PCIe reports maximum capability, not the idle-downclocked value** -- a parked 4090 drops to gen1, and reporting gen1 would be wrong;
+- **PCIe reports maximum capability, not the idle-downclocked value** - a parked 4090 drops to gen1, and reporting gen1 would be wrong;
 - `--bench` measures real memcpy bandwidth, replacing an estimate with a measurement;
 - The roofline knee is peak throughput ÷ bandwidth; kernels below it are bandwidth-bound.
 
 ### 5. Deployment derivation
 
-Conclusions derived from the measured memory, precision support and bandwidth -- labelled as derived, never as measured:
+Conclusions I derive from the measured memory, precision support and bandwidth - labelled as derived, never as measured:
 
 - Model capacity at `int4` / `int8` / `fp16`;
 - Training capacity (16 B/param, Adam state, no activations);
@@ -181,9 +216,11 @@ Conclusions derived from the measured memory, precision support and bandwidth --
 
 - cgroup v1 / v2: `cpu.max`, `memory.max`, `cpuset.cpus.effective`;
 - Windows job object CPU and memory limits;
-- Free disk space resolved through the real mount point, so an overlay `/` inside a container still maps correctly.
+- Free disk space resolved through the real mount point, so an overlay root inside a container still maps correctly.
 
 ## ⚡ Why it is fast
+
+I did not optimise this; I deleted the slow parts.
 
 | Rule | Consequence |
 |---|---|
@@ -205,13 +242,13 @@ The same binary, on four very different machines:
 | Jetson AGX Orin 64GB | aarch64 | 12 cores | 16 SM / 64 TC · sm_8.7 | 61.4 GiB unified | 29.65 ms |
 | Dell OptiPlex 7090 · Win11 | x86_64 | i7-11700 8C/16T | UHD 750 + RX 640 | 63.7 GiB | 199 ms |
 
-Full record, raw output per machine, and the known limits: [site/results.html](site/results.html).
+Full record, raw output per machine, and the known limits: [results.html](https://zhipingwoods.github.io/devinfo/results.html).
 
-The 8-GPU figure moves with machine load (117-163 ms observed): nearly all of it is `cuInit` bringing up 8 devices, which cannot be parallelised. The per-card queries can: 13-22 ms serially, about 3 ms across threads. The table quotes the run behind the capture file, not the best result.
+The 8-GPU figure moves with machine load (117-163 ms observed). Nearly all of it is `cuInit` bringing up 8 devices, which cannot be parallelised; the per-card queries can, 13-22 ms serially and about 3 ms across threads. The table quotes the run behind the capture file, not the best result I have seen.
 
 ## 🎯 No invention
 
-This is the hardest rule in the project, and the one most worth keeping.
+This is the rule I care about most, and the one I would ask you to hold me to.
 
 **If it cannot be read, it does not get a number.** Dressing up "could not read it" as "estimated" is worse than saying nothing: someone budgets VRAM with it and gets the wrong answer.
 
@@ -243,12 +280,12 @@ Artifacts:
 | `build/devinfo` (`devinfo.exe` on Windows) | CLI, statically linked |
 | `build/libdevinfo.so` / `.dylib` / `devinfo.dll` | the C ABI plugin |
 
-macOS builds a **universal binary** (`arm64 + x86_64`) by default; Windows builds for both 32-bit and 64-bit.
+macOS builds a **universal binary** (`arm64 + x86_64`) by default; Windows builds for both 32-bit and 64-bit. The cross-compilation toolchains I use live in [`cmake/`](cmake/).
 
 ### Run
 
 ```bash
-./build/devinfo              # terminal → table, pipe → JSON
+./build/devinfo              # terminal -> table, pipe -> JSON
 ./build/devinfo --table      # force the table
 ./build/devinfo --json       # force JSON
 ./build/devinfo --bench      # add a real memory bandwidth measurement
@@ -259,7 +296,7 @@ When double-clicked on Windows it writes `devinfo-report.txt` and `devinfo-repor
 
 ### C ABI
 
-Four exported symbols, header `include/devinfo.h`:
+Four exported symbols, header [`include/devinfo.h`](include/devinfo.h):
 
 ```c
 #define DEVINFO_ABI_VERSION 1u
@@ -293,9 +330,11 @@ for gpu in data["gpus"]:
     print(gpu["name"], gpu.get("vram_gib"), gpu.get("sm_count"))
 ```
 
-See `examples/ffi_c.c` and `examples/ffi_python.py`.
+See [`examples/ffi_c.c`](examples/ffi_c.c) and [`examples/ffi_python.py`](examples/ffi_python.py).
 
 ## 📊 Support matrix
+
+What each platform can read today. A dash means I have not implemented it there, and several of those dashes are in the to-do list above.
 
 | Item | Linux | macOS | Windows |
 |---|---|---|---|
@@ -326,26 +365,29 @@ See `examples/ffi_c.c` and `examples/ffi_python.py`.
 | `include/devinfo_core.hpp` | internal data model (`Num` with provenance) |
 | `site/` | static site and measured record |
 | `assets/captures/` | real stdout captures; screenshots and the results page are generated from them |
-| `tools/` | screenshot renderer, results-page generator |
-| `dist/` | prebuilt binaries per platform |
+| `tools/` | screenshot renderer, results-page generator, packaging |
+| `release/` | the six packaged downloads |
 
 ## 🔍 Known limits
 
-Not a to-do list -- places where the program currently cannot read, or cannot read fully. They are listed so you know which column to trust:
+Not a to-do list - that one is above. These are places where the program cannot read, or cannot read fully, so you know which column to trust:
 
 - **Linux memory speed needs root**: the SMBIOS table lives in `/sys/firmware/dmi/tables/DMI`, root-only;
-- **Windows reports base clock only**: `CallNtPowerInformation` did not return turbo on that machine;
+- **Windows reports base clock only**: `CallNtPowerInformation` did not return turbo on the machine I tested;
 - **PCIe on non-NVIDIA is not reported**: only NVML gives link generation and width reliably;
 - **No bandwidth for integrated GPUs**: the iGPU shares the memory bus;
-- **Windows network and disk media are not implemented**: needs SetupAPI plus IOCTL work;
-- **Windows re-test pending**: the six issues found in the first real Windows run (missing SSE4.2, halved CPU peak, heterogeneous VRAM summed, training capacity shown as `~0b`, poor heterogeneous-parallel wording, HIP mislabelled as a ROCm version) are all fixed, but that machine is currently unreachable, so the post-fix numbers are unverified.
+- **Windows network and disk media are not implemented**: needs SetupAPI plus IOCTL work.
 
 ## 📌 Status
 
-Verified on four real machines (Apple Silicon, dual EPYC with 8 GPUs, Jetson, an Intel desktop) and builds with zero warnings on every platform.
+It runs on four real machines - Apple Silicon, a dual EPYC box with 8 GPUs, a Jetson, and an Intel desktop - and builds with zero warnings on every platform I have a compiler for.
 
-Still unverified: an MSVC build (the Windows binaries are cross-compiled with llvm-mingw), and the Windows re-test above.
+Everything I know to be unfinished is in the to-do list above. I would rather leave it visible than describe it as done.
 
 ## 📄 License
 
 Apache License 2.0. The full text is in [LICENSE](LICENSE).
+
+---
+
+If this saved you one `nvidia-smi` and one `lscpu`, the most useful thing you can send back is a capture from a machine I have never touched.
