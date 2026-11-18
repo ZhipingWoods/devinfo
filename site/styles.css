@@ -268,6 +268,13 @@ table.data .no { color: var(--dim); }
 .path-list code { color: var(--accent); font-size: 11.5px; }
 .path-list span { grid-column: 2; color: var(--muted); font-size: 12px; }
 
+/* Download links: the page should be enough on its own to leave with a binary. */
+.dl-row { display: flex; flex-wrap: wrap; align-items: center; gap: 9px; margin-top: 16px; }
+.dl-label { color: var(--muted); font-size: 12px; }
+.dl-row a { padding: 5px 11px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--accent); font-size: 11.5px; text-decoration: none; transition: border-color .15s, background .15s; }
+.dl-row a:hover { border-color: var(--accent); background: var(--surface-2, var(--surface)); }
+.dl-row a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
 /* ---------- final ---------- */
 .final-cta { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 26px; margin: 72px auto 0; padding: 34px 36px; border: 1px solid var(--line-strong); border-radius: 20px; background: linear-gradient(135deg, var(--surface), var(--bg)); }
 .final-cta h2 { margin: 8px 0 6px; font-size: clamp(21px, 2.4vw, 28px); letter-spacing: -0.03em; }
