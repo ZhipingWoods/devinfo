@@ -24,17 +24,17 @@
 <tr>
 <td width="33%" valign="top">
 <p align="center"><b>macOS</b><br><sub>11+ &middot; Apple Silicon 与 Intel &middot; 同一个 universal 二进制</sub></p>
-<p align="center"><img src="site/assets/macos-m5.png" width="340" alt="devinfo 在 Apple M5 上"></p>
+<p align="center"><a href="https://zhipingwoods.github.io/devinfo/#output"><img src="site/assets/macos-m5.png" width="340" alt="devinfo 在 Apple M5 上"></a></p>
 <p><sub><code>sysctl</code> 与 IOKit 读拓扑、缓存和带宽，Metal 读 GPU，ANE 核心数从系统拿。不需要装任何东西。</sub></p>
 </td>
 <td width="33%" valign="top">
 <p align="center"><b>Linux</b><br><sub>x86_64 与 aarch64 &middot; 容器里也能跑</sub></p>
-<p align="center"><img src="site/assets/linux-8x4090.png" width="340" alt="devinfo 在 8 张 RTX 4090 上"></p>
+<p align="center"><a href="https://zhipingwoods.github.io/devinfo/#output"><img src="site/assets/linux-8x4090.png" width="340" alt="devinfo 在 8 张 RTX 4090 上"></a></p>
 <p><sub>sysfs 与 procfs、NUMA、<code>cpufreq</code>、cgroup 限额；通过 <code>dlopen</code> 调 CUDA 驱动 API；PCIe 走 sysfs。不用 root，不用装任何东西。</sub></p>
 </td>
 <td width="33%" valign="top">
 <p align="center"><b>Windows</b><br><sub>10 与 11 &middot; x64 与 x86</sub></p>
-<p align="center"><img src="site/assets/windows-i7.png" width="340" alt="devinfo 在 i7-11700 上"></p>
+<p align="center"><a href="https://zhipingwoods.github.io/devinfo/#output"><img src="site/assets/windows-i7.png" width="340" alt="devinfo 在 i7-11700 上"></a></p>
 <p><sub>CPUID 读核心与指令集，DXGI 读显卡与显存，SetupAPI 读 NPU，NVML 补 NVIDIA 细节。一个 <code>.exe</code>，无运行时、无安装包。</sub></p>
 </td>
 </tr>

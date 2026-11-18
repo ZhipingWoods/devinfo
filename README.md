@@ -24,17 +24,17 @@
 <tr>
 <td width="33%" valign="top">
 <p align="center"><b>macOS</b><br><sub>11+ &middot; Apple Silicon and Intel &middot; one universal binary</sub></p>
-<p align="center"><img src="site/assets/macos-m5.png" width="340" alt="devinfo on an Apple M5"></p>
+<p align="center"><a href="https://zhipingwoods.github.io/devinfo/#output"><img src="site/assets/macos-m5.png" width="340" alt="devinfo on an Apple M5"></a></p>
 <p><sub><code>sysctl</code> and IOKit read topology, caches and bandwidth; Metal reads the GPU; the ANE core count comes from the OS. Nothing to install.</sub></p>
 </td>
 <td width="33%" valign="top">
 <p align="center"><b>Linux</b><br><sub>x86_64 and aarch64 &middot; containers included</sub></p>
-<p align="center"><img src="site/assets/linux-8x4090.png" width="340" alt="devinfo on 8x RTX 4090"></p>
+<p align="center"><a href="https://zhipingwoods.github.io/devinfo/#output"><img src="site/assets/linux-8x4090.png" width="340" alt="devinfo on 8x RTX 4090"></a></p>
 <p><sub>sysfs and procfs, NUMA, <code>cpufreq</code>, cgroup limits; the CUDA driver API through <code>dlopen</code>; PCIe through sysfs. No root, nothing to install.</sub></p>
 </td>
 <td width="33%" valign="top">
 <p align="center"><b>Windows</b><br><sub>10 and 11 &middot; x64 and x86</sub></p>
-<p align="center"><img src="site/assets/windows-i7.png" width="340" alt="devinfo on an i7-11700"></p>
+<p align="center"><a href="https://zhipingwoods.github.io/devinfo/#output"><img src="site/assets/windows-i7.png" width="340" alt="devinfo on an i7-11700"></a></p>
 <p><sub>CPUID for cores and ISA, DXGI for adapters and VRAM, SetupAPI for NPUs, NVML for NVIDIA detail. One <code>.exe</code>, no runtime, no installer.</sub></p>
 </td>
 </tr>
