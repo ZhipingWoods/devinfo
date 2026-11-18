@@ -17,22 +17,28 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Fail loudly if an artifact is missing rather than publish a release
-      # with nothing attached.
-      - name: Check the artifacts are present
+      # Two of the artifacts are both called "devinfo" (the macOS and the
+      # Linux CLI), and release assets must have unique names, so they are
+      # staged under platform-qualified names first. This also fails the run
+      # if any artifact is missing, rather than publishing a release with
+      # holes in it.
+      - name: Stage the artifacts
         run: |
           set -e
-          missing=0
-          for f in dist/devinfo-test.zip dist/devinfo-test-mac.zip \
-                   dist/windows/devinfo-x64.exe dist/windows/devinfo-x86.exe \
-                   dist/windows/devinfo-x64.dll \
-                   dist/macos/devinfo dist/macos/libdevinfo.dylib \
-                   dist/linux/devinfo dist/linux/devinfo-arm64 \
-                   dist/linux/libdevinfo.so dist/linux/libdevinfo-arm64.so; do
-            if [ ! -f "$f" ]; then echo "missing: $f"; missing=1; fi
-          done
-          if [ "$missing" = "1" ]; then exit 1; fi
-          echo "all artifacts present"
+          mkdir -p out
+          stage() { if [ ! -f "$1" ]; then echo "missing: $1"; exit 1; fi; cp "$1" "out/$2"; }
+          stage dist/windows/devinfo-x64.exe     devinfo-windows-x64.exe
+          stage dist/windows/devinfo-x86.exe     devinfo-windows-x86.exe
+          stage dist/windows/devinfo-x64.dll     libdevinfo-windows-x64.dll
+          stage dist/macos/devinfo               devinfo-macos-universal
+          stage dist/macos/libdevinfo.dylib      libdevinfo-macos.dylib
+          stage dist/linux/devinfo               devinfo-linux-x64
+          stage dist/linux/devinfo-arm64         devinfo-linux-arm64
+          stage dist/linux/libdevinfo.so         libdevinfo-linux-x64.so
+          stage dist/linux/libdevinfo-arm64.so   libdevinfo-linux-arm64.so
+          stage dist/devinfo-test.zip            devinfo-test.zip
+          stage dist/devinfo-test-mac.zip        devinfo-test-mac.zip
+          ls -l out
 
       - name: Publish
         uses: softprops/action-gh-release@v2
@@ -45,30 +51,19 @@ jobs:
 
             | Platform | File | Kind |
             |---|---|---|
-            | Windows x64 | devinfo-x64.exe | single-file CLI |
-            | Windows x86 | devinfo-x86.exe | single-file CLI (32-bit) |
-            | Windows x64 | devinfo-x64.dll | C ABI plugin |
-            | macOS | devinfo | universal CLI (arm64 + x86_64) |
-            | macOS | libdevinfo.dylib | C ABI plugin |
-            | Linux x64 | devinfo | single-file CLI |
-            | Linux arm64 | devinfo-arm64 | single-file CLI |
-            | Linux x64 | libdevinfo.so | C ABI plugin |
-            | Linux arm64 | libdevinfo-arm64.so | C ABI plugin |
+            | Windows x64 | devinfo-windows-x64.exe | single-file CLI |
+            | Windows x86 | devinfo-windows-x86.exe | single-file CLI (32-bit) |
+            | Windows x64 | libdevinfo-windows-x64.dll | C ABI plugin |
+            | macOS | devinfo-macos-universal | universal CLI (arm64 + x86_64) |
+            | macOS | libdevinfo-macos.dylib | C ABI plugin |
+            | Linux x64 | devinfo-linux-x64 | single-file CLI |
+            | Linux arm64 | devinfo-linux-arm64 | single-file CLI |
+            | Linux x64 | libdevinfo-linux-x64.so | C ABI plugin |
+            | Linux arm64 | libdevinfo-linux-arm64.so | C ABI plugin |
 
             devinfo-test.zip and devinfo-test-mac.zip are the same files with a
             short README inside.
 
             Anything shown with a tilde is an estimate, never a datasheet copy:
             see the "no invented numbers" section of the README.
-          files: |
-            dist/devinfo-test.zip
-            dist/devinfo-test-mac.zip
-            dist/windows/devinfo-x64.exe
-            dist/windows/devinfo-x86.exe
-            dist/windows/devinfo-x64.dll
-            dist/macos/devinfo
-            dist/macos/libdevinfo.dylib
-            dist/linux/devinfo
-            dist/linux/devinfo-arm64
-            dist/linux/libdevinfo.so
-            dist/linux/libdevinfo-arm64.so
+          files: out/*
