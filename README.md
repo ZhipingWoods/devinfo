@@ -35,7 +35,9 @@
 
 ### 静态展示页
 
-`site/` 是一个不依赖任何 CDN 的静态站点：`site/index.html` 是产品页，`site/results.html` 是四台真实机器的实测记录（由 `tools/build_results.py` 从 `assets/captures/*.txt` 生成，原始输出逐字节注入，不会和程序实际打印的内容脱节）。
+在线版：**[zhipingwoods.github.io/devinfo](https://zhipingwoods.github.io/devinfo/)**　·　实测记录页：[results.html](https://zhipingwoods.github.io/devinfo/results.html)
+
+站点源码在 `site/`，不依赖任何 CDN：`site/index.html` 是产品页，`site/results.html` 是四台真实机器的实测记录（由 `tools/build_results.py` 从 `assets/captures/*.txt` 生成，原始输出逐字节注入，不会和程序实际打印的内容脱节）。
 
 本地直接打开：
 
@@ -44,7 +46,7 @@ python3 -m http.server 19090 --directory site
 # 打开 http://127.0.0.1:19090/
 ```
 
-纯静态，没有构建步骤。同样的内容也在 `gh-pages` 分支上（站点在分支根目录），在仓库 **Settings → Pages** 里把 Source 设为该分支即可对外访问。
+纯静态，没有构建步骤。线上的那份由 `gh-pages` 分支提供（站点在分支根目录），经 GitHub Pages 发布。
 
 ## 📝 简介
 
