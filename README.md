@@ -1,11 +1,11 @@
 <p align="center">
   <b>devinfo</b><br>
-  一个二进制，读出任何机器的真实硬件<br>
-  <sub>one binary · any machine · no subprocess · 3 ms</sub>
+  One binary that reads the real hardware of any machine<br>
+  <sub>no subprocess · no vendor SDK · no install · milliseconds</sub>
 </p>
 
 <p align="center">
-  <a href="README_EN.md">English</a> &nbsp;｜&nbsp; <b>中文</b>
+  <b>English</b> &nbsp;｜&nbsp; <a href="README_zh.md">中文</a>
 </p>
 
 <p align="center">
@@ -13,15 +13,91 @@
   <img src="https://img.shields.io/badge/dependencies-0-brightgreen" alt="zero dependencies">
   <img src="https://img.shields.io/badge/subprocess_calls-0-brightgreen" alt="no subprocess">
   <img src="https://img.shields.io/badge/Linux%20%7C%20macOS%20%7C%20Windows-4f9dff" alt="Linux macOS Windows">
-  <img src="https://img.shields.io/badge/x86__64%20%7C%20arm64%20%7C%20%E5%9B%BD%E4%BA%A7%E8%8A%AF%E7%89%87-2ee6a8" alt="x86_64 arm64">
   <img src="https://img.shields.io/badge/License-Apache_2.0-blue" alt="Apache-2.0">
 </p>
 
-> 把一个静态链接的 C++17 二进制丢到任何一台陌生机器上跑一次，它就告诉你：CPU 有几个核、缓存多大、支持哪些指令集，GPU 有多少 SM 和 Tensor Core、什么架构、显存和带宽多少，NPU 算力多少，装了哪些加速栈，PCIe 跑在第几代，以及**这块机器能跑多大的模型**。
->
-> 3 毫秒。零第三方依赖。不调用任何子进程。
+> Drop one statically linked C++17 binary onto a machine nobody administered, run it once, and it reports how many cores and how much cache the CPU has, which ISA extensions it supports, how many SMs and tensor cores the GPU has, its architecture, VRAM and bandwidth, the NPU throughput, which acceleration stacks are installed, what PCIe generation is on the link, and **how large a model this box can hold**.
 
-## 🖼️ 输出预览
+## 🖥️ Three platforms, one binary
+
+Same program, same output, no per-platform build to pick:
+
+| | What it reads there | What the machine needs |
+|---|---|---|
+| **Windows** 10/11<br>x64 · x86 | CPUID for cores and ISA; DXGI for adapters and VRAM; SetupAPI for NPUs; NVML for NVIDIA detail; the power API for base clock | nothing — one `.exe`, no runtime, no installer, no DLL to copy next to it |
+| **macOS** 11+<br>Apple Silicon **and** Intel | `sysctl` + IOKit for topology, caches and bandwidth; Metal for the GPU; the ANE core count | nothing |
+| **Linux**<br>x86_64 · aarch64 | sysfs/procfs, NUMA, `cpufreq`, cgroup limits; the CUDA driver API through `dlopen`; PCIe through sysfs | nothing — no root, containers included |
+
+No subprocess, no WMI, no vendor SDK on the box, no admin rights. Domestic parts — Kunpeng, Phytium, Loongson, Zhaoxin — go down the same code paths, and a Jetson Orin is just another aarch64 Linux box.
+
+## ⬇️ Download
+
+Built for each platform, named so the filename alone answers "will this run here":
+
+| Platform | Architecture | File | Contents |
+|---|---|---|---|
+| **Windows** | x86_64 | [devinfo-1.0.0-windows-x64.zip](https://github.com/ZhipingWoods/devinfo/raw/main/release/devinfo-1.0.0-windows-x64.zip) | `devinfo.exe` + `devinfo.dll` |
+| **Windows** | i686, 32-bit | [devinfo-1.0.0-windows-x86.zip](https://github.com/ZhipingWoods/devinfo/raw/main/release/devinfo-1.0.0-windows-x86.zip) | `devinfo.exe` + `devinfo.dll` |
+| **macOS** | universal: arm64 + x86_64 in one binary | [devinfo-1.0.0-macos-universal.dmg](https://github.com/ZhipingWoods/devinfo/raw/main/release/devinfo-1.0.0-macos-universal.dmg) | `devinfo` + `libdevinfo.dylib` |
+| **macOS** | same, zipped | [devinfo-1.0.0-macos-universal.zip](https://github.com/ZhipingWoods/devinfo/raw/main/release/devinfo-1.0.0-macos-universal.zip) | same |
+| **Linux** | x86_64 | [devinfo-1.0.0-linux-x86_64.tar.gz](https://github.com/ZhipingWoods/devinfo/raw/main/release/devinfo-1.0.0-linux-x86_64.tar.gz) | `devinfo` + `libdevinfo.so` |
+| **Linux** | aarch64 | [devinfo-1.0.0-linux-aarch64.tar.gz](https://github.com/ZhipingWoods/devinfo/raw/main/release/devinfo-1.0.0-linux-aarch64.tar.gz) | `devinfo` + `libdevinfo.so` |
+
+Unzip, run `./devinfo` (`devinfo.exe` on Windows). Every package carries a short `README.txt`. Binaries are also on the [v1.0.0 release page](https://github.com/ZhipingWoods/devinfo/releases/tag/v1.0.0).
+
+## 📋 Examples
+
+A Mac, an 8-GPU Linux box, and an edge module. Real output, copied from the runs in [results.html](https://zhipingwoods.github.io/devinfo/results.html):
+
+**Apple M5 · macOS 26.6 · arm64** — 3.4 ms
+
+```text
+devinfo - 3.43 ms  (fast)
+macos 26.6.2 | arm64 | native
+CPU  Apple M5
+     10 cores (4P + 6E)            clock 4.610 GHz~  arm64
+     L1i 1.5 MiB  L1d 896 KiB  L2 22.0 MiB  line 128B
+     RAM 16.0 GiB  bw 153.0 GB/s~
+     peak FP32 0.878 TFLOPS~
+GPU0 Apple M5
+     8 GPU core(s)  AGXMetalG17G
+     unified 16.0 GiB  clock 1.620 GHz~  bw 153.0 GB/s~
+     peak FP32 3.318 TF~  FP16 3.318 TF~
+NPU0 Apple Neural Engine (ANE)  16 cores  40.00 TOPS~
+deploy (derived from the measurements above, not measured)
+     memory 16.0 GiB of unified memory shared with the GPU -> inference ~33b
+```
+
+**2× EPYC 7402 + 8× RTX 4090 · Ubuntu 22.04 · x86_64** — 8 cards, each one read separately
+
+```text
+GPU0 NVIDIA GeForce RTX 4090
+     0000:01:00.0  128 SM(s)  512 Tensor Cores  sm_8.9
+     vram 23.5 GiB  clock 2.520 GHz  pcie gen4 x16  bw 1008.1 GB/s
+     peak FP32 82.58 TF~  FP16 330.3 TF~  BF16 330.3 TF~  INT8 660.6 TOPS~
+          FP8 660.6 TF~  FP16-sparse 660.6 TF~
+GPU1 NVIDIA GeForce RTX 4090
+     0000:23:00.0  128 SM(s)  512 Tensor Cores  sm_8.9
+     ...
+```
+
+**Jetson AGX Orin 64GB · L4T R36.4 · aarch64** — reports the shared-memory model, not a fake VRAM figure
+
+```text
+GPU0 Orin
+     unified 61.4 GiB  clock 1.300 GHz
+     peak FP32 5.325 TF~  FP16 10.65 TF~  INT8 21.30 TOPS~
+NPU  none detected
+accelerators
+     cuda          12.6          driver
+     tensorrt      10.7          runtime
+deploy (derived from the measurements above, not measured)
+     memory 61.4 GiB of unified memory shared with the GPU -> inference ~126b
+```
+
+Numbers marked `~` are derived from a chip spec table rather than read from the hardware; the JSON lists them in an `estimated` array. Nothing is filled in.
+
+## 🖼️ Output
 
 | Apple M5 · macOS arm64 | Jetson AGX Orin · Linux aarch64 |
 |:---:|:---:|
@@ -31,206 +107,188 @@
 |:---:|
 | ![8x4090](site/assets/linux-8x4090.png) |
 
-图中带 `~` 的数字是**从芯片规格表推算的**，不是从硬件读出来的，统一显示为琥珀色。没有任何数字是凭空填的。
+Numbers marked `~` are **derived from a chip spec table**, not read from the hardware, and are rendered in amber. Nothing is filled in.
 
-### 静态展示页
+### Static site
 
-在线版：**[zhipingwoods.github.io/devinfo](https://zhipingwoods.github.io/devinfo/)**　·　实测记录页：[results.html](https://zhipingwoods.github.io/devinfo/results.html)
+Live: **[zhipingwoods.github.io/devinfo](https://zhipingwoods.github.io/devinfo/)**　·　measured records: [results.html](https://zhipingwoods.github.io/devinfo/results.html)
 
-站点源码在 `site/`，不依赖任何 CDN：`site/index.html` 是产品页，`site/results.html` 是四台真实机器的实测记录（由 `tools/build_results.py` 从 `assets/captures/*.txt` 生成，原始输出逐字节注入，不会和程序实际打印的内容脱节）。
+The source lives in `site/` with no CDN dependency: `site/index.html` is the product page, `site/results.html` the measured record for four real machines. The raw-output blocks are generated by `tools/build_results.py` straight from `assets/captures/*.txt`, so the page cannot drift from what the binary actually printed.
 
-本地直接打开：
+Open it locally:
 
 ```bash
 python3 -m http.server 19090 --directory site
-# 打开 http://127.0.0.1:19090/
+# open http://127.0.0.1:19090/
 ```
 
-纯静态，没有构建步骤。线上的那份由 `gh-pages` 分支提供（站点在分支根目录），经 GitHub Pages 发布。
+Nothing to build. The published copy is served from the `gh-pages` branch (site at the branch root) through GitHub Pages.
 
-## 📝 简介
+## 📝 What it is
 
-devinfo 不是"又一个硬件信息脚本"。它回答的是**部署前必须知道的那些问题**，而且只回答它真的能读到的部分：
+devinfo answers the questions you must answer **before** deploying, and it only answers the ones it can actually read:
 
-- 这块卡是 **sm_89** 还是 **sm_87**？能不能吃 FP8？
-- 显存是 **23.5 GiB 独立内存** 还是 **61.4 GiB 统一内存**？后者不能当显存单独算。
-- 8 张卡是**同型号可合并成 186.6 GiB 内存池**，还是**两种不同型号只能各跑各的**？
-- 带宽是 **1008 GB/s** 还是根本没读到？roofline 拐点在 82 FLOP/byte 还是算不出来？
-- 这台机器装了 **CUDA 13.0 + cuDNN 9.20 + TensorRT 10.7**，还是只有驱动？
-- 我在容器里，看到的 96 个核里有 **多少是我能用的**？
+- Is this card **sm_89** or **sm_87**? Can it do FP8?
+- Is that **23.5 GiB of dedicated VRAM** or **61.4 GiB of unified memory**? The second one cannot be counted as VRAM.
+- Do those 8 cards form **one 186.6 GiB pool**, or are they **two different models that can only run separate jobs**?
+- Is bandwidth **1008 GB/s**, or was it simply not readable? Is the roofline knee at 82 FLOP/byte, or not computable at all?
+- Does this box have **CUDA 13.0 + cuDNN 9.20 + TensorRT 10.7**, or just a driver?
+- I am inside a container: of the 96 cores I can see, **how many may I actually use**?
 
-输出只有三种：给人看的表（`--table`）、给程序看的 JSON（`--json`）、给别的语言调用的 C ABI（`libdevinfo.so` / `.dylib` / `devinfo.dll`）。
+Three exits: a table for humans (`--table`), JSON for programs (`--json`), and a C ABI for other languages (`libdevinfo.so` / `.dylib` / `devinfo.dll`).
 
-## ✨ 能读到什么
+## ✨ What it reads
 
-### 1. CPU 与缓存
+### 1. CPU and caches
 
-- 物理核 / 逻辑线程、性能核与能效核拆分（Apple Silicon、Intel 12 代以后的混合架构）；
-- L1i / L1d / L2 / L3、缓存行大小；
-- 频率：能读到就报实测值，读不到才用规格表推算并标 `~`；
-- 完整 ISA 位图：x86 从 SSE2 / SSE4.1 / **SSE4.2** / AVX / AVX2 / AVX-512 / FMA / AES / SHA，ARM 从 NEON / FP16 / DotProd / I8MM / BF16 / SVE / SME / SME2；
-- NUMA 节点划分。
+- Physical cores and threads, with performance/efficiency split (Apple Silicon, Intel 12th gen and later);
+- L1i / L1d / L2 / L3 and the cache line size;
+- Clocks: the measured value when readable, otherwise a spec-table figure marked `~`;
+- Full ISA bitmap: x86 from SSE2 / SSE4.1 / **SSE4.2** / AVX / AVX2 / AVX-512 / FMA / AES / SHA; ARM from NEON / FP16 / DotProd / I8MM / BF16 / SVE / SME / SME2;
+- NUMA node layout.
 
-峰值算力由**核心数 × 频率 × 每周期浮点操作数**算出，其中每周期浮点数按 ISA 决定（AVX-512 = 64、AVX2 = 32、SSE/NEON = 16 FLOP/cycle），所以不会出现"只有一半"这种经典错误。
+Peak FP32 is **cores × GHz × flops-per-cycle**, where flops-per-cycle follows the ISA (AVX-512 = 64, AVX2 = 32, SSE/NEON = 16 FLOP/cycle). That is why the number is not half of what it should be.
 
-### 2. GPU 与 NPU
+### 2. GPU and NPU
 
-- 型号、PCI 地址、PCI ID（`1002:6987` 这种，能对上驱动支持列表）；
-- **SM 数量**、**Tensor Core 数量**、计算能力（`sm_8.9`）；
-- 显存容量，以及它到底是**独立显存**还是**统一内存**（CUDA 的 `integrated` 属性判定，不是靠型号猜）；
-- 显存频率、总线宽度、由此算出的带宽；
-- 各精度峰值：FP32 / FP16 / BF16 / INT8 / FP8 / FP16-sparse，按架构的 Tensor Core 规格推导；
-- NPU：Apple ANE 的核心数与 TOPS、昇腾 / 寒武纪通过 CANN dlopen 读取。
+- Model, PCI address, PCI ID (the `1002:6987` kind that matches driver support lists);
+- **SM count**, **tensor core count**, compute capability (`sm_8.9`);
+- VRAM size, and whether it is **dedicated** or **unified** (decided by CUDA's `integrated` attribute, not guessed from the model name);
+- Memory clock, bus width, and the resulting bandwidth;
+- Per-precision peaks: FP32 / FP16 / BF16 / INT8 / FP8 / FP16-sparse, derived from the architecture's tensor core spec;
+- NPU: Apple ANE core count and TOPS, Ascend / Cambricon through the CANN loader.
 
-### 3. 加速栈
+### 3. Acceleration stacks
 
-只 `dlopen`，不链接、不执行：
+`dlopen` only -- never linked, never executed:
 
-| 栈 | 探测方式 |
+| Stack | How |
 |---|---|
-| CUDA / cuDNN / TensorRT / NCCL / NVML | `libcudart` / `libcudnn` / `libnvinfer` / `libnccl` / `libnvidia-ml`，版本从符号或文件读 |
-| ROCm / HIP | `libamdhip64`、`librocblas` |
-| CANN（昇腾） | `libascendcl`、`libcann` |
-| 寒武纪 | `libcnrt`、`libcndev` |
-| OpenVINO / OpenCL / Vulkan / Metal / DirectML | 平台 API |
-| PyTorch / Conda 环境 | 只读文件，解析已安装版本 |
+| CUDA / cuDNN / TensorRT / NCCL / NVML | `libcudart` / `libcudnn` / `libnvinfer` / `libnccl` / `libnvidia-ml`, version from a symbol or a file |
+| ROCm / HIP | `libamdhip64`, `librocblas` |
+| CANN (Ascend) | `libascendcl`, `libcann` |
+| Cambricon | `libcnrt`, `libcndev` |
+| OpenVINO / OpenCL / Vulkan / Metal / DirectML | platform APIs |
+| PyTorch / Conda environments | file reads only |
 
-每一条都带**来源**：`driver` / `runtime` / `lib` / `toolkit` / `framework`，看得出这是驱动带起来的还是 pip 装的。
+Every entry carries its **provenance**: `driver` / `runtime` / `lib` / `toolkit` / `framework`. You can tell a driver-bundled runtime from a pip install.
 
-### 4. 带宽与链路
+### 4. Bandwidth and links
 
-- 显存带宽 = 总线宽度 ÷ 8 × 等效频率 × 2（GDDR 双沿），只有独立显存才算；
-- **PCIe 报的是最大能力，不是当前省电降频值**——空闲的 4090 会掉到 gen1，报 gen1 是错的；
-- `--bench` 会用真实的 memcpy 测一次内存带宽，把"估算"换成"实测"；
-- roofline 拐点 = 峰值算力 ÷ 带宽，低于这个值的算子都是带宽受限。
+- VRAM bandwidth = bus width ÷ 8 × effective clock × 2 (GDDR double-pumped), dedicated memory only;
+- **PCIe reports maximum capability, not the idle-downclocked value** -- a parked 4090 drops to gen1, and reporting gen1 would be wrong;
+- `--bench` measures real memcpy bandwidth, replacing an estimate with a measurement;
+- The roofline knee is peak throughput ÷ bandwidth; kernels below it are bandwidth-bound.
 
-### 5. 部署推导（derive）
+### 5. Deployment derivation
 
-从测到的显存 / 精度 / 带宽推出来的结论，明确标为推导而非实测：
+Conclusions derived from the measured memory, precision support and bandwidth -- labelled as derived, never as measured:
 
-- 能装多大的模型：`int4` / `int8` / `fp16` 三档；
-- 训练容量（16 B/param，Adam 优化器状态，不含激活）；
-- **是否可合并内存池**：只有同型号才算池，异构卡会明确写"不能合并"；
-- 并行方式：是否 8 卡全部 x16、tensor parallel 能不能放进 PCIe；
-- 磁盘够不够：stage 一个半精度 checkpoint 需要多少空间。
+- Model capacity at `int4` / `int8` / `fp16`;
+- Training capacity (16 B/param, Adam state, no activations);
+- **Whether the memory can be pooled**: only identical models form a pool; heterogeneous cards are called out explicitly;
+- Parallelism: whether all 8 cards are x16 and whether tensor parallel fits inside PCIe;
+- Whether the disk can stage a half-precision checkpoint.
 
-### 6. 容器与限额
+### 6. Containers and limits
 
-- cgroup v1 / v2：`cpu.max`、`memory.max`、`cpuset.cpus.effective`；
-- Windows Job Object 的 CPU 与内存限额；
-- 磁盘可用空间（按真实挂载点解析，容器里 `/` 在 overlay 上也能对上）。
+- cgroup v1 / v2: `cpu.max`, `memory.max`, `cpuset.cpus.effective`;
+- Windows job object CPU and memory limits;
+- Free disk space resolved through the real mount point, so an overlay `/` inside a container still maps correctly.
 
-## ⚡ 为什么快
+## ⚡ Why it is fast
 
-| 规则 | 后果 |
+| Rule | Consequence |
 |---|---|
-| **绝不启动子进程** | `nvidia-smi`、`npu-smi`、`lspci`、`wmic` 全部排除。每一个要 200–800 ms，还依赖 PATH 和权限 |
-| **绝不链接厂商 SDK** | CUDA / NVML / cuDNN / TensorRT / NCCL / ROCm / CANN / OpenCL 全部运行时 `dlopen` / `LoadLibrary`。没装驱动的机器是正常机器，不是崩溃 |
-| **绝不创建设备上下文** | CUDA 只问 `cuDeviceGetAttribute`，不建 context；不开 Metal 设备，不开 D3D12 设备。`cuInit` 那一次就要 100 ms 以上 |
-| **一遍采集，不轮询** | 这是快照，不是监控。没有采样线程，没有定时器，没有后台任务 |
+| **Never spawn a process** | `nvidia-smi`, `npu-smi`, `lspci`, `wmic` are all excluded. Each costs 200-800 ms and needs a PATH plus permissions |
+| **Never link a vendor SDK** | CUDA / NVML / cuDNN / TensorRT / NCCL / ROCm / CANN / OpenCL are resolved with `dlopen` / `LoadLibrary` at run time. A box without drivers is a normal box, not a crash |
+| **Never create a device context** | CUDA is asked only for `cuDeviceGetAttribute`; no context, no Metal device, no D3D12 device. `cuInit` alone costs over 100 ms |
+| **One pass, no polling** | This is a snapshot, not a monitor. No sampling thread, no timers, no background work |
 
-结果就是：macOS 上 **3.43 ms**，Jetson Orin **29.65 ms**，双 EPYC + 8 卡 4090 **142 ms**（时间几乎全花在 `cuInit` 初始化 8 个设备上）。
+The result: **3.43 ms** on macOS, **29.65 ms** on a Jetson Orin, **142 ms** on a dual EPYC box with 8× 4090 (almost all of it spent in `cuInit` bringing up 8 devices).
 
-## 🧪 实测记录
+## 🧪 Measured
 
-同一个二进制，跑在四类完全不同的机器上：
+The same binary, on four very different machines:
 
-| 机器 | 架构 | CPU | GPU | 内存 | 探针耗时 |
+| Machine | Arch | CPU | GPU | Memory | Probe |
 |---|---|---|---|---|---|
-| Apple M5 · macOS 26.6 | arm64 | 10 核（4P+6E） | 8 GPU 核 · ANE 40 TOPS | 16.0 GiB 统一 | **3.43 ms** |
+| Apple M5 · macOS 26.6 | arm64 | 10 cores (4P+6E) | 8 GPU cores · ANE 40 TOPS | 16.0 GiB unified | **3.43 ms** |
 | 2× EPYC 7402 + 8× RTX 4090 | x86_64 | 48C/96T | 8 × 23.5 GiB · sm_8.9 | 501.3 GiB | 142 ms |
-| Jetson AGX Orin 64GB | aarch64 | 12 核 | 16 SM / 64 TC · sm_8.7 | 61.4 GiB 统一 | 29.65 ms |
+| Jetson AGX Orin 64GB | aarch64 | 12 cores | 16 SM / 64 TC · sm_8.7 | 61.4 GiB unified | 29.65 ms |
 | Dell OptiPlex 7090 · Win11 | x86_64 | i7-11700 8C/16T | UHD 750 + RX 640 | 63.7 GiB | 199 ms |
 
-完整记录、每台的原始输出和已知边界见 [site/results.html](site/results.html)。
+Full record, raw output per machine, and the known limits: [site/results.html](site/results.html).
 
-8 卡那台的耗时随机器负载浮动（实测 117–163 ms），因为几乎全部时间花在 `cuInit` 拉起 8 个设备的驱动初始化上，这一段无法并行。能并行的是逐卡查询：串行时 13–22 ms，改成多线程后约 3 ms。表中数字取自抓包文件那次真实运行，不是最好成绩。
+The 8-GPU figure moves with machine load (117-163 ms observed): nearly all of it is `cuInit` bringing up 8 devices, which cannot be parallelised. The per-card queries can: 13-22 ms serially, about 3 ms across threads. The table quotes the run behind the capture file, not the best result.
 
-## 🎯 不编造
+## 🎯 No invention
 
-这是整个项目最硬的一条规则，也是最难坚持的一条。
+This is the hardest rule in the project, and the one most worth keeping.
 
-**测不到的东西就不给数字。** 把"拿不到"伪装成"估算"比不报更坏——下游拿它去算显存预算，就会算错。
+**If it cannot be read, it does not get a number.** Dressing up "could not read it" as "estimated" is worse than saying nothing: someone budgets VRAM with it and gets the wrong answer.
 
-| 场景 | 处理 |
+| Case | What happens |
 |---|---|
-| 集成显卡 | 不给"显存带宽"，因为核显和内存共享总线，没有这个量 |
-| Jetson 的 LPDDR5 带宽 | 不抄规格表，deploy 段直接写 `ridge point unavailable: no honest bandwidth figure for this GPU (run --bench)` |
-| Linux 非 root | SMBIOS 表读不到，就不报内存速率（`/sys/firmware/dmi/tables/DMI` 只有 root 可读） |
-| Windows 睿频 | `CallNtPowerInformation` 只返回基频，就不补一个"估算睿频" |
-| 非 NVIDIA 的 PCIe | 没有可靠来源，宁可空着 |
+| Integrated GPU | No "VRAM bandwidth", because an iGPU shares the memory bus and has no such quantity |
+| Jetson LPDDR5 bandwidth | Not copied from a spec table; the deploy block says `ridge point unavailable: no honest bandwidth figure for this GPU (run --bench)` |
+| Linux without root | The SMBIOS table is unreadable, so memory speed is not reported (`/sys/firmware/dmi/tables/DMI` is root-only) |
+| Windows turbo | `CallNtPowerInformation` returned only the base clock, so no "estimated turbo" is invented |
+| PCIe on non-NVIDIA | No reliable source, so it is left blank |
 
-所有推算值在 JSON 里都同时出现在 `estimated` 数组里，程序化消费时一眼能分清哪些是实测。
+Every derived value also appears in the JSON `estimated` array, so programmatic consumers can tell measurement from inference at a glance.
 
-## 🚀 快速开始
+## 🚀 Quick start
 
-### 直接下载
+### Build
 
-不想编译就直接拿现成的二进制，仓库里已经放好，目标机器上不需要装任何东西：
-
-| 平台 | 文件 | 类型 |
-|---|---|---|
-| Windows x64 | [devinfo-x64.exe](dist/windows/devinfo-x64.exe) | 单文件 CLI |
-| Windows x86 | [devinfo-x86.exe](dist/windows/devinfo-x86.exe) | 32 位单文件 CLI |
-| Windows x64 | [devinfo-x64.dll](dist/windows/devinfo-x64.dll) | C ABI 插件 |
-| macOS（universal） | [devinfo](dist/macos/devinfo) | arm64 + x86_64 单文件 CLI |
-| macOS | [libdevinfo.dylib](dist/macos/libdevinfo.dylib) | C ABI 插件 |
-| Linux x64 | [devinfo](dist/linux/devinfo) | 单文件 CLI |
-| Linux arm64 | [devinfo-arm64](dist/linux/devinfo-arm64) | 单文件 CLI |
-| Linux x64 | [libdevinfo.so](dist/linux/libdevinfo.so) | C ABI 插件 |
-| Linux arm64 | [libdevinfo-arm64.so](dist/linux/libdevinfo-arm64.so) | C ABI 插件 |
-
-打包版（含简短说明）：[devinfo-test.zip](dist/devinfo-test.zip)（Windows）、[devinfo-test-mac.zip](dist/devinfo-test-mac.zip)（macOS）。
-
-### 构建
-
-只需要一个 C++17 编译器和 CMake ≥ 3.16，没有任何第三方依赖：
+One C++17 compiler and CMake ≥ 3.16. Nothing else:
 
 ```bash
 cmake -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build -j
 ```
 
-产物：
+Artifacts:
 
-| 文件 | 说明 |
+| File | What |
 |---|---|
-| `build/devinfo`（Windows 为 `devinfo.exe`） | 命令行程序，静态链接 |
-| `build/libdevinfo.so` / `.dylib` / `devinfo.dll` | C ABI 插件 |
+| `build/devinfo` (`devinfo.exe` on Windows) | CLI, statically linked |
+| `build/libdevinfo.so` / `.dylib` / `devinfo.dll` | the C ABI plugin |
 
-macOS 默认构建 **universal binary**（`arm64 + x86_64`），Windows 支持 32 位与 64 位两套构建。
+macOS builds a **universal binary** (`arm64 + x86_64`) by default; Windows builds for both 32-bit and 64-bit.
 
-### 运行
+### Run
 
 ```bash
-./build/devinfo              # 终端 → 表格，重定向 → JSON
-./build/devinfo --table      # 强制表格
-./build/devinfo --json       # 强制 JSON
-./build/devinfo --bench      # 加测一次真实内存带宽
+./build/devinfo              # terminal → table, pipe → JSON
+./build/devinfo --table      # force the table
+./build/devinfo --json       # force JSON
+./build/devinfo --bench      # add a real memory bandwidth measurement
 ./build/devinfo --version
 ```
 
-双重链接（Windows 上直接双击）时会自己写一份 `devinfo-report.txt` 和 `.json` 到当前目录，然后退出——不会闪一下就没了。
+When double-clicked on Windows it writes `devinfo-report.txt` and `devinfo-report.json` next to itself and exits, instead of flashing a console and vanishing.
 
 ### C ABI
 
-四个导出符号，头文件 `include/devinfo.h`：
+Four exported symbols, header `include/devinfo.h`:
 
 ```c
 #define DEVINFO_ABI_VERSION 1u
 #define DEVINFO_VERSION_STRING "1.0.0"
-#define DEVINFO_FAST  0u   /* 只读结构，不做测量 */
-#define DEVINFO_BENCH 1u   /* 加内存带宽微基准 */
+#define DEVINFO_FAST  0u   /* structural only */
+#define DEVINFO_BENCH 1u   /* + memory bandwidth micro-benchmark */
 
 uint32_t    devinfo_abi_version(void);
 const char* devinfo_version(void);
-char*       devinfo_probe_json(uint32_t flags);   /* malloc 出的 JSON，失败返回 NULL */
-void        devinfo_free(char* p);                /* Windows 上必须用这个，不能用 free */
+char*       devinfo_probe_json(uint32_t flags);   /* malloc'd JSON, NULL on OOM */
+void        devinfo_free(char* p);                /* NOT free() -- on Windows they differ */
 ```
 
-JSON 文档本身就是 ABI 契约，所以头文件可以永远冻结：没有结构体跨边界，也就没有版本冲突。
+The JSON document *is* the ABI contract, so the header can stay frozen: no structs cross the boundary and there is nothing to version-fight over.
 
-Python 直接调用，不需要写 bindings：
+From Python, with no bindings:
 
 ```python
 import ctypes, json
@@ -248,59 +306,59 @@ for gpu in data["gpus"]:
     print(gpu["name"], gpu.get("vram_gib"), gpu.get("sm_count"))
 ```
 
-C 的完整例子见 `examples/ffi_c.c`，Python 见 `examples/ffi_python.py`。
+See `examples/ffi_c.c` and `examples/ffi_python.py`.
 
-## 📊 支持矩阵
+## 📊 Support matrix
 
-| 项 | Linux | macOS | Windows |
+| Item | Linux | macOS | Windows |
 |---|---|---|---|
-| CPU 型号 / 核心 / 缓存 | `/proc` + CPUID | `sysctl` | CPUID + `GetLogicalProcessorInformationEx` |
-| 混合架构 P/E 核 | — | ✅ | ✅ CPU Sets |
-| ISA 位图 | CPUID | `sysctl` | CPUID |
-| 内存容量 | `/proc/meminfo` | `sysctl` | `GlobalMemoryStatusEx` |
-| 内存速率 / 通道 | SMBIOS（需 root） | — | SMBIOS（无需管理员） |
+| CPU model / cores / caches | `/proc` + CPUID | `sysctl` | CPUID + `GetLogicalProcessorInformationEx` |
+| Hybrid P/E topology | — | ✅ | ✅ CPU Sets |
+| ISA bitmap | CPUID | `sysctl` | CPUID |
+| Memory size | `/proc/meminfo` | `sysctl` | `GlobalMemoryStatusEx` |
+| Memory speed / channels | SMBIOS (needs root) | — | SMBIOS (no admin needed) |
 | NVIDIA GPU | NVML / CUDA `dlopen` | ✅ | ✅ |
 | Apple GPU | — | IOKit + Metal | — |
-| 其他 GPU | sysfs PCI | — | DXGI |
-| NPU | CANN / 寒武纪 `dlopen` | ANE | 未检测 |
-| PCIe 链路 | NVML / sysfs | — | NVML（仅 NVIDIA） |
-| 磁盘 | `statvfs` + `/sys/block` | `statfs` | `GetDiskFreeSpaceEx` |
-| 网络 | 枚举 `/sys/class/net` | — | 未实现 |
-| 容器限额 | cgroup v1 / v2 | — | Job Object |
+| Other GPUs | sysfs PCI | — | DXGI |
+| NPU | CANN / Cambricon `dlopen` | ANE | not detected |
+| PCIe link | NVML / sysfs | — | NVML (NVIDIA only) |
+| Disk | `statvfs` + `/sys/block` | `statfs` | `GetDiskFreeSpaceEx` |
+| Network | enumerate `/sys/class/net` | — | not implemented |
+| Container limits | cgroup v1 / v2 | — | job object |
 
-## 📁 目录
+## 📁 Layout
 
-| 路径 | 内容 |
+| Path | Contents |
 |---|---|
-| `src/core.cpp` | 平台无关的归一化、峰值推导、deploy 推导、JSON 组装 |
-| `src/linux.cpp` / `apple.cpp` / `win32.cpp` | 三套平台采集，各自独立 |
-| `src/capi.cpp` | C ABI 薄封装（4 个符号） |
-| `src/emit.cpp` / `table.cpp` | 表格渲染、NV 架构规格表 |
-| `src/main.cpp` | CLI 参数与双重链接处理 |
-| `include/devinfo.h` | **公开的 C ABI 头文件**（冻结） |
-| `include/devinfo_core.hpp` | 内部数据模型（`Num` 带出处标记） |
-| `site/` | 静态展示页与实测记录 |
-| `assets/captures/` | 各机器真实 stdout 捕获，截图与结果页都从这里生成 |
-| `tools/` | 截图渲染器、结果页生成器 |
-| `dist/` | 各平台预编译二进制 |
+| `src/core.cpp` | platform-neutral normalisation, peak derivation, deploy derivation, JSON assembly |
+| `src/linux.cpp` / `apple.cpp` / `win32.cpp` | three independent platform collectors |
+| `src/capi.cpp` | thin C ABI wrapper (4 symbols) |
+| `src/emit.cpp` / `table.cpp` | table rendering, NV architecture spec table |
+| `src/main.cpp` | CLI flags and double-click handling |
+| `include/devinfo.h` | **public C ABI header** (frozen) |
+| `include/devinfo_core.hpp` | internal data model (`Num` with provenance) |
+| `site/` | static site and measured record |
+| `assets/captures/` | real stdout captures; screenshots and the results page are generated from them |
+| `tools/` | screenshot renderer, results-page generator |
+| `dist/` | prebuilt binaries per platform |
 
-## 🔍 已知限制
+## 🔍 Known limits
 
-这些不是待办事项，是明确读不到或读不全的地方，列出来是为了让人知道哪一列可以信、哪一列要自己复核：
+Not a to-do list -- places where the program currently cannot read, or cannot read fully. They are listed so you know which column to trust:
 
-- **Linux 非 root 读不到内存速率**：SMBIOS 表在 `/sys/firmware/dmi/tables/DMI`，只有 root 可读；
-- **Windows 只有基频**：`CallNtPowerInformation` 在该机器上不返回睿频；
-- **非 NVIDIA 的 PCIe 链路未报**：只有 NVML 能可靠给出代数与宽度；
-- **集成显卡不给带宽**：核显与内存共享总线；
-- **Windows 网络与磁盘介质未实现**：需要 SetupAPI + IOCTL 组合；
-- **Windows 复测待完成**：第一轮实机测试暴露的六个问题（SSE4.2 漏报、CPU 峰值减半、异构显存被加总、训练容量显示 `~0b`、异构并行措辞、HIP 被误标为 ROCm）已全部修复，但那台机器暂时无法连接，修复后的数字尚未验证。
+- **Linux memory speed needs root**: the SMBIOS table lives in `/sys/firmware/dmi/tables/DMI`, root-only;
+- **Windows reports base clock only**: `CallNtPowerInformation` did not return turbo on that machine;
+- **PCIe on non-NVIDIA is not reported**: only NVML gives link generation and width reliably;
+- **No bandwidth for integrated GPUs**: the iGPU shares the memory bus;
+- **Windows network and disk media are not implemented**: needs SetupAPI plus IOCTL work;
+- **Windows re-test pending**: the six issues found in the first real Windows run (missing SSE4.2, halved CPU peak, heterogeneous VRAM summed, training capacity shown as `~0b`, poor heterogeneous-parallel wording, HIP mislabelled as a ROCm version) are all fixed, but that machine is currently unreachable, so the post-fix numbers are unverified.
 
-## 📌 状态
+## 📌 Status
 
-devinfo 已经在四类真实机器上跑通过（Apple Silicon、双路 EPYC + 8 卡、Jetson、Intel 办公机），所有平台 0 警告编译。
+Verified on four real machines (Apple Silicon, dual EPYC with 8 GPUs, Jetson, an Intel desktop) and builds with zero warnings on every platform.
 
-尚未验证的：MSVC 工具链构建（目前 Windows 二进制由 llvm-mingw 交叉编译），以及上面"Windows 复测待完成"一项。
+Still unverified: an MSVC build (the Windows binaries are cross-compiled with llvm-mingw), and the Windows re-test above.
 
-## 📄 许可证
+## 📄 License
 
-Apache License 2.0，完整文本见 [LICENSE](LICENSE)。
+Apache License 2.0. The full text is in [LICENSE](LICENSE).

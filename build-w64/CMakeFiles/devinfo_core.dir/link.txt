@@ -1,0 +1,2 @@
+/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin/x86_64-w64-mingw32-llvm-ar qc libdevinfo_core.a CMakeFiles/devinfo_core.dir/src/core.cpp.obj CMakeFiles/devinfo_core.dir/src/table.cpp.obj CMakeFiles/devinfo_core.dir/src/emit.cpp.obj CMakeFiles/devinfo_core.dir/src/win32.cpp.obj
+/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin/x86_64-w64-mingw32-llvm-ranlib libdevinfo_core.a

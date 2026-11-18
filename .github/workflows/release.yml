@@ -1,8 +1,9 @@
 name: release
 
-# The binaries in dist/ are built and verified by hand on the machines they
-# target. This attaches them to the release so they are one click away
-# instead of buried five directories deep in the tree.
+# tools/package.sh builds these from dist/ - they are verified by hand on the
+# machines they target, so this workflow only publishes them. The naming is
+# devinfo-<version>-<os>-<arch>.<ext>; archive contents are identical to the
+# repositories devinfo CLI plus its C ABI library.
 on:
   push:
     tags: ['v*']
@@ -17,53 +18,56 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Two of the artifacts are both called "devinfo" (the macOS and the
-      # Linux CLI), and release assets must have unique names, so they are
-      # staged under platform-qualified names first. This also fails the run
-      # if any artifact is missing, rather than publishing a release with
-      # holes in it.
-      - name: Stage the artifacts
+      # Fail the run if a package is missing rather than publishing a release
+      # with holes in it.
+      - name: Check the packages
         run: |
           set -e
-          mkdir -p out
-          stage() { if [ ! -f "$1" ]; then echo "missing: $1"; exit 1; fi; cp "$1" "out/$2"; }
-          stage dist/windows/devinfo-x64.exe     devinfo-windows-x64.exe
-          stage dist/windows/devinfo-x86.exe     devinfo-windows-x86.exe
-          stage dist/windows/devinfo-x64.dll     libdevinfo-windows-x64.dll
-          stage dist/macos/devinfo               devinfo-macos-universal
-          stage dist/macos/libdevinfo.dylib      libdevinfo-macos.dylib
-          stage dist/linux/devinfo               devinfo-linux-x64
-          stage dist/linux/devinfo-arm64         devinfo-linux-arm64
-          stage dist/linux/libdevinfo.so         libdevinfo-linux-x64.so
-          stage dist/linux/libdevinfo-arm64.so   libdevinfo-linux-arm64.so
-          stage dist/devinfo-test.zip            devinfo-test.zip
-          stage dist/devinfo-test-mac.zip        devinfo-test-mac.zip
-          ls -l out
+          for f in \
+            release/devinfo-1.0.0-windows-x64.zip \
+            release/devinfo-1.0.0-windows-x86.zip \
+            release/devinfo-1.0.0-macos-universal.dmg \
+            release/devinfo-1.0.0-macos-universal.zip \
+            release/devinfo-1.0.0-linux-x86_64.tar.gz \
+            release/devinfo-1.0.0-linux-aarch64.tar.gz
+          do
+            test -f "$f" || { echo "missing: $f"; exit 1; }
+          done
+          ls -l release
 
       - name: Publish
         uses: softprops/action-gh-release@v2
         with:
-          name: devinfo ${{ github.ref_name }}
+          name: devinfo $$ github.ref_name
           generate_release_notes: true
           body: |
-            Prebuilt binaries. No compiler and no dependencies: copy one file to
-            the machine and run it.
+            Prebuilt binaries, one per platform. No compiler, no runtime, no
+            dependencies: unpack, run, read the machine.
 
-            | Platform | File | Kind |
+            | Platform | Architecture | File |
             |---|---|---|
-            | Windows x64 | devinfo-windows-x64.exe | single-file CLI |
-            | Windows x86 | devinfo-windows-x86.exe | single-file CLI (32-bit) |
-            | Windows x64 | libdevinfo-windows-x64.dll | C ABI plugin |
-            | macOS | devinfo-macos-universal | universal CLI (arm64 + x86_64) |
-            | macOS | libdevinfo-macos.dylib | C ABI plugin |
-            | Linux x64 | devinfo-linux-x64 | single-file CLI |
-            | Linux arm64 | devinfo-linux-arm64 | single-file CLI |
-            | Linux x64 | libdevinfo-linux-x64.so | C ABI plugin |
-            | Linux arm64 | libdevinfo-linux-arm64.so | C ABI plugin |
+            | Windows 10/11 | x86_64 | devinfo-1.0.0-windows-x64.zip |
+            | Windows 10/11 | i686, 32-bit | devinfo-1.0.0-windows-x86.zip |
+            | Windows 7+ | i686, 32-bit | devinfo-1.0.0-windows-x86.zip |
+            | macOS 11+ | universal: arm64 + x86_64 | devinfo-1.0.0-macos-universal.dmg |
+            | macOS 11+ | universal: arm64 + x86_64 | devinfo-1.0.0-macos-universal.zip |
+            | Linux | x86_64 | devinfo-1.0.0-linux-x86_64.tar.gz |
+            | Linux | aarch64 (Jetson, Graviton, Kunpeng) | devinfo-1.0.0-linux-aarch64.tar.gz |
 
-            devinfo-test.zip and devinfo-test-mac.zip are the same files with a
-            short README inside.
+            Every archive contains the @@T@@devinfo@@T@@ executable, its C ABI library
+            (@@T@@libdevinfo.dylib@@T@@ / @@T@@libdevinfo.so@@T@@ / @@T@@devinfo.dll@@T@@), and a short README.
 
-            Anything shown with a tilde is an estimate, never a datasheet copy:
-            see the "no invented numbers" section of the README.
-          files: out/*
+            The macOS build is one universal binary: it runs natively on Apple
+            Silicon and on Intel without Rosetta for the x86 slice, and under
+            Rosetta when the host is Apple Silicon.
+
+            Anything shown with a leading tilde is derived from a chip spec
+            table and marked in the JSON's @@T@@estimated@@T@@ array - never a datasheet
+            number passed off as measured.
+          files: |
+            release/devinfo-1.0.0-windows-x64.zip
+            release/devinfo-1.0.0-windows-x86.zip
+            release/devinfo-1.0.0-macos-universal.dmg
+            release/devinfo-1.0.0-macos-universal.zip
+            release/devinfo-1.0.0-linux-x86_64.tar.gz
+            release/devinfo-1.0.0-linux-aarch64.tar.gz

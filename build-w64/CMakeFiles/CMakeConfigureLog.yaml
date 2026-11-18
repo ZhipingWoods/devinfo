@@ -1,0 +1,1950 @@
+
+---
+events:
+  -
+    kind: "find-v1"
+    backtrace:
+      - "/opt/homebrew/share/cmake/Modules/CMakeDetermineSystem.cmake:12 (find_program)"
+      - "CMakeLists.txt:2 (project)"
+    mode: "program"
+    variable: "CMAKE_UNAME"
+    description: "Path to a program."
+    settings:
+      SearchFramework: "FIRST"
+      SearchAppBundle: "FIRST"
+      CMAKE_FIND_USE_CMAKE_PATH: true
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "uname"
+    candidate_directories:
+      - "/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin/"
+      - "/opt/homebrew/opt/python@3.12/libexec/bin/"
+      - "/opt/homebrew/bin/"
+      - "/opt/homebrew/sbin/"
+      - "/Users/zhipingwu/.nvm/versions/node/v24.20.0/bin/"
+      - "/Users/zhipingwu/.local/bin/"
+      - "/usr/local/bin/"
+      - "/System/Cryptexes/App/usr/bin/"
+      - "/usr/bin/"
+      - "/bin/"
+      - "/usr/sbin/"
+      - "/sbin/"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin/"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin/"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin/"
+      - "/pkg/env/global/bin/"
+      - "/Library/Apple/usr/bin/"
+      - "/usr/local/corplink/mdm/opt/corplink-mdm/bin/"
+      - "/Users/zhipingwu/.docker/bin/"
+    searched_directories:
+      - "/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin/uname"
+      - "/opt/homebrew/opt/python@3.12/libexec/bin/uname"
+      - "/opt/homebrew/bin/uname"
+      - "/opt/homebrew/sbin/uname"
+      - "/Users/zhipingwu/.nvm/versions/node/v24.20.0/bin/uname"
+      - "/Users/zhipingwu/.local/bin/uname"
+      - "/usr/local/bin/uname"
+      - "/System/Cryptexes/App/usr/bin/uname"
+    found: "/usr/bin/uname"
+    search_context:
+      ENV{PATH}:
+        - "/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin"
+        - "/opt/homebrew/opt/python@3.12/libexec/bin"
+        - "/opt/homebrew/bin"
+        - "/opt/homebrew/sbin"
+        - "/Users/zhipingwu/.nvm/versions/node/v24.20.0/bin"
+        - "/Users/zhipingwu/.local/bin"
+        - "/opt/homebrew/bin"
+        - "/opt/homebrew/sbin"
+        - "/Users/zhipingwu/.local/bin"
+        - "/usr/local/bin"
+        - "/System/Cryptexes/App/usr/bin"
+        - "/usr/bin"
+        - "/bin"
+        - "/usr/sbin"
+        - "/sbin"
+        - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin"
+        - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin"
+        - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin"
+        - "/pkg/env/global/bin"
+        - "/Library/Apple/usr/bin"
+        - "/usr/local/corplink/mdm/opt/corplink-mdm/bin"
+        - "/opt/homebrew/bin"
+        - "/Users/zhipingwu/.docker/bin"
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/opt/homebrew/share/cmake/Modules/CMakeDetermineSystem.cmake:213 (message)"
+      - "CMakeLists.txt:2 (project)"
+    message: |
+      The target system is: Windows -  - x86_64
+      The host system is: Darwin - 25.6.0 - arm64
+  -
+    kind: "find-v1"
+    backtrace:
+      - "/opt/homebrew/share/cmake/Modules/CMakeUnixFindMake.cmake:5 (find_program)"
+      - "CMakeLists.txt:2 (project)"
+    mode: "program"
+    variable: "CMAKE_MAKE_PROGRAM"
+    description: "Path to a program."
+    settings:
+      SearchFramework: "FIRST"
+      SearchAppBundle: "FIRST"
+      CMAKE_FIND_USE_CMAKE_PATH: true
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "gmake"
+      - "make"
+      - "smake"
+    candidate_directories:
+      - "/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin/"
+      - "/opt/homebrew/opt/python@3.12/libexec/bin/"
+      - "/opt/homebrew/bin/"
+      - "/opt/homebrew/sbin/"
+      - "/Users/zhipingwu/.nvm/versions/node/v24.20.0/bin/"
+      - "/Users/zhipingwu/.local/bin/"
+      - "/usr/local/bin/"
+      - "/System/Cryptexes/App/usr/bin/"
+      - "/usr/bin/"
+      - "/bin/"
+      - "/usr/sbin/"
+      - "/sbin/"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin/"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin/"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin/"
+      - "/pkg/env/global/bin/"
+      - "/Library/Apple/usr/bin/"
+      - "/usr/local/corplink/mdm/opt/corplink-mdm/bin/"
+      - "/Users/zhipingwu/.docker/bin/"
+    searched_directories:
+      - "/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin/gmake"
+      - "/opt/homebrew/opt/python@3.12/libexec/bin/gmake"
+      - "/opt/homebrew/bin/gmake"
+      - "/opt/homebrew/sbin/gmake"
+      - "/Users/zhipingwu/.nvm/versions/node/v24.20.0/bin/gmake"
+      - "/Users/zhipingwu/.local/bin/gmake"
+      - "/usr/local/bin/gmake"
+      - "/System/Cryptexes/App/usr/bin/gmake"
+      - "/usr/bin/gmake"
+      - "/bin/gmake"
+      - "/usr/sbin/gmake"
+      - "/sbin/gmake"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin/gmake"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin/gmake"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin/gmake"
+      - "/pkg/env/global/bin/gmake"
+      - "/Library/Apple/usr/bin/gmake"
+      - "/usr/local/corplink/mdm/opt/corplink-mdm/bin/gmake"
+      - "/Users/zhipingwu/.docker/bin/gmake"
+      - "/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin/make"
+      - "/opt/homebrew/opt/python@3.12/libexec/bin/make"
+      - "/opt/homebrew/bin/make"
+      - "/opt/homebrew/sbin/make"
+      - "/Users/zhipingwu/.nvm/versions/node/v24.20.0/bin/make"
+      - "/Users/zhipingwu/.local/bin/make"
+      - "/usr/local/bin/make"
+      - "/System/Cryptexes/App/usr/bin/make"
+    found: "/usr/bin/make"
+    search_context:
+      ENV{PATH}:
+        - "/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin"
+        - "/opt/homebrew/opt/python@3.12/libexec/bin"
+        - "/opt/homebrew/bin"
+        - "/opt/homebrew/sbin"
+        - "/Users/zhipingwu/.nvm/versions/node/v24.20.0/bin"
+        - "/Users/zhipingwu/.local/bin"
+        - "/opt/homebrew/bin"
+        - "/opt/homebrew/sbin"
+        - "/Users/zhipingwu/.local/bin"
+        - "/usr/local/bin"
+        - "/System/Cryptexes/App/usr/bin"
+        - "/usr/bin"
+        - "/bin"
+        - "/usr/sbin"
+        - "/sbin"
+        - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin"
+        - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin"
+        - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin"
+        - "/pkg/env/global/bin"
+        - "/Library/Apple/usr/bin"
+        - "/usr/local/corplink/mdm/opt/corplink-mdm/bin"
+        - "/opt/homebrew/bin"
+        - "/Users/zhipingwu/.docker/bin"
+  -
+    kind: "find-v1"
+    backtrace:
+      - "/opt/homebrew/share/cmake/Modules/CMakeDetermineCompiler.cmake:115 (find_program)"
+      - "/opt/homebrew/share/cmake/Modules/CMakeDetermineCXXCompiler.cmake:71 (_cmake_find_compiler_path)"
+      - "CMakeLists.txt:2 (project)"
+    mode: "program"
+    variable: "CMAKE_CXX_COMPILER_WITH_PATH"
+    description: "Path to a program."
+    settings:
+      SearchFramework: "FIRST"
+      SearchAppBundle: "FIRST"
+      CMAKE_FIND_USE_CMAKE_PATH: true
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "x86_64-w64-mingw32-g++"
+    candidate_directories:
+      - "/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin/"
+      - "/opt/homebrew/opt/python@3.12/libexec/bin/"
+      - "/opt/homebrew/bin/"
+      - "/opt/homebrew/sbin/"
+      - "/Users/zhipingwu/.nvm/versions/node/v24.20.0/bin/"
+      - "/Users/zhipingwu/.local/bin/"
+      - "/usr/local/bin/"
+      - "/System/Cryptexes/App/usr/bin/"
+      - "/usr/bin/"
+      - "/bin/"
+      - "/usr/sbin/"
+      - "/sbin/"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin/"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin/"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin/"
+      - "/pkg/env/global/bin/"
+      - "/Library/Apple/usr/bin/"
+      - "/usr/local/corplink/mdm/opt/corplink-mdm/bin/"
+      - "/Users/zhipingwu/.docker/bin/"
+    found: "/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin/x86_64-w64-mingw32-g++"
+    search_context:
+      ENV{PATH}:
+        - "/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin"
+        - "/opt/homebrew/opt/python@3.12/libexec/bin"
+        - "/opt/homebrew/bin"
+        - "/opt/homebrew/sbin"
+        - "/Users/zhipingwu/.nvm/versions/node/v24.20.0/bin"
+        - "/Users/zhipingwu/.local/bin"
+        - "/opt/homebrew/bin"
+        - "/opt/homebrew/sbin"
+        - "/Users/zhipingwu/.local/bin"
+        - "/usr/local/bin"
+        - "/System/Cryptexes/App/usr/bin"
+        - "/usr/bin"
+        - "/bin"
+        - "/usr/sbin"
+        - "/sbin"
+        - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin"
+        - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin"
+        - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin"
+        - "/pkg/env/global/bin"
+        - "/Library/Apple/usr/bin"
+        - "/usr/local/corplink/mdm/opt/corplink-mdm/bin"
+        - "/opt/homebrew/bin"
+        - "/Users/zhipingwu/.docker/bin"
+  -
+    kind: "find-v1"
+    backtrace:
+      - "/opt/homebrew/share/cmake/Modules/CMakeDetermineCompilerId.cmake:501 (find_file)"
+      - "/opt/homebrew/share/cmake/Modules/CMakeDetermineCompilerId.cmake:538 (CMAKE_DETERMINE_COMPILER_ID_WRITE)"
+      - "/opt/homebrew/share/cmake/Modules/CMakeDetermineCompilerId.cmake:8 (CMAKE_DETERMINE_COMPILER_ID_BUILD)"
+      - "/opt/homebrew/share/cmake/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "/opt/homebrew/share/cmake/Modules/CMakeDetermineCXXCompiler.cmake:125 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:2 (project)"
+    mode: "file"
+    variable: "src_in"
+    description: "Path to a file."
+    settings:
+      SearchFramework: "FIRST"
+      SearchAppBundle: "FIRST"
+      CMAKE_FIND_USE_CMAKE_PATH: true
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "CMakeCXXCompilerId.cpp.in"
+    candidate_directories:
+      - "/opt/homebrew/share/cmake/Modules/"
+    found: "/opt/homebrew/share/cmake/Modules/CMakeCXXCompilerId.cpp.in"
+    search_context:
+      ENV{PATH}:
+        - "/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin"
+        - "/opt/homebrew/opt/python@3.12/libexec/bin"
+        - "/opt/homebrew/bin"
+        - "/opt/homebrew/sbin"
+        - "/Users/zhipingwu/.nvm/versions/node/v24.20.0/bin"
+        - "/Users/zhipingwu/.local/bin"
+        - "/opt/homebrew/bin"
+        - "/opt/homebrew/sbin"
+        - "/Users/zhipingwu/.local/bin"
+        - "/usr/local/bin"
+        - "/System/Cryptexes/App/usr/bin"
+        - "/usr/bin"
+        - "/bin"
+        - "/usr/sbin"
+        - "/sbin"
+        - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin"
+        - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin"
+        - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin"
+        - "/pkg/env/global/bin"
+        - "/Library/Apple/usr/bin"
+        - "/usr/local/corplink/mdm/opt/corplink-mdm/bin"
+        - "/opt/homebrew/bin"
+        - "/Users/zhipingwu/.docker/bin"
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/opt/homebrew/share/cmake/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "/opt/homebrew/share/cmake/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "/opt/homebrew/share/cmake/Modules/CMakeDetermineCXXCompiler.cmake:125 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:2 (project)"
+    message: |
+      Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" succeeded.
+      Compiler: /Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin/x86_64-w64-mingw32-g++ 
+      Build flags: 
+      Id flags:  
+      
+      The output was:
+      0
+      
+      
+      Compilation of the CXX compiler identification source "CMakeCXXCompilerId.cpp" produced "a.exe"
+      
+      The CXX compiler identification is Clang, found in:
+        /Users/zhipingwu/modelbest/devinfo/build-w64/CMakeFiles/4.4.4/CompilerIdCXX/a.exe
+      
+  -
+    kind: "find-v1"
+    backtrace:
+      - "/opt/homebrew/share/cmake/Modules/CMakeFindBinUtils.cmake:247 (find_program)"
+      - "/opt/homebrew/share/cmake/Modules/CMakeDetermineCXXCompiler.cmake:206 (include)"
+      - "CMakeLists.txt:2 (project)"
+    mode: "program"
+    variable: "CMAKE_AR"
+    description: "Path to a program."
+    settings:
+      SearchFramework: "FIRST"
+      SearchAppBundle: "FIRST"
+      CMAKE_FIND_USE_CMAKE_PATH: false
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: false
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "x86_64-w64-mingw32-llvm-ar"
+      - "llvm-ar"
+      - "x86_64-w64-mingw32-ar"
+      - "ar"
+    candidate_directories:
+      - "/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin/"
+      - "/opt/homebrew/opt/python@3.12/libexec/bin/"
+      - "/opt/homebrew/bin/"
+      - "/opt/homebrew/sbin/"
+      - "/Users/zhipingwu/.nvm/versions/node/v24.20.0/bin/"
+      - "/Users/zhipingwu/.local/bin/"
+      - "/usr/local/bin/"
+      - "/System/Cryptexes/App/usr/bin/"
+      - "/usr/bin/"
+      - "/bin/"
+      - "/usr/sbin/"
+      - "/sbin/"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin/"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin/"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin/"
+      - "/pkg/env/global/bin/"
+      - "/Library/Apple/usr/bin/"
+      - "/usr/local/corplink/mdm/opt/corplink-mdm/bin/"
+      - "/Users/zhipingwu/.docker/bin/"
+    found: "/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin/x86_64-w64-mingw32-llvm-ar"
+    search_context:
+      ENV{PATH}:
+        - "/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin"
+        - "/opt/homebrew/opt/python@3.12/libexec/bin"
+        - "/opt/homebrew/bin"
+        - "/opt/homebrew/sbin"
+        - "/Users/zhipingwu/.nvm/versions/node/v24.20.0/bin"
+        - "/Users/zhipingwu/.local/bin"
+        - "/opt/homebrew/bin"
+        - "/opt/homebrew/sbin"
+        - "/Users/zhipingwu/.local/bin"
+        - "/usr/local/bin"
+        - "/System/Cryptexes/App/usr/bin"
+        - "/usr/bin"
+        - "/bin"
+        - "/usr/sbin"
+        - "/sbin"
+        - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin"
+        - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin"
+        - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin"
+        - "/pkg/env/global/bin"
+        - "/Library/Apple/usr/bin"
+        - "/usr/local/corplink/mdm/opt/corplink-mdm/bin"
+        - "/opt/homebrew/bin"
+        - "/Users/zhipingwu/.docker/bin"
+  -
+    kind: "find-v1"
+    backtrace:
+      - "/opt/homebrew/share/cmake/Modules/CMakeFindBinUtils.cmake:247 (find_program)"
+      - "/opt/homebrew/share/cmake/Modules/CMakeDetermineCXXCompiler.cmake:206 (include)"
+      - "CMakeLists.txt:2 (project)"
+    mode: "program"
+    variable: "CMAKE_RANLIB"
+    description: "Path to a program."
+    settings:
+      SearchFramework: "FIRST"
+      SearchAppBundle: "FIRST"
+      CMAKE_FIND_USE_CMAKE_PATH: false
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: false
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "x86_64-w64-mingw32-llvm-ranlib"
+      - "llvm-ranlib"
+      - "x86_64-w64-mingw32-ranlib"
+      - "ranlib"
+    candidate_directories:
+      - "/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin/"
+      - "/opt/homebrew/opt/python@3.12/libexec/bin/"
+      - "/opt/homebrew/bin/"
+      - "/opt/homebrew/sbin/"
+      - "/Users/zhipingwu/.nvm/versions/node/v24.20.0/bin/"
+      - "/Users/zhipingwu/.local/bin/"
+      - "/usr/local/bin/"
+      - "/System/Cryptexes/App/usr/bin/"
+      - "/usr/bin/"
+      - "/bin/"
+      - "/usr/sbin/"
+      - "/sbin/"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin/"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin/"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin/"
+      - "/pkg/env/global/bin/"
+      - "/Library/Apple/usr/bin/"
+      - "/usr/local/corplink/mdm/opt/corplink-mdm/bin/"
+      - "/Users/zhipingwu/.docker/bin/"
+    found: "/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin/x86_64-w64-mingw32-llvm-ranlib"
+    search_context:
+      ENV{PATH}:
+        - "/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin"
+        - "/opt/homebrew/opt/python@3.12/libexec/bin"
+        - "/opt/homebrew/bin"
+        - "/opt/homebrew/sbin"
+        - "/Users/zhipingwu/.nvm/versions/node/v24.20.0/bin"
+        - "/Users/zhipingwu/.local/bin"
+        - "/opt/homebrew/bin"
+        - "/opt/homebrew/sbin"
+        - "/Users/zhipingwu/.local/bin"
+        - "/usr/local/bin"
+        - "/System/Cryptexes/App/usr/bin"
+        - "/usr/bin"
+        - "/bin"
+        - "/usr/sbin"
+        - "/sbin"
+        - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin"
+        - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin"
+        - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin"
+        - "/pkg/env/global/bin"
+        - "/Library/Apple/usr/bin"
+        - "/usr/local/corplink/mdm/opt/corplink-mdm/bin"
+        - "/opt/homebrew/bin"
+        - "/Users/zhipingwu/.docker/bin"
+  -
+    kind: "find-v1"
+    backtrace:
+      - "/opt/homebrew/share/cmake/Modules/CMakeFindBinUtils.cmake:247 (find_program)"
+      - "/opt/homebrew/share/cmake/Modules/CMakeDetermineCXXCompiler.cmake:206 (include)"
+      - "CMakeLists.txt:2 (project)"
+    mode: "program"
+    variable: "CMAKE_STRIP"
+    description: "Path to a program."
+    settings:
+      SearchFramework: "FIRST"
+      SearchAppBundle: "FIRST"
+      CMAKE_FIND_USE_CMAKE_PATH: false
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: false
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "x86_64-w64-mingw32-llvm-strip"
+      - "llvm-strip"
+      - "x86_64-w64-mingw32-strip"
+      - "strip"
+    candidate_directories:
+      - "/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin/"
+      - "/opt/homebrew/opt/python@3.12/libexec/bin/"
+      - "/opt/homebrew/bin/"
+      - "/opt/homebrew/sbin/"
+      - "/Users/zhipingwu/.nvm/versions/node/v24.20.0/bin/"
+      - "/Users/zhipingwu/.local/bin/"
+      - "/usr/local/bin/"
+      - "/System/Cryptexes/App/usr/bin/"
+      - "/usr/bin/"
+      - "/bin/"
+      - "/usr/sbin/"
+      - "/sbin/"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin/"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin/"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin/"
+      - "/pkg/env/global/bin/"
+      - "/Library/Apple/usr/bin/"
+      - "/usr/local/corplink/mdm/opt/corplink-mdm/bin/"
+      - "/Users/zhipingwu/.docker/bin/"
+    searched_directories:
+      - "/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin/x86_64-w64-mingw32-llvm-strip"
+      - "/opt/homebrew/opt/python@3.12/libexec/bin/x86_64-w64-mingw32-llvm-strip"
+      - "/opt/homebrew/bin/x86_64-w64-mingw32-llvm-strip"
+      - "/opt/homebrew/sbin/x86_64-w64-mingw32-llvm-strip"
+      - "/Users/zhipingwu/.nvm/versions/node/v24.20.0/bin/x86_64-w64-mingw32-llvm-strip"
+      - "/Users/zhipingwu/.local/bin/x86_64-w64-mingw32-llvm-strip"
+      - "/usr/local/bin/x86_64-w64-mingw32-llvm-strip"
+      - "/System/Cryptexes/App/usr/bin/x86_64-w64-mingw32-llvm-strip"
+      - "/usr/bin/x86_64-w64-mingw32-llvm-strip"
+      - "/bin/x86_64-w64-mingw32-llvm-strip"
+      - "/usr/sbin/x86_64-w64-mingw32-llvm-strip"
+      - "/sbin/x86_64-w64-mingw32-llvm-strip"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin/x86_64-w64-mingw32-llvm-strip"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin/x86_64-w64-mingw32-llvm-strip"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin/x86_64-w64-mingw32-llvm-strip"
+      - "/pkg/env/global/bin/x86_64-w64-mingw32-llvm-strip"
+      - "/Library/Apple/usr/bin/x86_64-w64-mingw32-llvm-strip"
+      - "/usr/local/corplink/mdm/opt/corplink-mdm/bin/x86_64-w64-mingw32-llvm-strip"
+      - "/Users/zhipingwu/.docker/bin/x86_64-w64-mingw32-llvm-strip"
+    found: "/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin/llvm-strip"
+    search_context:
+      ENV{PATH}:
+        - "/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin"
+        - "/opt/homebrew/opt/python@3.12/libexec/bin"
+        - "/opt/homebrew/bin"
+        - "/opt/homebrew/sbin"
+        - "/Users/zhipingwu/.nvm/versions/node/v24.20.0/bin"
+        - "/Users/zhipingwu/.local/bin"
+        - "/opt/homebrew/bin"
+        - "/opt/homebrew/sbin"
+        - "/Users/zhipingwu/.local/bin"
+        - "/usr/local/bin"
+        - "/System/Cryptexes/App/usr/bin"
+        - "/usr/bin"
+        - "/bin"
+        - "/usr/sbin"
+        - "/sbin"
+        - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin"
+        - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin"
+        - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin"
+        - "/pkg/env/global/bin"
+        - "/Library/Apple/usr/bin"
+        - "/usr/local/corplink/mdm/opt/corplink-mdm/bin"
+        - "/opt/homebrew/bin"
+        - "/Users/zhipingwu/.docker/bin"
+  -
+    kind: "find-v1"
+    backtrace:
+      - "/opt/homebrew/share/cmake/Modules/CMakeFindBinUtils.cmake:247 (find_program)"
+      - "/opt/homebrew/share/cmake/Modules/CMakeDetermineCXXCompiler.cmake:206 (include)"
+      - "CMakeLists.txt:2 (project)"
+    mode: "program"
+    variable: "CMAKE_LINKER"
+    description: "Path to a program."
+    settings:
+      SearchFramework: "FIRST"
+      SearchAppBundle: "FIRST"
+      CMAKE_FIND_USE_CMAKE_PATH: false
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: false
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "x86_64-w64-mingw32-ld.lld"
+      - "ld.lld"
+      - "x86_64-w64-mingw32-ld"
+      - "ld"
+    candidate_directories:
+      - "/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin/"
+      - "/opt/homebrew/opt/python@3.12/libexec/bin/"
+      - "/opt/homebrew/bin/"
+      - "/opt/homebrew/sbin/"
+      - "/Users/zhipingwu/.nvm/versions/node/v24.20.0/bin/"
+      - "/Users/zhipingwu/.local/bin/"
+      - "/usr/local/bin/"
+      - "/System/Cryptexes/App/usr/bin/"
+      - "/usr/bin/"
+      - "/bin/"
+      - "/usr/sbin/"
+      - "/sbin/"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin/"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin/"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin/"
+      - "/pkg/env/global/bin/"
+      - "/Library/Apple/usr/bin/"
+      - "/usr/local/corplink/mdm/opt/corplink-mdm/bin/"
+      - "/Users/zhipingwu/.docker/bin/"
+    searched_directories:
+      - "/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin/x86_64-w64-mingw32-ld.lld"
+      - "/opt/homebrew/opt/python@3.12/libexec/bin/x86_64-w64-mingw32-ld.lld"
+      - "/opt/homebrew/bin/x86_64-w64-mingw32-ld.lld"
+      - "/opt/homebrew/sbin/x86_64-w64-mingw32-ld.lld"
+      - "/Users/zhipingwu/.nvm/versions/node/v24.20.0/bin/x86_64-w64-mingw32-ld.lld"
+      - "/Users/zhipingwu/.local/bin/x86_64-w64-mingw32-ld.lld"
+      - "/usr/local/bin/x86_64-w64-mingw32-ld.lld"
+      - "/System/Cryptexes/App/usr/bin/x86_64-w64-mingw32-ld.lld"
+      - "/usr/bin/x86_64-w64-mingw32-ld.lld"
+      - "/bin/x86_64-w64-mingw32-ld.lld"
+      - "/usr/sbin/x86_64-w64-mingw32-ld.lld"
+      - "/sbin/x86_64-w64-mingw32-ld.lld"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin/x86_64-w64-mingw32-ld.lld"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin/x86_64-w64-mingw32-ld.lld"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin/x86_64-w64-mingw32-ld.lld"
+      - "/pkg/env/global/bin/x86_64-w64-mingw32-ld.lld"
+      - "/Library/Apple/usr/bin/x86_64-w64-mingw32-ld.lld"
+      - "/usr/local/corplink/mdm/opt/corplink-mdm/bin/x86_64-w64-mingw32-ld.lld"
+      - "/Users/zhipingwu/.docker/bin/x86_64-w64-mingw32-ld.lld"
+    found: "/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin/ld.lld"
+    search_context:
+      ENV{PATH}:
+        - "/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin"
+        - "/opt/homebrew/opt/python@3.12/libexec/bin"
+        - "/opt/homebrew/bin"
+        - "/opt/homebrew/sbin"
+        - "/Users/zhipingwu/.nvm/versions/node/v24.20.0/bin"
+        - "/Users/zhipingwu/.local/bin"
+        - "/opt/homebrew/bin"
+        - "/opt/homebrew/sbin"
+        - "/Users/zhipingwu/.local/bin"
+        - "/usr/local/bin"
+        - "/System/Cryptexes/App/usr/bin"
+        - "/usr/bin"
+        - "/bin"
+        - "/usr/sbin"
+        - "/sbin"
+        - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin"
+        - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin"
+        - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin"
+        - "/pkg/env/global/bin"
+        - "/Library/Apple/usr/bin"
+        - "/usr/local/corplink/mdm/opt/corplink-mdm/bin"
+        - "/opt/homebrew/bin"
+        - "/Users/zhipingwu/.docker/bin"
+  -
+    kind: "find-v1"
+    backtrace:
+      - "/opt/homebrew/share/cmake/Modules/CMakeFindBinUtils.cmake:247 (find_program)"
+      - "/opt/homebrew/share/cmake/Modules/CMakeDetermineCXXCompiler.cmake:206 (include)"
+      - "CMakeLists.txt:2 (project)"
+    mode: "program"
+    variable: "CMAKE_NM"
+    description: "Path to a program."
+    settings:
+      SearchFramework: "FIRST"
+      SearchAppBundle: "FIRST"
+      CMAKE_FIND_USE_CMAKE_PATH: false
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: false
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "x86_64-w64-mingw32-llvm-nm"
+      - "llvm-nm"
+      - "x86_64-w64-mingw32-nm"
+      - "nm"
+    candidate_directories:
+      - "/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin/"
+      - "/opt/homebrew/opt/python@3.12/libexec/bin/"
+      - "/opt/homebrew/bin/"
+      - "/opt/homebrew/sbin/"
+      - "/Users/zhipingwu/.nvm/versions/node/v24.20.0/bin/"
+      - "/Users/zhipingwu/.local/bin/"
+      - "/usr/local/bin/"
+      - "/System/Cryptexes/App/usr/bin/"
+      - "/usr/bin/"
+      - "/bin/"
+      - "/usr/sbin/"
+      - "/sbin/"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin/"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin/"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin/"
+      - "/pkg/env/global/bin/"
+      - "/Library/Apple/usr/bin/"
+      - "/usr/local/corplink/mdm/opt/corplink-mdm/bin/"
+      - "/Users/zhipingwu/.docker/bin/"
+    searched_directories:
+      - "/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin/x86_64-w64-mingw32-llvm-nm"
+      - "/opt/homebrew/opt/python@3.12/libexec/bin/x86_64-w64-mingw32-llvm-nm"
+      - "/opt/homebrew/bin/x86_64-w64-mingw32-llvm-nm"
+      - "/opt/homebrew/sbin/x86_64-w64-mingw32-llvm-nm"
+      - "/Users/zhipingwu/.nvm/versions/node/v24.20.0/bin/x86_64-w64-mingw32-llvm-nm"
+      - "/Users/zhipingwu/.local/bin/x86_64-w64-mingw32-llvm-nm"
+      - "/usr/local/bin/x86_64-w64-mingw32-llvm-nm"
+      - "/System/Cryptexes/App/usr/bin/x86_64-w64-mingw32-llvm-nm"
+      - "/usr/bin/x86_64-w64-mingw32-llvm-nm"
+      - "/bin/x86_64-w64-mingw32-llvm-nm"
+      - "/usr/sbin/x86_64-w64-mingw32-llvm-nm"
+      - "/sbin/x86_64-w64-mingw32-llvm-nm"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin/x86_64-w64-mingw32-llvm-nm"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin/x86_64-w64-mingw32-llvm-nm"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin/x86_64-w64-mingw32-llvm-nm"
+      - "/pkg/env/global/bin/x86_64-w64-mingw32-llvm-nm"
+      - "/Library/Apple/usr/bin/x86_64-w64-mingw32-llvm-nm"
+      - "/usr/local/corplink/mdm/opt/corplink-mdm/bin/x86_64-w64-mingw32-llvm-nm"
+      - "/Users/zhipingwu/.docker/bin/x86_64-w64-mingw32-llvm-nm"
+    found: "/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin/llvm-nm"
+    search_context:
+      ENV{PATH}:
+        - "/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin"
+        - "/opt/homebrew/opt/python@3.12/libexec/bin"
+        - "/opt/homebrew/bin"
+        - "/opt/homebrew/sbin"
+        - "/Users/zhipingwu/.nvm/versions/node/v24.20.0/bin"
+        - "/Users/zhipingwu/.local/bin"
+        - "/opt/homebrew/bin"
+        - "/opt/homebrew/sbin"
+        - "/Users/zhipingwu/.local/bin"
+        - "/usr/local/bin"
+        - "/System/Cryptexes/App/usr/bin"
+        - "/usr/bin"
+        - "/bin"
+        - "/usr/sbin"
+        - "/sbin"
+        - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin"
+        - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin"
+        - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin"
+        - "/pkg/env/global/bin"
+        - "/Library/Apple/usr/bin"
+        - "/usr/local/corplink/mdm/opt/corplink-mdm/bin"
+        - "/opt/homebrew/bin"
+        - "/Users/zhipingwu/.docker/bin"
+  -
+    kind: "find-v1"
+    backtrace:
+      - "/opt/homebrew/share/cmake/Modules/CMakeFindBinUtils.cmake:247 (find_program)"
+      - "/opt/homebrew/share/cmake/Modules/CMakeDetermineCXXCompiler.cmake:206 (include)"
+      - "CMakeLists.txt:2 (project)"
+    mode: "program"
+    variable: "CMAKE_OBJDUMP"
+    description: "Path to a program."
+    settings:
+      SearchFramework: "FIRST"
+      SearchAppBundle: "FIRST"
+      CMAKE_FIND_USE_CMAKE_PATH: false
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: false
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "x86_64-w64-mingw32-llvm-objdump"
+      - "llvm-objdump"
+      - "x86_64-w64-mingw32-objdump"
+      - "objdump"
+    candidate_directories:
+      - "/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin/"
+      - "/opt/homebrew/opt/python@3.12/libexec/bin/"
+      - "/opt/homebrew/bin/"
+      - "/opt/homebrew/sbin/"
+      - "/Users/zhipingwu/.nvm/versions/node/v24.20.0/bin/"
+      - "/Users/zhipingwu/.local/bin/"
+      - "/usr/local/bin/"
+      - "/System/Cryptexes/App/usr/bin/"
+      - "/usr/bin/"
+      - "/bin/"
+      - "/usr/sbin/"
+      - "/sbin/"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin/"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin/"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin/"
+      - "/pkg/env/global/bin/"
+      - "/Library/Apple/usr/bin/"
+      - "/usr/local/corplink/mdm/opt/corplink-mdm/bin/"
+      - "/Users/zhipingwu/.docker/bin/"
+    searched_directories:
+      - "/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin/x86_64-w64-mingw32-llvm-objdump"
+      - "/opt/homebrew/opt/python@3.12/libexec/bin/x86_64-w64-mingw32-llvm-objdump"
+      - "/opt/homebrew/bin/x86_64-w64-mingw32-llvm-objdump"
+      - "/opt/homebrew/sbin/x86_64-w64-mingw32-llvm-objdump"
+      - "/Users/zhipingwu/.nvm/versions/node/v24.20.0/bin/x86_64-w64-mingw32-llvm-objdump"
+      - "/Users/zhipingwu/.local/bin/x86_64-w64-mingw32-llvm-objdump"
+      - "/usr/local/bin/x86_64-w64-mingw32-llvm-objdump"
+      - "/System/Cryptexes/App/usr/bin/x86_64-w64-mingw32-llvm-objdump"
+      - "/usr/bin/x86_64-w64-mingw32-llvm-objdump"
+      - "/bin/x86_64-w64-mingw32-llvm-objdump"
+      - "/usr/sbin/x86_64-w64-mingw32-llvm-objdump"
+      - "/sbin/x86_64-w64-mingw32-llvm-objdump"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin/x86_64-w64-mingw32-llvm-objdump"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin/x86_64-w64-mingw32-llvm-objdump"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin/x86_64-w64-mingw32-llvm-objdump"
+      - "/pkg/env/global/bin/x86_64-w64-mingw32-llvm-objdump"
+      - "/Library/Apple/usr/bin/x86_64-w64-mingw32-llvm-objdump"
+      - "/usr/local/corplink/mdm/opt/corplink-mdm/bin/x86_64-w64-mingw32-llvm-objdump"
+      - "/Users/zhipingwu/.docker/bin/x86_64-w64-mingw32-llvm-objdump"
+    found: "/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin/llvm-objdump"
+    search_context:
+      ENV{PATH}:
+        - "/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin"
+        - "/opt/homebrew/opt/python@3.12/libexec/bin"
+        - "/opt/homebrew/bin"
+        - "/opt/homebrew/sbin"
+        - "/Users/zhipingwu/.nvm/versions/node/v24.20.0/bin"
+        - "/Users/zhipingwu/.local/bin"
+        - "/opt/homebrew/bin"
+        - "/opt/homebrew/sbin"
+        - "/Users/zhipingwu/.local/bin"
+        - "/usr/local/bin"
+        - "/System/Cryptexes/App/usr/bin"
+        - "/usr/bin"
+        - "/bin"
+        - "/usr/sbin"
+        - "/sbin"
+        - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin"
+        - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin"
+        - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin"
+        - "/pkg/env/global/bin"
+        - "/Library/Apple/usr/bin"
+        - "/usr/local/corplink/mdm/opt/corplink-mdm/bin"
+        - "/opt/homebrew/bin"
+        - "/Users/zhipingwu/.docker/bin"
+  -
+    kind: "find-v1"
+    backtrace:
+      - "/opt/homebrew/share/cmake/Modules/CMakeFindBinUtils.cmake:247 (find_program)"
+      - "/opt/homebrew/share/cmake/Modules/CMakeDetermineCXXCompiler.cmake:206 (include)"
+      - "CMakeLists.txt:2 (project)"
+    mode: "program"
+    variable: "CMAKE_OBJCOPY"
+    description: "Path to a program."
+    settings:
+      SearchFramework: "FIRST"
+      SearchAppBundle: "FIRST"
+      CMAKE_FIND_USE_CMAKE_PATH: false
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: false
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "x86_64-w64-mingw32-llvm-objcopy"
+      - "llvm-objcopy"
+      - "x86_64-w64-mingw32-objcopy"
+      - "objcopy"
+    candidate_directories:
+      - "/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin/"
+      - "/opt/homebrew/opt/python@3.12/libexec/bin/"
+      - "/opt/homebrew/bin/"
+      - "/opt/homebrew/sbin/"
+      - "/Users/zhipingwu/.nvm/versions/node/v24.20.0/bin/"
+      - "/Users/zhipingwu/.local/bin/"
+      - "/usr/local/bin/"
+      - "/System/Cryptexes/App/usr/bin/"
+      - "/usr/bin/"
+      - "/bin/"
+      - "/usr/sbin/"
+      - "/sbin/"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin/"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin/"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin/"
+      - "/pkg/env/global/bin/"
+      - "/Library/Apple/usr/bin/"
+      - "/usr/local/corplink/mdm/opt/corplink-mdm/bin/"
+      - "/Users/zhipingwu/.docker/bin/"
+    searched_directories:
+      - "/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin/x86_64-w64-mingw32-llvm-objcopy"
+      - "/opt/homebrew/opt/python@3.12/libexec/bin/x86_64-w64-mingw32-llvm-objcopy"
+      - "/opt/homebrew/bin/x86_64-w64-mingw32-llvm-objcopy"
+      - "/opt/homebrew/sbin/x86_64-w64-mingw32-llvm-objcopy"
+      - "/Users/zhipingwu/.nvm/versions/node/v24.20.0/bin/x86_64-w64-mingw32-llvm-objcopy"
+      - "/Users/zhipingwu/.local/bin/x86_64-w64-mingw32-llvm-objcopy"
+      - "/usr/local/bin/x86_64-w64-mingw32-llvm-objcopy"
+      - "/System/Cryptexes/App/usr/bin/x86_64-w64-mingw32-llvm-objcopy"
+      - "/usr/bin/x86_64-w64-mingw32-llvm-objcopy"
+      - "/bin/x86_64-w64-mingw32-llvm-objcopy"
+      - "/usr/sbin/x86_64-w64-mingw32-llvm-objcopy"
+      - "/sbin/x86_64-w64-mingw32-llvm-objcopy"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin/x86_64-w64-mingw32-llvm-objcopy"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin/x86_64-w64-mingw32-llvm-objcopy"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin/x86_64-w64-mingw32-llvm-objcopy"
+      - "/pkg/env/global/bin/x86_64-w64-mingw32-llvm-objcopy"
+      - "/Library/Apple/usr/bin/x86_64-w64-mingw32-llvm-objcopy"
+      - "/usr/local/corplink/mdm/opt/corplink-mdm/bin/x86_64-w64-mingw32-llvm-objcopy"
+      - "/Users/zhipingwu/.docker/bin/x86_64-w64-mingw32-llvm-objcopy"
+    found: "/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin/llvm-objcopy"
+    search_context:
+      ENV{PATH}:
+        - "/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin"
+        - "/opt/homebrew/opt/python@3.12/libexec/bin"
+        - "/opt/homebrew/bin"
+        - "/opt/homebrew/sbin"
+        - "/Users/zhipingwu/.nvm/versions/node/v24.20.0/bin"
+        - "/Users/zhipingwu/.local/bin"
+        - "/opt/homebrew/bin"
+        - "/opt/homebrew/sbin"
+        - "/Users/zhipingwu/.local/bin"
+        - "/usr/local/bin"
+        - "/System/Cryptexes/App/usr/bin"
+        - "/usr/bin"
+        - "/bin"
+        - "/usr/sbin"
+        - "/sbin"
+        - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin"
+        - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin"
+        - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin"
+        - "/pkg/env/global/bin"
+        - "/Library/Apple/usr/bin"
+        - "/usr/local/corplink/mdm/opt/corplink-mdm/bin"
+        - "/opt/homebrew/bin"
+        - "/Users/zhipingwu/.docker/bin"
+  -
+    kind: "find-v1"
+    backtrace:
+      - "/opt/homebrew/share/cmake/Modules/CMakeFindBinUtils.cmake:247 (find_program)"
+      - "/opt/homebrew/share/cmake/Modules/CMakeDetermineCXXCompiler.cmake:206 (include)"
+      - "CMakeLists.txt:2 (project)"
+    mode: "program"
+    variable: "CMAKE_READELF"
+    description: "Path to a program."
+    settings:
+      SearchFramework: "FIRST"
+      SearchAppBundle: "FIRST"
+      CMAKE_FIND_USE_CMAKE_PATH: false
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: false
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "x86_64-w64-mingw32-llvm-readelf"
+      - "llvm-readelf"
+      - "x86_64-w64-mingw32-readelf"
+      - "readelf"
+    candidate_directories:
+      - "/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin/"
+      - "/opt/homebrew/opt/python@3.12/libexec/bin/"
+      - "/opt/homebrew/bin/"
+      - "/opt/homebrew/sbin/"
+      - "/Users/zhipingwu/.nvm/versions/node/v24.20.0/bin/"
+      - "/Users/zhipingwu/.local/bin/"
+      - "/usr/local/bin/"
+      - "/System/Cryptexes/App/usr/bin/"
+      - "/usr/bin/"
+      - "/bin/"
+      - "/usr/sbin/"
+      - "/sbin/"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin/"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin/"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin/"
+      - "/pkg/env/global/bin/"
+      - "/Library/Apple/usr/bin/"
+      - "/usr/local/corplink/mdm/opt/corplink-mdm/bin/"
+      - "/Users/zhipingwu/.docker/bin/"
+    searched_directories:
+      - "/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin/x86_64-w64-mingw32-llvm-readelf"
+      - "/opt/homebrew/opt/python@3.12/libexec/bin/x86_64-w64-mingw32-llvm-readelf"
+      - "/opt/homebrew/bin/x86_64-w64-mingw32-llvm-readelf"
+      - "/opt/homebrew/sbin/x86_64-w64-mingw32-llvm-readelf"
+      - "/Users/zhipingwu/.nvm/versions/node/v24.20.0/bin/x86_64-w64-mingw32-llvm-readelf"
+      - "/Users/zhipingwu/.local/bin/x86_64-w64-mingw32-llvm-readelf"
+      - "/usr/local/bin/x86_64-w64-mingw32-llvm-readelf"
+      - "/System/Cryptexes/App/usr/bin/x86_64-w64-mingw32-llvm-readelf"
+      - "/usr/bin/x86_64-w64-mingw32-llvm-readelf"
+      - "/bin/x86_64-w64-mingw32-llvm-readelf"
+      - "/usr/sbin/x86_64-w64-mingw32-llvm-readelf"
+      - "/sbin/x86_64-w64-mingw32-llvm-readelf"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin/x86_64-w64-mingw32-llvm-readelf"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin/x86_64-w64-mingw32-llvm-readelf"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin/x86_64-w64-mingw32-llvm-readelf"
+      - "/pkg/env/global/bin/x86_64-w64-mingw32-llvm-readelf"
+      - "/Library/Apple/usr/bin/x86_64-w64-mingw32-llvm-readelf"
+      - "/usr/local/corplink/mdm/opt/corplink-mdm/bin/x86_64-w64-mingw32-llvm-readelf"
+      - "/Users/zhipingwu/.docker/bin/x86_64-w64-mingw32-llvm-readelf"
+    found: "/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin/llvm-readelf"
+    search_context:
+      ENV{PATH}:
+        - "/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin"
+        - "/opt/homebrew/opt/python@3.12/libexec/bin"
+        - "/opt/homebrew/bin"
+        - "/opt/homebrew/sbin"
+        - "/Users/zhipingwu/.nvm/versions/node/v24.20.0/bin"
+        - "/Users/zhipingwu/.local/bin"
+        - "/opt/homebrew/bin"
+        - "/opt/homebrew/sbin"
+        - "/Users/zhipingwu/.local/bin"
+        - "/usr/local/bin"
+        - "/System/Cryptexes/App/usr/bin"
+        - "/usr/bin"
+        - "/bin"
+        - "/usr/sbin"
+        - "/sbin"
+        - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin"
+        - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin"
+        - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin"
+        - "/pkg/env/global/bin"
+        - "/Library/Apple/usr/bin"
+        - "/usr/local/corplink/mdm/opt/corplink-mdm/bin"
+        - "/opt/homebrew/bin"
+        - "/Users/zhipingwu/.docker/bin"
+  -
+    kind: "find-v1"
+    backtrace:
+      - "/opt/homebrew/share/cmake/Modules/CMakeFindBinUtils.cmake:247 (find_program)"
+      - "/opt/homebrew/share/cmake/Modules/CMakeDetermineCXXCompiler.cmake:206 (include)"
+      - "CMakeLists.txt:2 (project)"
+    mode: "program"
+    variable: "CMAKE_DLLTOOL"
+    description: "Path to a program."
+    settings:
+      SearchFramework: "FIRST"
+      SearchAppBundle: "FIRST"
+      CMAKE_FIND_USE_CMAKE_PATH: false
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: false
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "x86_64-w64-mingw32-llvm-dlltool"
+      - "llvm-dlltool"
+      - "x86_64-w64-mingw32-dlltool"
+      - "dlltool"
+    candidate_directories:
+      - "/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin/"
+      - "/opt/homebrew/opt/python@3.12/libexec/bin/"
+      - "/opt/homebrew/bin/"
+      - "/opt/homebrew/sbin/"
+      - "/Users/zhipingwu/.nvm/versions/node/v24.20.0/bin/"
+      - "/Users/zhipingwu/.local/bin/"
+      - "/usr/local/bin/"
+      - "/System/Cryptexes/App/usr/bin/"
+      - "/usr/bin/"
+      - "/bin/"
+      - "/usr/sbin/"
+      - "/sbin/"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin/"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin/"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin/"
+      - "/pkg/env/global/bin/"
+      - "/Library/Apple/usr/bin/"
+      - "/usr/local/corplink/mdm/opt/corplink-mdm/bin/"
+      - "/Users/zhipingwu/.docker/bin/"
+    searched_directories:
+      - "/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin/x86_64-w64-mingw32-llvm-dlltool"
+      - "/opt/homebrew/opt/python@3.12/libexec/bin/x86_64-w64-mingw32-llvm-dlltool"
+      - "/opt/homebrew/bin/x86_64-w64-mingw32-llvm-dlltool"
+      - "/opt/homebrew/sbin/x86_64-w64-mingw32-llvm-dlltool"
+      - "/Users/zhipingwu/.nvm/versions/node/v24.20.0/bin/x86_64-w64-mingw32-llvm-dlltool"
+      - "/Users/zhipingwu/.local/bin/x86_64-w64-mingw32-llvm-dlltool"
+      - "/usr/local/bin/x86_64-w64-mingw32-llvm-dlltool"
+      - "/System/Cryptexes/App/usr/bin/x86_64-w64-mingw32-llvm-dlltool"
+      - "/usr/bin/x86_64-w64-mingw32-llvm-dlltool"
+      - "/bin/x86_64-w64-mingw32-llvm-dlltool"
+      - "/usr/sbin/x86_64-w64-mingw32-llvm-dlltool"
+      - "/sbin/x86_64-w64-mingw32-llvm-dlltool"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin/x86_64-w64-mingw32-llvm-dlltool"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin/x86_64-w64-mingw32-llvm-dlltool"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin/x86_64-w64-mingw32-llvm-dlltool"
+      - "/pkg/env/global/bin/x86_64-w64-mingw32-llvm-dlltool"
+      - "/Library/Apple/usr/bin/x86_64-w64-mingw32-llvm-dlltool"
+      - "/usr/local/corplink/mdm/opt/corplink-mdm/bin/x86_64-w64-mingw32-llvm-dlltool"
+      - "/Users/zhipingwu/.docker/bin/x86_64-w64-mingw32-llvm-dlltool"
+    found: "/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin/llvm-dlltool"
+    search_context:
+      ENV{PATH}:
+        - "/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin"
+        - "/opt/homebrew/opt/python@3.12/libexec/bin"
+        - "/opt/homebrew/bin"
+        - "/opt/homebrew/sbin"
+        - "/Users/zhipingwu/.nvm/versions/node/v24.20.0/bin"
+        - "/Users/zhipingwu/.local/bin"
+        - "/opt/homebrew/bin"
+        - "/opt/homebrew/sbin"
+        - "/Users/zhipingwu/.local/bin"
+        - "/usr/local/bin"
+        - "/System/Cryptexes/App/usr/bin"
+        - "/usr/bin"
+        - "/bin"
+        - "/usr/sbin"
+        - "/sbin"
+        - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin"
+        - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin"
+        - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin"
+        - "/pkg/env/global/bin"
+        - "/Library/Apple/usr/bin"
+        - "/usr/local/corplink/mdm/opt/corplink-mdm/bin"
+        - "/opt/homebrew/bin"
+        - "/Users/zhipingwu/.docker/bin"
+  -
+    kind: "find-v1"
+    backtrace:
+      - "/opt/homebrew/share/cmake/Modules/CMakeFindBinUtils.cmake:247 (find_program)"
+      - "/opt/homebrew/share/cmake/Modules/CMakeDetermineCXXCompiler.cmake:206 (include)"
+      - "CMakeLists.txt:2 (project)"
+    mode: "program"
+    variable: "CMAKE_ADDR2LINE"
+    description: "Path to a program."
+    settings:
+      SearchFramework: "FIRST"
+      SearchAppBundle: "FIRST"
+      CMAKE_FIND_USE_CMAKE_PATH: false
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: false
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "x86_64-w64-mingw32-llvm-addr2line"
+      - "llvm-addr2line"
+      - "x86_64-w64-mingw32-addr2line"
+      - "addr2line"
+    candidate_directories:
+      - "/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin/"
+      - "/opt/homebrew/opt/python@3.12/libexec/bin/"
+      - "/opt/homebrew/bin/"
+      - "/opt/homebrew/sbin/"
+      - "/Users/zhipingwu/.nvm/versions/node/v24.20.0/bin/"
+      - "/Users/zhipingwu/.local/bin/"
+      - "/usr/local/bin/"
+      - "/System/Cryptexes/App/usr/bin/"
+      - "/usr/bin/"
+      - "/bin/"
+      - "/usr/sbin/"
+      - "/sbin/"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin/"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin/"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin/"
+      - "/pkg/env/global/bin/"
+      - "/Library/Apple/usr/bin/"
+      - "/usr/local/corplink/mdm/opt/corplink-mdm/bin/"
+      - "/Users/zhipingwu/.docker/bin/"
+    searched_directories:
+      - "/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin/x86_64-w64-mingw32-llvm-addr2line"
+      - "/opt/homebrew/opt/python@3.12/libexec/bin/x86_64-w64-mingw32-llvm-addr2line"
+      - "/opt/homebrew/bin/x86_64-w64-mingw32-llvm-addr2line"
+      - "/opt/homebrew/sbin/x86_64-w64-mingw32-llvm-addr2line"
+      - "/Users/zhipingwu/.nvm/versions/node/v24.20.0/bin/x86_64-w64-mingw32-llvm-addr2line"
+      - "/Users/zhipingwu/.local/bin/x86_64-w64-mingw32-llvm-addr2line"
+      - "/usr/local/bin/x86_64-w64-mingw32-llvm-addr2line"
+      - "/System/Cryptexes/App/usr/bin/x86_64-w64-mingw32-llvm-addr2line"
+      - "/usr/bin/x86_64-w64-mingw32-llvm-addr2line"
+      - "/bin/x86_64-w64-mingw32-llvm-addr2line"
+      - "/usr/sbin/x86_64-w64-mingw32-llvm-addr2line"
+      - "/sbin/x86_64-w64-mingw32-llvm-addr2line"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin/x86_64-w64-mingw32-llvm-addr2line"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin/x86_64-w64-mingw32-llvm-addr2line"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin/x86_64-w64-mingw32-llvm-addr2line"
+      - "/pkg/env/global/bin/x86_64-w64-mingw32-llvm-addr2line"
+      - "/Library/Apple/usr/bin/x86_64-w64-mingw32-llvm-addr2line"
+      - "/usr/local/corplink/mdm/opt/corplink-mdm/bin/x86_64-w64-mingw32-llvm-addr2line"
+      - "/Users/zhipingwu/.docker/bin/x86_64-w64-mingw32-llvm-addr2line"
+    found: "/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin/llvm-addr2line"
+    search_context:
+      ENV{PATH}:
+        - "/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin"
+        - "/opt/homebrew/opt/python@3.12/libexec/bin"
+        - "/opt/homebrew/bin"
+        - "/opt/homebrew/sbin"
+        - "/Users/zhipingwu/.nvm/versions/node/v24.20.0/bin"
+        - "/Users/zhipingwu/.local/bin"
+        - "/opt/homebrew/bin"
+        - "/opt/homebrew/sbin"
+        - "/Users/zhipingwu/.local/bin"
+        - "/usr/local/bin"
+        - "/System/Cryptexes/App/usr/bin"
+        - "/usr/bin"
+        - "/bin"
+        - "/usr/sbin"
+        - "/sbin"
+        - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin"
+        - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin"
+        - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin"
+        - "/pkg/env/global/bin"
+        - "/Library/Apple/usr/bin"
+        - "/usr/local/corplink/mdm/opt/corplink-mdm/bin"
+        - "/opt/homebrew/bin"
+        - "/Users/zhipingwu/.docker/bin"
+  -
+    kind: "find-v1"
+    backtrace:
+      - "/opt/homebrew/share/cmake/Modules/CMakeFindBinUtils.cmake:247 (find_program)"
+      - "/opt/homebrew/share/cmake/Modules/CMakeDetermineCXXCompiler.cmake:206 (include)"
+      - "CMakeLists.txt:2 (project)"
+    mode: "program"
+    variable: "CMAKE_TAPI"
+    description: "Path to a program."
+    settings:
+      SearchFramework: "FIRST"
+      SearchAppBundle: "FIRST"
+      CMAKE_FIND_USE_CMAKE_PATH: false
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: false
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "x86_64-w64-mingw32-tapi"
+      - "tapi"
+    candidate_directories:
+      - "/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin/"
+      - "/opt/homebrew/opt/python@3.12/libexec/bin/"
+      - "/opt/homebrew/bin/"
+      - "/opt/homebrew/sbin/"
+      - "/Users/zhipingwu/.nvm/versions/node/v24.20.0/bin/"
+      - "/Users/zhipingwu/.local/bin/"
+      - "/usr/local/bin/"
+      - "/System/Cryptexes/App/usr/bin/"
+      - "/usr/bin/"
+      - "/bin/"
+      - "/usr/sbin/"
+      - "/sbin/"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin/"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin/"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin/"
+      - "/pkg/env/global/bin/"
+      - "/Library/Apple/usr/bin/"
+      - "/usr/local/corplink/mdm/opt/corplink-mdm/bin/"
+      - "/Users/zhipingwu/.docker/bin/"
+    searched_directories:
+      - "/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin/x86_64-w64-mingw32-tapi"
+      - "/opt/homebrew/opt/python@3.12/libexec/bin/x86_64-w64-mingw32-tapi"
+      - "/opt/homebrew/bin/x86_64-w64-mingw32-tapi"
+      - "/opt/homebrew/sbin/x86_64-w64-mingw32-tapi"
+      - "/Users/zhipingwu/.nvm/versions/node/v24.20.0/bin/x86_64-w64-mingw32-tapi"
+      - "/Users/zhipingwu/.local/bin/x86_64-w64-mingw32-tapi"
+      - "/usr/local/bin/x86_64-w64-mingw32-tapi"
+      - "/System/Cryptexes/App/usr/bin/x86_64-w64-mingw32-tapi"
+      - "/usr/bin/x86_64-w64-mingw32-tapi"
+      - "/bin/x86_64-w64-mingw32-tapi"
+      - "/usr/sbin/x86_64-w64-mingw32-tapi"
+      - "/sbin/x86_64-w64-mingw32-tapi"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin/x86_64-w64-mingw32-tapi"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin/x86_64-w64-mingw32-tapi"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin/x86_64-w64-mingw32-tapi"
+      - "/pkg/env/global/bin/x86_64-w64-mingw32-tapi"
+      - "/Library/Apple/usr/bin/x86_64-w64-mingw32-tapi"
+      - "/usr/local/corplink/mdm/opt/corplink-mdm/bin/x86_64-w64-mingw32-tapi"
+      - "/Users/zhipingwu/.docker/bin/x86_64-w64-mingw32-tapi"
+      - "/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin/tapi"
+      - "/opt/homebrew/opt/python@3.12/libexec/bin/tapi"
+      - "/opt/homebrew/bin/tapi"
+      - "/opt/homebrew/sbin/tapi"
+      - "/Users/zhipingwu/.nvm/versions/node/v24.20.0/bin/tapi"
+      - "/Users/zhipingwu/.local/bin/tapi"
+      - "/usr/local/bin/tapi"
+      - "/System/Cryptexes/App/usr/bin/tapi"
+      - "/usr/bin/tapi"
+      - "/bin/tapi"
+      - "/usr/sbin/tapi"
+      - "/sbin/tapi"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin/tapi"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin/tapi"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin/tapi"
+      - "/pkg/env/global/bin/tapi"
+      - "/Library/Apple/usr/bin/tapi"
+      - "/usr/local/corplink/mdm/opt/corplink-mdm/bin/tapi"
+      - "/Users/zhipingwu/.docker/bin/tapi"
+    found: false
+    search_context:
+      ENV{PATH}:
+        - "/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin"
+        - "/opt/homebrew/opt/python@3.12/libexec/bin"
+        - "/opt/homebrew/bin"
+        - "/opt/homebrew/sbin"
+        - "/Users/zhipingwu/.nvm/versions/node/v24.20.0/bin"
+        - "/Users/zhipingwu/.local/bin"
+        - "/opt/homebrew/bin"
+        - "/opt/homebrew/sbin"
+        - "/Users/zhipingwu/.local/bin"
+        - "/usr/local/bin"
+        - "/System/Cryptexes/App/usr/bin"
+        - "/usr/bin"
+        - "/bin"
+        - "/usr/sbin"
+        - "/sbin"
+        - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin"
+        - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin"
+        - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin"
+        - "/pkg/env/global/bin"
+        - "/Library/Apple/usr/bin"
+        - "/usr/local/corplink/mdm/opt/corplink-mdm/bin"
+        - "/opt/homebrew/bin"
+        - "/Users/zhipingwu/.docker/bin"
+  -
+    kind: "find-v1"
+    backtrace:
+      - "/opt/homebrew/share/cmake/Modules/Compiler/Clang-FindBinUtils.cmake:26 (find_program)"
+      - "/opt/homebrew/share/cmake/Modules/CMakeDetermineCXXCompiler.cmake:207 (include)"
+      - "CMakeLists.txt:2 (project)"
+    mode: "program"
+    variable: "CMAKE_CXX_COMPILER_AR"
+    description: "LLVM archiver"
+    settings:
+      SearchFramework: "FIRST"
+      SearchAppBundle: "FIRST"
+      CMAKE_FIND_USE_CMAKE_PATH: false
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: false
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "x86_64-w64-mingw32-llvm-ar-19.1"
+      - "x86_64-w64-mingw32-llvm-ar-19"
+      - "x86_64-w64-mingw32-llvm-ar19"
+      - "x86_64-w64-mingw32-llvm-ar"
+    candidate_directories:
+      - "/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin/"
+      - "/opt/homebrew/opt/python@3.12/libexec/bin/"
+      - "/opt/homebrew/bin/"
+      - "/opt/homebrew/sbin/"
+      - "/Users/zhipingwu/.nvm/versions/node/v24.20.0/bin/"
+      - "/Users/zhipingwu/.local/bin/"
+      - "/usr/local/bin/"
+      - "/System/Cryptexes/App/usr/bin/"
+      - "/usr/bin/"
+      - "/bin/"
+      - "/usr/sbin/"
+      - "/sbin/"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin/"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin/"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin/"
+      - "/pkg/env/global/bin/"
+      - "/Library/Apple/usr/bin/"
+      - "/usr/local/corplink/mdm/opt/corplink-mdm/bin/"
+      - "/Users/zhipingwu/.docker/bin/"
+    searched_directories:
+      - "/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin/x86_64-w64-mingw32-llvm-ar-19.1"
+      - "/opt/homebrew/opt/python@3.12/libexec/bin/x86_64-w64-mingw32-llvm-ar-19.1"
+      - "/opt/homebrew/bin/x86_64-w64-mingw32-llvm-ar-19.1"
+      - "/opt/homebrew/sbin/x86_64-w64-mingw32-llvm-ar-19.1"
+      - "/Users/zhipingwu/.nvm/versions/node/v24.20.0/bin/x86_64-w64-mingw32-llvm-ar-19.1"
+      - "/Users/zhipingwu/.local/bin/x86_64-w64-mingw32-llvm-ar-19.1"
+      - "/usr/local/bin/x86_64-w64-mingw32-llvm-ar-19.1"
+      - "/System/Cryptexes/App/usr/bin/x86_64-w64-mingw32-llvm-ar-19.1"
+      - "/usr/bin/x86_64-w64-mingw32-llvm-ar-19.1"
+      - "/bin/x86_64-w64-mingw32-llvm-ar-19.1"
+      - "/usr/sbin/x86_64-w64-mingw32-llvm-ar-19.1"
+      - "/sbin/x86_64-w64-mingw32-llvm-ar-19.1"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin/x86_64-w64-mingw32-llvm-ar-19.1"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin/x86_64-w64-mingw32-llvm-ar-19.1"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin/x86_64-w64-mingw32-llvm-ar-19.1"
+      - "/pkg/env/global/bin/x86_64-w64-mingw32-llvm-ar-19.1"
+      - "/Library/Apple/usr/bin/x86_64-w64-mingw32-llvm-ar-19.1"
+      - "/usr/local/corplink/mdm/opt/corplink-mdm/bin/x86_64-w64-mingw32-llvm-ar-19.1"
+      - "/Users/zhipingwu/.docker/bin/x86_64-w64-mingw32-llvm-ar-19.1"
+      - "/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin/x86_64-w64-mingw32-llvm-ar-19"
+      - "/opt/homebrew/opt/python@3.12/libexec/bin/x86_64-w64-mingw32-llvm-ar-19"
+      - "/opt/homebrew/bin/x86_64-w64-mingw32-llvm-ar-19"
+      - "/opt/homebrew/sbin/x86_64-w64-mingw32-llvm-ar-19"
+      - "/Users/zhipingwu/.nvm/versions/node/v24.20.0/bin/x86_64-w64-mingw32-llvm-ar-19"
+      - "/Users/zhipingwu/.local/bin/x86_64-w64-mingw32-llvm-ar-19"
+      - "/usr/local/bin/x86_64-w64-mingw32-llvm-ar-19"
+      - "/System/Cryptexes/App/usr/bin/x86_64-w64-mingw32-llvm-ar-19"
+      - "/usr/bin/x86_64-w64-mingw32-llvm-ar-19"
+      - "/bin/x86_64-w64-mingw32-llvm-ar-19"
+      - "/usr/sbin/x86_64-w64-mingw32-llvm-ar-19"
+      - "/sbin/x86_64-w64-mingw32-llvm-ar-19"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin/x86_64-w64-mingw32-llvm-ar-19"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin/x86_64-w64-mingw32-llvm-ar-19"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin/x86_64-w64-mingw32-llvm-ar-19"
+      - "/pkg/env/global/bin/x86_64-w64-mingw32-llvm-ar-19"
+      - "/Library/Apple/usr/bin/x86_64-w64-mingw32-llvm-ar-19"
+      - "/usr/local/corplink/mdm/opt/corplink-mdm/bin/x86_64-w64-mingw32-llvm-ar-19"
+      - "/Users/zhipingwu/.docker/bin/x86_64-w64-mingw32-llvm-ar-19"
+      - "/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin/x86_64-w64-mingw32-llvm-ar19"
+      - "/opt/homebrew/opt/python@3.12/libexec/bin/x86_64-w64-mingw32-llvm-ar19"
+      - "/opt/homebrew/bin/x86_64-w64-mingw32-llvm-ar19"
+      - "/opt/homebrew/sbin/x86_64-w64-mingw32-llvm-ar19"
+      - "/Users/zhipingwu/.nvm/versions/node/v24.20.0/bin/x86_64-w64-mingw32-llvm-ar19"
+      - "/Users/zhipingwu/.local/bin/x86_64-w64-mingw32-llvm-ar19"
+      - "/usr/local/bin/x86_64-w64-mingw32-llvm-ar19"
+      - "/System/Cryptexes/App/usr/bin/x86_64-w64-mingw32-llvm-ar19"
+      - "/usr/bin/x86_64-w64-mingw32-llvm-ar19"
+      - "/bin/x86_64-w64-mingw32-llvm-ar19"
+      - "/usr/sbin/x86_64-w64-mingw32-llvm-ar19"
+      - "/sbin/x86_64-w64-mingw32-llvm-ar19"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin/x86_64-w64-mingw32-llvm-ar19"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin/x86_64-w64-mingw32-llvm-ar19"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin/x86_64-w64-mingw32-llvm-ar19"
+      - "/pkg/env/global/bin/x86_64-w64-mingw32-llvm-ar19"
+      - "/Library/Apple/usr/bin/x86_64-w64-mingw32-llvm-ar19"
+      - "/usr/local/corplink/mdm/opt/corplink-mdm/bin/x86_64-w64-mingw32-llvm-ar19"
+      - "/Users/zhipingwu/.docker/bin/x86_64-w64-mingw32-llvm-ar19"
+    found: "/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin/x86_64-w64-mingw32-llvm-ar"
+    search_context:
+      ENV{PATH}:
+        - "/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin"
+        - "/opt/homebrew/opt/python@3.12/libexec/bin"
+        - "/opt/homebrew/bin"
+        - "/opt/homebrew/sbin"
+        - "/Users/zhipingwu/.nvm/versions/node/v24.20.0/bin"
+        - "/Users/zhipingwu/.local/bin"
+        - "/opt/homebrew/bin"
+        - "/opt/homebrew/sbin"
+        - "/Users/zhipingwu/.local/bin"
+        - "/usr/local/bin"
+        - "/System/Cryptexes/App/usr/bin"
+        - "/usr/bin"
+        - "/bin"
+        - "/usr/sbin"
+        - "/sbin"
+        - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin"
+        - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin"
+        - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin"
+        - "/pkg/env/global/bin"
+        - "/Library/Apple/usr/bin"
+        - "/usr/local/corplink/mdm/opt/corplink-mdm/bin"
+        - "/opt/homebrew/bin"
+        - "/Users/zhipingwu/.docker/bin"
+  -
+    kind: "find-v1"
+    backtrace:
+      - "/opt/homebrew/share/cmake/Modules/Compiler/Clang-FindBinUtils.cmake:38 (find_program)"
+      - "/opt/homebrew/share/cmake/Modules/CMakeDetermineCXXCompiler.cmake:207 (include)"
+      - "CMakeLists.txt:2 (project)"
+    mode: "program"
+    variable: "CMAKE_CXX_COMPILER_RANLIB"
+    description: "Generate index for LLVM archive"
+    settings:
+      SearchFramework: "FIRST"
+      SearchAppBundle: "FIRST"
+      CMAKE_FIND_USE_CMAKE_PATH: false
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: false
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "x86_64-w64-mingw32-llvm-ranlib-19.1"
+      - "x86_64-w64-mingw32-llvm-ranlib-19"
+      - "x86_64-w64-mingw32-llvm-ranlib19"
+      - "x86_64-w64-mingw32-llvm-ranlib"
+    candidate_directories:
+      - "/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin/"
+      - "/opt/homebrew/opt/python@3.12/libexec/bin/"
+      - "/opt/homebrew/bin/"
+      - "/opt/homebrew/sbin/"
+      - "/Users/zhipingwu/.nvm/versions/node/v24.20.0/bin/"
+      - "/Users/zhipingwu/.local/bin/"
+      - "/usr/local/bin/"
+      - "/System/Cryptexes/App/usr/bin/"
+      - "/usr/bin/"
+      - "/bin/"
+      - "/usr/sbin/"
+      - "/sbin/"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin/"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin/"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin/"
+      - "/pkg/env/global/bin/"
+      - "/Library/Apple/usr/bin/"
+      - "/usr/local/corplink/mdm/opt/corplink-mdm/bin/"
+      - "/Users/zhipingwu/.docker/bin/"
+    searched_directories:
+      - "/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin/x86_64-w64-mingw32-llvm-ranlib-19.1"
+      - "/opt/homebrew/opt/python@3.12/libexec/bin/x86_64-w64-mingw32-llvm-ranlib-19.1"
+      - "/opt/homebrew/bin/x86_64-w64-mingw32-llvm-ranlib-19.1"
+      - "/opt/homebrew/sbin/x86_64-w64-mingw32-llvm-ranlib-19.1"
+      - "/Users/zhipingwu/.nvm/versions/node/v24.20.0/bin/x86_64-w64-mingw32-llvm-ranlib-19.1"
+      - "/Users/zhipingwu/.local/bin/x86_64-w64-mingw32-llvm-ranlib-19.1"
+      - "/usr/local/bin/x86_64-w64-mingw32-llvm-ranlib-19.1"
+      - "/System/Cryptexes/App/usr/bin/x86_64-w64-mingw32-llvm-ranlib-19.1"
+      - "/usr/bin/x86_64-w64-mingw32-llvm-ranlib-19.1"
+      - "/bin/x86_64-w64-mingw32-llvm-ranlib-19.1"
+      - "/usr/sbin/x86_64-w64-mingw32-llvm-ranlib-19.1"
+      - "/sbin/x86_64-w64-mingw32-llvm-ranlib-19.1"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin/x86_64-w64-mingw32-llvm-ranlib-19.1"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin/x86_64-w64-mingw32-llvm-ranlib-19.1"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin/x86_64-w64-mingw32-llvm-ranlib-19.1"
+      - "/pkg/env/global/bin/x86_64-w64-mingw32-llvm-ranlib-19.1"
+      - "/Library/Apple/usr/bin/x86_64-w64-mingw32-llvm-ranlib-19.1"
+      - "/usr/local/corplink/mdm/opt/corplink-mdm/bin/x86_64-w64-mingw32-llvm-ranlib-19.1"
+      - "/Users/zhipingwu/.docker/bin/x86_64-w64-mingw32-llvm-ranlib-19.1"
+      - "/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin/x86_64-w64-mingw32-llvm-ranlib-19"
+      - "/opt/homebrew/opt/python@3.12/libexec/bin/x86_64-w64-mingw32-llvm-ranlib-19"
+      - "/opt/homebrew/bin/x86_64-w64-mingw32-llvm-ranlib-19"
+      - "/opt/homebrew/sbin/x86_64-w64-mingw32-llvm-ranlib-19"
+      - "/Users/zhipingwu/.nvm/versions/node/v24.20.0/bin/x86_64-w64-mingw32-llvm-ranlib-19"
+      - "/Users/zhipingwu/.local/bin/x86_64-w64-mingw32-llvm-ranlib-19"
+      - "/usr/local/bin/x86_64-w64-mingw32-llvm-ranlib-19"
+      - "/System/Cryptexes/App/usr/bin/x86_64-w64-mingw32-llvm-ranlib-19"
+      - "/usr/bin/x86_64-w64-mingw32-llvm-ranlib-19"
+      - "/bin/x86_64-w64-mingw32-llvm-ranlib-19"
+      - "/usr/sbin/x86_64-w64-mingw32-llvm-ranlib-19"
+      - "/sbin/x86_64-w64-mingw32-llvm-ranlib-19"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin/x86_64-w64-mingw32-llvm-ranlib-19"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin/x86_64-w64-mingw32-llvm-ranlib-19"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin/x86_64-w64-mingw32-llvm-ranlib-19"
+      - "/pkg/env/global/bin/x86_64-w64-mingw32-llvm-ranlib-19"
+      - "/Library/Apple/usr/bin/x86_64-w64-mingw32-llvm-ranlib-19"
+      - "/usr/local/corplink/mdm/opt/corplink-mdm/bin/x86_64-w64-mingw32-llvm-ranlib-19"
+      - "/Users/zhipingwu/.docker/bin/x86_64-w64-mingw32-llvm-ranlib-19"
+      - "/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin/x86_64-w64-mingw32-llvm-ranlib19"
+      - "/opt/homebrew/opt/python@3.12/libexec/bin/x86_64-w64-mingw32-llvm-ranlib19"
+      - "/opt/homebrew/bin/x86_64-w64-mingw32-llvm-ranlib19"
+      - "/opt/homebrew/sbin/x86_64-w64-mingw32-llvm-ranlib19"
+      - "/Users/zhipingwu/.nvm/versions/node/v24.20.0/bin/x86_64-w64-mingw32-llvm-ranlib19"
+      - "/Users/zhipingwu/.local/bin/x86_64-w64-mingw32-llvm-ranlib19"
+      - "/usr/local/bin/x86_64-w64-mingw32-llvm-ranlib19"
+      - "/System/Cryptexes/App/usr/bin/x86_64-w64-mingw32-llvm-ranlib19"
+      - "/usr/bin/x86_64-w64-mingw32-llvm-ranlib19"
+      - "/bin/x86_64-w64-mingw32-llvm-ranlib19"
+      - "/usr/sbin/x86_64-w64-mingw32-llvm-ranlib19"
+      - "/sbin/x86_64-w64-mingw32-llvm-ranlib19"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin/x86_64-w64-mingw32-llvm-ranlib19"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin/x86_64-w64-mingw32-llvm-ranlib19"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin/x86_64-w64-mingw32-llvm-ranlib19"
+      - "/pkg/env/global/bin/x86_64-w64-mingw32-llvm-ranlib19"
+      - "/Library/Apple/usr/bin/x86_64-w64-mingw32-llvm-ranlib19"
+      - "/usr/local/corplink/mdm/opt/corplink-mdm/bin/x86_64-w64-mingw32-llvm-ranlib19"
+      - "/Users/zhipingwu/.docker/bin/x86_64-w64-mingw32-llvm-ranlib19"
+    found: "/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin/x86_64-w64-mingw32-llvm-ranlib"
+    search_context:
+      ENV{PATH}:
+        - "/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin"
+        - "/opt/homebrew/opt/python@3.12/libexec/bin"
+        - "/opt/homebrew/bin"
+        - "/opt/homebrew/sbin"
+        - "/Users/zhipingwu/.nvm/versions/node/v24.20.0/bin"
+        - "/Users/zhipingwu/.local/bin"
+        - "/opt/homebrew/bin"
+        - "/opt/homebrew/sbin"
+        - "/Users/zhipingwu/.local/bin"
+        - "/usr/local/bin"
+        - "/System/Cryptexes/App/usr/bin"
+        - "/usr/bin"
+        - "/bin"
+        - "/usr/sbin"
+        - "/sbin"
+        - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin"
+        - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin"
+        - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin"
+        - "/pkg/env/global/bin"
+        - "/Library/Apple/usr/bin"
+        - "/usr/local/corplink/mdm/opt/corplink-mdm/bin"
+        - "/opt/homebrew/bin"
+        - "/Users/zhipingwu/.docker/bin"
+  -
+    kind: "find-v1"
+    backtrace:
+      - "/opt/homebrew/share/cmake/Modules/Compiler/Clang-FindBinUtils.cmake:50 (find_program)"
+      - "/opt/homebrew/share/cmake/Modules/CMakeDetermineCXXCompiler.cmake:207 (include)"
+      - "CMakeLists.txt:2 (project)"
+    mode: "program"
+    variable: "CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS"
+    description: "`clang-scan-deps` dependency scanner"
+    settings:
+      SearchFramework: "FIRST"
+      SearchAppBundle: "FIRST"
+      CMAKE_FIND_USE_CMAKE_PATH: false
+      CMAKE_FIND_USE_CMAKE_ENVIRONMENT_PATH: false
+      CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH: true
+      CMAKE_FIND_USE_CMAKE_SYSTEM_PATH: true
+      CMAKE_FIND_USE_INSTALL_PREFIX: true
+    names:
+      - "x86_64-w64-mingw32-clang-scan-deps-19.1"
+      - "x86_64-w64-mingw32-clang-scan-deps-19"
+      - "x86_64-w64-mingw32-clang-scan-deps19"
+      - "x86_64-w64-mingw32-clang-scan-deps"
+      - "clang-scan-deps-19.1"
+      - "clang-scan-deps-19"
+      - "clang-scan-deps19"
+      - "clang-scan-deps"
+    candidate_directories:
+      - "/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin/"
+      - "/opt/homebrew/opt/python@3.12/libexec/bin/"
+      - "/opt/homebrew/bin/"
+      - "/opt/homebrew/sbin/"
+      - "/Users/zhipingwu/.nvm/versions/node/v24.20.0/bin/"
+      - "/Users/zhipingwu/.local/bin/"
+      - "/usr/local/bin/"
+      - "/System/Cryptexes/App/usr/bin/"
+      - "/usr/bin/"
+      - "/bin/"
+      - "/usr/sbin/"
+      - "/sbin/"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin/"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin/"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin/"
+      - "/pkg/env/global/bin/"
+      - "/Library/Apple/usr/bin/"
+      - "/usr/local/corplink/mdm/opt/corplink-mdm/bin/"
+      - "/Users/zhipingwu/.docker/bin/"
+    searched_directories:
+      - "/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin/x86_64-w64-mingw32-clang-scan-deps-19.1"
+      - "/opt/homebrew/opt/python@3.12/libexec/bin/x86_64-w64-mingw32-clang-scan-deps-19.1"
+      - "/opt/homebrew/bin/x86_64-w64-mingw32-clang-scan-deps-19.1"
+      - "/opt/homebrew/sbin/x86_64-w64-mingw32-clang-scan-deps-19.1"
+      - "/Users/zhipingwu/.nvm/versions/node/v24.20.0/bin/x86_64-w64-mingw32-clang-scan-deps-19.1"
+      - "/Users/zhipingwu/.local/bin/x86_64-w64-mingw32-clang-scan-deps-19.1"
+      - "/usr/local/bin/x86_64-w64-mingw32-clang-scan-deps-19.1"
+      - "/System/Cryptexes/App/usr/bin/x86_64-w64-mingw32-clang-scan-deps-19.1"
+      - "/usr/bin/x86_64-w64-mingw32-clang-scan-deps-19.1"
+      - "/bin/x86_64-w64-mingw32-clang-scan-deps-19.1"
+      - "/usr/sbin/x86_64-w64-mingw32-clang-scan-deps-19.1"
+      - "/sbin/x86_64-w64-mingw32-clang-scan-deps-19.1"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin/x86_64-w64-mingw32-clang-scan-deps-19.1"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin/x86_64-w64-mingw32-clang-scan-deps-19.1"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin/x86_64-w64-mingw32-clang-scan-deps-19.1"
+      - "/pkg/env/global/bin/x86_64-w64-mingw32-clang-scan-deps-19.1"
+      - "/Library/Apple/usr/bin/x86_64-w64-mingw32-clang-scan-deps-19.1"
+      - "/usr/local/corplink/mdm/opt/corplink-mdm/bin/x86_64-w64-mingw32-clang-scan-deps-19.1"
+      - "/Users/zhipingwu/.docker/bin/x86_64-w64-mingw32-clang-scan-deps-19.1"
+      - "/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin/x86_64-w64-mingw32-clang-scan-deps-19"
+      - "/opt/homebrew/opt/python@3.12/libexec/bin/x86_64-w64-mingw32-clang-scan-deps-19"
+      - "/opt/homebrew/bin/x86_64-w64-mingw32-clang-scan-deps-19"
+      - "/opt/homebrew/sbin/x86_64-w64-mingw32-clang-scan-deps-19"
+      - "/Users/zhipingwu/.nvm/versions/node/v24.20.0/bin/x86_64-w64-mingw32-clang-scan-deps-19"
+      - "/Users/zhipingwu/.local/bin/x86_64-w64-mingw32-clang-scan-deps-19"
+      - "/usr/local/bin/x86_64-w64-mingw32-clang-scan-deps-19"
+      - "/System/Cryptexes/App/usr/bin/x86_64-w64-mingw32-clang-scan-deps-19"
+      - "/usr/bin/x86_64-w64-mingw32-clang-scan-deps-19"
+      - "/bin/x86_64-w64-mingw32-clang-scan-deps-19"
+      - "/usr/sbin/x86_64-w64-mingw32-clang-scan-deps-19"
+      - "/sbin/x86_64-w64-mingw32-clang-scan-deps-19"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin/x86_64-w64-mingw32-clang-scan-deps-19"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin/x86_64-w64-mingw32-clang-scan-deps-19"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin/x86_64-w64-mingw32-clang-scan-deps-19"
+      - "/pkg/env/global/bin/x86_64-w64-mingw32-clang-scan-deps-19"
+      - "/Library/Apple/usr/bin/x86_64-w64-mingw32-clang-scan-deps-19"
+      - "/usr/local/corplink/mdm/opt/corplink-mdm/bin/x86_64-w64-mingw32-clang-scan-deps-19"
+      - "/Users/zhipingwu/.docker/bin/x86_64-w64-mingw32-clang-scan-deps-19"
+      - "/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin/x86_64-w64-mingw32-clang-scan-deps19"
+      - "/opt/homebrew/opt/python@3.12/libexec/bin/x86_64-w64-mingw32-clang-scan-deps19"
+      - "/opt/homebrew/bin/x86_64-w64-mingw32-clang-scan-deps19"
+      - "/opt/homebrew/sbin/x86_64-w64-mingw32-clang-scan-deps19"
+      - "/Users/zhipingwu/.nvm/versions/node/v24.20.0/bin/x86_64-w64-mingw32-clang-scan-deps19"
+      - "/Users/zhipingwu/.local/bin/x86_64-w64-mingw32-clang-scan-deps19"
+      - "/usr/local/bin/x86_64-w64-mingw32-clang-scan-deps19"
+      - "/System/Cryptexes/App/usr/bin/x86_64-w64-mingw32-clang-scan-deps19"
+      - "/usr/bin/x86_64-w64-mingw32-clang-scan-deps19"
+      - "/bin/x86_64-w64-mingw32-clang-scan-deps19"
+      - "/usr/sbin/x86_64-w64-mingw32-clang-scan-deps19"
+      - "/sbin/x86_64-w64-mingw32-clang-scan-deps19"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin/x86_64-w64-mingw32-clang-scan-deps19"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin/x86_64-w64-mingw32-clang-scan-deps19"
+      - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin/x86_64-w64-mingw32-clang-scan-deps19"
+      - "/pkg/env/global/bin/x86_64-w64-mingw32-clang-scan-deps19"
+      - "/Library/Apple/usr/bin/x86_64-w64-mingw32-clang-scan-deps19"
+      - "/usr/local/corplink/mdm/opt/corplink-mdm/bin/x86_64-w64-mingw32-clang-scan-deps19"
+      - "/Users/zhipingwu/.docker/bin/x86_64-w64-mingw32-clang-scan-deps19"
+    found: "/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin/x86_64-w64-mingw32-clang-scan-deps"
+    search_context:
+      ENV{PATH}:
+        - "/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin"
+        - "/opt/homebrew/opt/python@3.12/libexec/bin"
+        - "/opt/homebrew/bin"
+        - "/opt/homebrew/sbin"
+        - "/Users/zhipingwu/.nvm/versions/node/v24.20.0/bin"
+        - "/Users/zhipingwu/.local/bin"
+        - "/opt/homebrew/bin"
+        - "/opt/homebrew/sbin"
+        - "/Users/zhipingwu/.local/bin"
+        - "/usr/local/bin"
+        - "/System/Cryptexes/App/usr/bin"
+        - "/usr/bin"
+        - "/bin"
+        - "/usr/sbin"
+        - "/sbin"
+        - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin"
+        - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin"
+        - "/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin"
+        - "/pkg/env/global/bin"
+        - "/Library/Apple/usr/bin"
+        - "/usr/local/corplink/mdm/opt/corplink-mdm/bin"
+        - "/opt/homebrew/bin"
+        - "/Users/zhipingwu/.docker/bin"
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/opt/homebrew/share/cmake/Modules/CMakeDetermineCompilerABI.cmake:123 (try_compile)"
+      - "/opt/homebrew/share/cmake/Modules/CMakeTestCXXCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:2 (project)"
+    checks:
+      - "Detecting CXX compiler ABI info"
+    directories:
+      source: "/Users/zhipingwu/modelbest/devinfo/build-w64/CMakeFiles/CMakeScratch/TryCompile-rYdBP9"
+      binary: "/Users/zhipingwu/modelbest/devinfo/build-w64/CMakeFiles/CMakeScratch/TryCompile-rYdBP9"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin/x86_64-w64-mingw32-clang-scan-deps"
+      CMAKE_CXX_FLAGS: ""
+      CMAKE_CXX_FLAGS_DEBUG: "-g"
+      CMAKE_CXX_SCAN_FOR_MODULES: "OFF"
+      CMAKE_CXX_STDLIB_MODULES_JSON: ""
+      CMAKE_EXE_LINKER_FLAGS: ""
+    buildResult:
+      variable: "CMAKE_CXX_ABI_COMPILED"
+      cached: false
+      stdout: |
+        Change Dir: '/Users/zhipingwu/modelbest/devinfo/build-w64/CMakeFiles/CMakeScratch/TryCompile-rYdBP9'
+        
+        Run Build Command(s): /opt/homebrew/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_980a1/fast
+        /Applications/Xcode.app/Contents/Developer/usr/bin/make  -f CMakeFiles/cmTC_980a1.dir/build.make CMakeFiles/cmTC_980a1.dir/build
+        Building CXX object CMakeFiles/cmTC_980a1.dir/CMakeCXXCompilerABI.cpp.obj
+        /Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin/x86_64-w64-mingw32-g++   -v -MD -MT CMakeFiles/cmTC_980a1.dir/CMakeCXXCompilerABI.cpp.obj -MF CMakeFiles/cmTC_980a1.dir/CMakeCXXCompilerABI.cpp.obj.d -o CMakeFiles/cmTC_980a1.dir/CMakeCXXCompilerABI.cpp.obj -c /opt/homebrew/share/cmake/Modules/CMakeCXXCompilerABI.cpp
+        clang version 19.1.0 (https://github.com/llvm/llvm-project.git a4bf6cd7cfb1a1421ba92bca9d017b49936c55e4)
+        Target: x86_64-w64-windows-gnu
+        Thread model: posix
+        InstalledDir: /Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin
+         (in-process)
+         "/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin/clang-19" -cc1 -triple x86_64-w64-windows-gnu -emit-obj -disable-free -clear-ast-before-backend -disable-llvm-verifier -discard-value-names -main-file-name CMakeCXXCompilerABI.cpp -mrelocation-model pic -pic-level 2 -mframe-pointer=none -fmath-errno -ffp-contract=on -fno-rounding-math -mconstructor-aliases -mms-bitfields -funwind-tables=2 -fno-sized-deallocation -fno-use-init-array -target-cpu x86-64 -tune-cpu generic -debugger-tuning=gdb -fdebug-compilation-dir=/Users/zhipingwu/modelbest/devinfo/build-w64/CMakeFiles/CMakeScratch/TryCompile-rYdBP9 -target-linker-version 1053.12 -v -fcoverage-compilation-dir=/Users/zhipingwu/modelbest/devinfo/build-w64/CMakeFiles/CMakeScratch/TryCompile-rYdBP9 -resource-dir /Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/lib/clang/19 -dependency-file CMakeFiles/cmTC_980a1.dir/CMakeCXXCompilerABI.cpp.obj.d -MT CMakeFiles/cmTC_980a1.dir/CMakeCXXCompilerABI.cpp.obj -sys-header-deps -internal-isystem /Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/x86_64-w64-mingw32/include/c++/v1 -internal-isystem /Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/include/c++/v1 -internal-isystem /Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/lib/clang/19/include -internal-isystem /Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/x86_64-w64-mingw32/include -internal-isystem /Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/x86_64-w64-mingw32/usr/include -fdeprecated-macro -ferror-limit 19 -fno-use-cxa-atexit -fgnuc-version=4.2.1 -fskip-odr-check-in-gmf -fcxx-exceptions -fexceptions -exception-model=seh -faddrsig -o CMakeFiles/cmTC_980a1.dir/CMakeCXXCompilerABI.cpp.obj -x c++ /opt/homebrew/share/cmake/Modules/CMakeCXXCompilerABI.cpp
+        clang -cc1 version 19.1.0 based upon LLVM 19.1.0 default target arm64-apple-darwin25.6.0
+        ignoring nonexistent directory "/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/include/c++/v1"
+        ignoring nonexistent directory "/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/x86_64-w64-mingw32/usr/include"
+        #include "..." search starts here:
+        #include <...> search starts here:
+         /Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/x86_64-w64-mingw32/include/c++/v1
+         /Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/lib/clang/19/include
+         /Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/x86_64-w64-mingw32/include
+        End of search list.
+        Linking CXX executable cmTC_980a1.exe
+        /opt/homebrew/bin/cmake -E cmake_link_script CMakeFiles/cmTC_980a1.dir/link.txt --verbose=1
+        clang version 19.1.0 (https://github.com/llvm/llvm-project.git a4bf6cd7cfb1a1421ba92bca9d017b49936c55e4)
+        Target: x86_64-w64-windows-gnu
+        Thread model: posix
+        InstalledDir: /Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin
+         "/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin/ld.lld" -m i386pep -Bdynamic -o cmTC_980a1.exe /Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/x86_64-w64-mingw32/lib/crt2.o /Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/x86_64-w64-mingw32/lib/crtbegin.o -L/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/x86_64-w64-mingw32/lib -L/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/x86_64-w64-mingw32/mingw/lib -L/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/lib/clang/19/lib/windows -v --whole-archive CMakeFiles/cmTC_980a1.dir/objects.a --no-whole-archive --out-implib libcmTC_980a1.dll.a --major-image-version 0 --minor-image-version 0 -lc++ -lmingw32 /Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/lib/clang/19/lib/windows/libclang_rt.builtins-x86_64.a -lunwind -lmoldname -lmingwex -lmsvcrt -ladvapi32 -lshell32 -luser32 -lkernel32 -lmingw32 /Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/lib/clang/19/lib/windows/libclang_rt.builtins-x86_64.a -lunwind -lmoldname -lmingwex -lmsvcrt -lkernel32 /Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/x86_64-w64-mingw32/lib/crtend.o
+        LLD 19.1.0 (https://github.com/llvm/llvm-project.git a4bf6cd7cfb1a1421ba92bca9d017b49936c55e4) (compatible with GNU linkers)
+        /opt/homebrew/bin/cmake -E rm -f CMakeFiles/cmTC_980a1.dir/objects.a
+        /Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin/x86_64-w64-mingw32-llvm-ar qc CMakeFiles/cmTC_980a1.dir/objects.a @CMakeFiles/cmTC_980a1.dir/objects1.rsp
+        /Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin/x86_64-w64-mingw32-g++  -v -Wl,-v -Wl,--whole-archive CMakeFiles/cmTC_980a1.dir/objects.a -Wl,--no-whole-archive -o cmTC_980a1.exe -Wl,--out-implib,libcmTC_980a1.dll.a -Wl,--major-image-version,0,--minor-image-version,0
+        
+      exitCode: 0
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/opt/homebrew/share/cmake/Modules/CMakeDetermineCompilerABI.cmake:255 (message)"
+      - "/opt/homebrew/share/cmake/Modules/CMakeTestCXXCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:2 (project)"
+    message: |
+      Parsed CXX implicit include dir info: rv=done
+        found start of include info
+        found start of implicit include info
+          add: [/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/x86_64-w64-mingw32/include/c++/v1]
+          add: [/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/lib/clang/19/include]
+          add: [/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/x86_64-w64-mingw32/include]
+        end of search list found
+        collapse include dir [/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/x86_64-w64-mingw32/include/c++/v1] ==> [/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/x86_64-w64-mingw32/include/c++/v1]
+        collapse include dir [/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/lib/clang/19/include] ==> [/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/lib/clang/19/include]
+        collapse include dir [/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/x86_64-w64-mingw32/include] ==> [/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/x86_64-w64-mingw32/include]
+        implicit include dirs: [/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/x86_64-w64-mingw32/include/c++/v1;/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/lib/clang/19/include;/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/x86_64-w64-mingw32/include]
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/opt/homebrew/share/cmake/Modules/CMakeDetermineCompilerABI.cmake:291 (message)"
+      - "/opt/homebrew/share/cmake/Modules/CMakeTestCXXCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:2 (project)"
+    message: |
+      Parsed CXX implicit link information:
+        link line regex: [^( *|.*[/\\])(ld[0-9]*(|\\.[a-rt-z][a-z]*|\\.s[a-np-z][a-z]*|\\.so[a-z]+)|wild|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\\]+-)?ld|collect2)[^/\\]*( |$)]
+        linker tool regex: [^[ 	]*(->|"|[0-9]+>[ 	-]*Build:[ 	0-9]+ ms[ 	]*)?[ 	]*(([^"]*[/\\])?(ld[0-9]*(|\\.[a-rt-z][a-z]*|\\.s[a-np-z][a-z]*|\\.so[a-z]+)|wild))("|,| |$)]
+        ignore line: [Change Dir: '/Users/zhipingwu/modelbest/devinfo/build-w64/CMakeFiles/CMakeScratch/TryCompile-rYdBP9']
+        ignore line: []
+        ignore line: [Run Build Command(s): /opt/homebrew/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_980a1/fast]
+        ignore line: [/Applications/Xcode.app/Contents/Developer/usr/bin/make  -f CMakeFiles/cmTC_980a1.dir/build.make CMakeFiles/cmTC_980a1.dir/build]
+        ignore line: [Building CXX object CMakeFiles/cmTC_980a1.dir/CMakeCXXCompilerABI.cpp.obj]
+        ignore line: [/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin/x86_64-w64-mingw32-g++   -v -MD -MT CMakeFiles/cmTC_980a1.dir/CMakeCXXCompilerABI.cpp.obj -MF CMakeFiles/cmTC_980a1.dir/CMakeCXXCompilerABI.cpp.obj.d -o CMakeFiles/cmTC_980a1.dir/CMakeCXXCompilerABI.cpp.obj -c /opt/homebrew/share/cmake/Modules/CMakeCXXCompilerABI.cpp]
+        ignore line: [clang version 19.1.0 (https://github.com/llvm/llvm-project.git a4bf6cd7cfb1a1421ba92bca9d017b49936c55e4)]
+        ignore line: [Target: x86_64-w64-windows-gnu]
+        ignore line: [Thread model: posix]
+        ignore line: [InstalledDir: /Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin]
+        ignore line: [ (in-process)]
+        ignore line: [ "/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin/clang-19" -cc1 -triple x86_64-w64-windows-gnu -emit-obj -disable-free -clear-ast-before-backend -disable-llvm-verifier -discard-value-names -main-file-name CMakeCXXCompilerABI.cpp -mrelocation-model pic -pic-level 2 -mframe-pointer=none -fmath-errno -ffp-contract=on -fno-rounding-math -mconstructor-aliases -mms-bitfields -funwind-tables=2 -fno-sized-deallocation -fno-use-init-array -target-cpu x86-64 -tune-cpu generic -debugger-tuning=gdb -fdebug-compilation-dir=/Users/zhipingwu/modelbest/devinfo/build-w64/CMakeFiles/CMakeScratch/TryCompile-rYdBP9 -target-linker-version 1053.12 -v -fcoverage-compilation-dir=/Users/zhipingwu/modelbest/devinfo/build-w64/CMakeFiles/CMakeScratch/TryCompile-rYdBP9 -resource-dir /Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/lib/clang/19 -dependency-file CMakeFiles/cmTC_980a1.dir/CMakeCXXCompilerABI.cpp.obj.d -MT CMakeFiles/cmTC_980a1.dir/CMakeCXXCompilerABI.cpp.obj -sys-header-deps -internal-isystem /Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/x86_64-w64-mingw32/include/c++/v1 -internal-isystem /Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/include/c++/v1 -internal-isystem /Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/lib/clang/19/include -internal-isystem /Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/x86_64-w64-mingw32/include -internal-isystem /Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/x86_64-w64-mingw32/usr/include -fdeprecated-macro -ferror-limit 19 -fno-use-cxa-atexit -fgnuc-version=4.2.1 -fskip-odr-check-in-gmf -fcxx-exceptions -fexceptions -exception-model=seh -faddrsig -o CMakeFiles/cmTC_980a1.dir/CMakeCXXCompilerABI.cpp.obj -x c++ /opt/homebrew/share/cmake/Modules/CMakeCXXCompilerABI.cpp]
+        ignore line: [clang -cc1 version 19.1.0 based upon LLVM 19.1.0 default target arm64-apple-darwin25.6.0]
+        ignore line: [ignoring nonexistent directory "/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/include/c++/v1"]
+        ignore line: [ignoring nonexistent directory "/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/x86_64-w64-mingw32/usr/include"]
+        ignore line: [#include "..." search starts here:]
+        ignore line: [#include <...> search starts here:]
+        ignore line: [ /Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/x86_64-w64-mingw32/include/c++/v1]
+        ignore line: [ /Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/lib/clang/19/include]
+        ignore line: [ /Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/x86_64-w64-mingw32/include]
+        ignore line: [End of search list.]
+        ignore line: [Linking CXX executable cmTC_980a1.exe]
+        ignore line: [/opt/homebrew/bin/cmake -E cmake_link_script CMakeFiles/cmTC_980a1.dir/link.txt --verbose=1]
+        ignore line: [clang version 19.1.0 (https://github.com/llvm/llvm-project.git a4bf6cd7cfb1a1421ba92bca9d017b49936c55e4)]
+        ignore line: [Target: x86_64-w64-windows-gnu]
+        ignore line: [Thread model: posix]
+        ignore line: [InstalledDir: /Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin]
+        link line: [ "/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin/ld.lld" -m i386pep -Bdynamic -o cmTC_980a1.exe /Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/x86_64-w64-mingw32/lib/crt2.o /Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/x86_64-w64-mingw32/lib/crtbegin.o -L/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/x86_64-w64-mingw32/lib -L/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/x86_64-w64-mingw32/mingw/lib -L/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/lib/clang/19/lib/windows -v --whole-archive CMakeFiles/cmTC_980a1.dir/objects.a --no-whole-archive --out-implib libcmTC_980a1.dll.a --major-image-version 0 --minor-image-version 0 -lc++ -lmingw32 /Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/lib/clang/19/lib/windows/libclang_rt.builtins-x86_64.a -lunwind -lmoldname -lmingwex -lmsvcrt -ladvapi32 -lshell32 -luser32 -lkernel32 -lmingw32 /Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/lib/clang/19/lib/windows/libclang_rt.builtins-x86_64.a -lunwind -lmoldname -lmingwex -lmsvcrt -lkernel32 /Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/x86_64-w64-mingw32/lib/crtend.o] ==> linker [/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin/ld.lld]
+        link line: [ "/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin/ld.lld" -m i386pep -Bdynamic -o cmTC_980a1.exe /Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/x86_64-w64-mingw32/lib/crt2.o /Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/x86_64-w64-mingw32/lib/crtbegin.o -L/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/x86_64-w64-mingw32/lib -L/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/x86_64-w64-mingw32/mingw/lib -L/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/lib/clang/19/lib/windows -v --whole-archive CMakeFiles/cmTC_980a1.dir/objects.a --no-whole-archive --out-implib libcmTC_980a1.dll.a --major-image-version 0 --minor-image-version 0 -lc++ -lmingw32 /Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/lib/clang/19/lib/windows/libclang_rt.builtins-x86_64.a -lunwind -lmoldname -lmingwex -lmsvcrt -ladvapi32 -lshell32 -luser32 -lkernel32 -lmingw32 /Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/lib/clang/19/lib/windows/libclang_rt.builtins-x86_64.a -lunwind -lmoldname -lmingwex -lmsvcrt -lkernel32 /Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/x86_64-w64-mingw32/lib/crtend.o] ==> linker architecture flags [-m;i386pep]
+        link line: [ "/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin/ld.lld" -m i386pep -Bdynamic -o cmTC_980a1.exe /Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/x86_64-w64-mingw32/lib/crt2.o /Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/x86_64-w64-mingw32/lib/crtbegin.o -L/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/x86_64-w64-mingw32/lib -L/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/x86_64-w64-mingw32/mingw/lib -L/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/lib/clang/19/lib/windows -v --whole-archive CMakeFiles/cmTC_980a1.dir/objects.a --no-whole-archive --out-implib libcmTC_980a1.dll.a --major-image-version 0 --minor-image-version 0 -lc++ -lmingw32 /Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/lib/clang/19/lib/windows/libclang_rt.builtins-x86_64.a -lunwind -lmoldname -lmingwex -lmsvcrt -ladvapi32 -lshell32 -luser32 -lkernel32 -lmingw32 /Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/lib/clang/19/lib/windows/libclang_rt.builtins-x86_64.a -lunwind -lmoldname -lmingwex -lmsvcrt -lkernel32 /Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/x86_64-w64-mingw32/lib/crtend.o]
+          arg [/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin/ld.lld] ==> ignore
+          arg [-m] ==> ignore
+          arg [i386pep] ==> ignore
+          arg [-Bdynamic] ==> search dynamic
+          arg [-o] ==> ignore
+          arg [cmTC_980a1.exe] ==> ignore
+          arg [/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/x86_64-w64-mingw32/lib/crt2.o] ==> obj [/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/x86_64-w64-mingw32/lib/crt2.o]
+          arg [/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/x86_64-w64-mingw32/lib/crtbegin.o] ==> obj [/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/x86_64-w64-mingw32/lib/crtbegin.o]
+          arg [-L/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/x86_64-w64-mingw32/lib] ==> dir [/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/x86_64-w64-mingw32/lib]
+          arg [-L/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/x86_64-w64-mingw32/mingw/lib] ==> dir [/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/x86_64-w64-mingw32/mingw/lib]
+          arg [-L/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/lib/clang/19/lib/windows] ==> dir [/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/lib/clang/19/lib/windows]
+          arg [-v] ==> ignore
+          arg [--whole-archive] ==> ignore
+          arg [CMakeFiles/cmTC_980a1.dir/objects.a] ==> ignore
+          arg [--no-whole-archive] ==> ignore
+          arg [--out-implib] ==> ignore
+          arg [libcmTC_980a1.dll.a] ==> ignore
+          arg [--major-image-version] ==> ignore
+          arg [0] ==> ignore
+          arg [--minor-image-version] ==> ignore
+          arg [0] ==> ignore
+          arg [-lc++] ==> lib [c++]
+          arg [-lmingw32] ==> lib [mingw32]
+          arg [/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/lib/clang/19/lib/windows/libclang_rt.builtins-x86_64.a] ==> lib [/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/lib/clang/19/lib/windows/libclang_rt.builtins-x86_64.a]
+          arg [-lunwind] ==> lib [unwind]
+          arg [-lmoldname] ==> lib [moldname]
+          arg [-lmingwex] ==> lib [mingwex]
+          arg [-lmsvcrt] ==> lib [msvcrt]
+          arg [-ladvapi32] ==> lib [advapi32]
+          arg [-lshell32] ==> lib [shell32]
+          arg [-luser32] ==> lib [user32]
+          arg [-lkernel32] ==> lib [kernel32]
+          arg [-lmingw32] ==> lib [mingw32]
+          arg [/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/lib/clang/19/lib/windows/libclang_rt.builtins-x86_64.a] ==> lib [/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/lib/clang/19/lib/windows/libclang_rt.builtins-x86_64.a]
+          arg [-lunwind] ==> lib [unwind]
+          arg [-lmoldname] ==> lib [moldname]
+          arg [-lmingwex] ==> lib [mingwex]
+          arg [-lmsvcrt] ==> lib [msvcrt]
+          arg [-lkernel32] ==> lib [kernel32]
+          arg [/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/x86_64-w64-mingw32/lib/crtend.o] ==> obj [/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/x86_64-w64-mingw32/lib/crtend.o]
+        linker tool for 'CXX': /Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin/ld.lld -m;i386pep
+        remove lib [/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/lib/clang/19/lib/windows/libclang_rt.builtins-x86_64.a]
+        remove lib [msvcrt]
+        remove lib [/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/lib/clang/19/lib/windows/libclang_rt.builtins-x86_64.a]
+        remove lib [msvcrt]
+        collapse library dir [/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/x86_64-w64-mingw32/lib] ==> [/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/x86_64-w64-mingw32/lib]
+        collapse library dir [/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/x86_64-w64-mingw32/mingw/lib] ==> [/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/x86_64-w64-mingw32/mingw/lib]
+        collapse library dir [/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/lib/clang/19/lib/windows] ==> [/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/lib/clang/19/lib/windows]
+        implicit libs: [c++;mingw32;unwind;moldname;mingwex;advapi32;shell32;user32;kernel32;mingw32;unwind;moldname;mingwex;kernel32]
+        implicit objs: [/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/x86_64-w64-mingw32/lib/crt2.o;/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/x86_64-w64-mingw32/lib/crtbegin.o;/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/x86_64-w64-mingw32/lib/crtend.o]
+        implicit dirs: [/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/x86_64-w64-mingw32/lib;/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/x86_64-w64-mingw32/mingw/lib;/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/lib/clang/19/lib/windows]
+        implicit fwks: []
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/opt/homebrew/share/cmake/Modules/Internal/CMakeDetermineLinkerId.cmake:41 (message)"
+      - "/opt/homebrew/share/cmake/Modules/CMakeDetermineCompilerABI.cmake:337 (cmake_determine_linker_id)"
+      - "/opt/homebrew/share/cmake/Modules/CMakeTestCXXCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:2 (project)"
+    message: |
+      Running the CXX compiler's linker: "/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin/ld.lld" "-v"
+      LLD 19.1.0 (https://github.com/llvm/llvm-project.git a4bf6cd7cfb1a1421ba92bca9d017b49936c55e4) (compatible with GNU linkers)
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/opt/homebrew/share/cmake/Modules/Internal/CheckSourceCompiles.cmake:81 (try_compile)"
+      - "/opt/homebrew/share/cmake/Modules/CheckCXXSourceCompiles.cmake:103 (cmake_check_source_compiles)"
+      - "/opt/homebrew/share/cmake/Modules/FindThreads.cmake:162 (check_cxx_source_compiles)"
+      - "/opt/homebrew/share/cmake/Modules/FindThreads.cmake:226 (_threads_check_libc)"
+      - "CMakeLists.txt:41 (find_package)"
+    checks:
+      - "Performing Test CMAKE_HAVE_LIBC_PTHREAD"
+    directories:
+      source: "/Users/zhipingwu/modelbest/devinfo/build-w64/CMakeFiles/CMakeScratch/TryCompile-2lP4Td"
+      binary: "/Users/zhipingwu/modelbest/devinfo/build-w64/CMakeFiles/CMakeScratch/TryCompile-2lP4Td"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin/x86_64-w64-mingw32-clang-scan-deps"
+      CMAKE_CXX_FLAGS: ""
+      CMAKE_CXX_FLAGS_DEBUG: "-g"
+      CMAKE_CXX_STDLIB_MODULES_JSON: ""
+      CMAKE_EXE_LINKER_FLAGS: ""
+    buildResult:
+      variable: "CMAKE_HAVE_LIBC_PTHREAD"
+      cached: true
+      stdout: |
+        Change Dir: '/Users/zhipingwu/modelbest/devinfo/build-w64/CMakeFiles/CMakeScratch/TryCompile-2lP4Td'
+        
+        Run Build Command(s): /opt/homebrew/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_83263/fast
+        /Applications/Xcode.app/Contents/Developer/usr/bin/make  -f CMakeFiles/cmTC_83263.dir/build.make CMakeFiles/cmTC_83263.dir/build
+        Building CXX object CMakeFiles/cmTC_83263.dir/src.cxx.obj
+        /Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin/x86_64-w64-mingw32-g++ -DCMAKE_HAVE_LIBC_PTHREAD  -std=c++17 -MD -MT CMakeFiles/cmTC_83263.dir/src.cxx.obj -MF CMakeFiles/cmTC_83263.dir/src.cxx.obj.d -o CMakeFiles/cmTC_83263.dir/src.cxx.obj -c /Users/zhipingwu/modelbest/devinfo/build-w64/CMakeFiles/CMakeScratch/TryCompile-2lP4Td/src.cxx
+        Linking CXX executable cmTC_83263.exe
+        /opt/homebrew/bin/cmake -E cmake_link_script CMakeFiles/cmTC_83263.dir/link.txt --verbose=1
+        ld.lld: error: undefined symbol: pthread_create
+        >>> referenced by objects.a(src.cxx.obj):(main)
+        
+        ld.lld: error: undefined symbol: pthread_detach
+        >>> referenced by objects.a(src.cxx.obj):(main)
+        
+        ld.lld: error: undefined symbol: pthread_cancel
+        >>> referenced by objects.a(src.cxx.obj):(main)
+        
+        ld.lld: error: undefined symbol: pthread_join
+        >>> referenced by objects.a(src.cxx.obj):(main)
+        
+        ld.lld: error: undefined symbol: pthread_exit
+        >>> referenced by objects.a(src.cxx.obj):(main)
+        clang: error: linker command failed with exit code 1 (use -v to see invocation)
+        /opt/homebrew/bin/cmake -E rm -f CMakeFiles/cmTC_83263.dir/objects.a
+        /Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin/x86_64-w64-mingw32-llvm-ar qc CMakeFiles/cmTC_83263.dir/objects.a @CMakeFiles/cmTC_83263.dir/objects1.rsp
+        /Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin/x86_64-w64-mingw32-g++ -Wl,--whole-archive CMakeFiles/cmTC_83263.dir/objects.a -Wl,--no-whole-archive -o cmTC_83263.exe -Wl,--out-implib,libcmTC_83263.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles/cmTC_83263.dir/linkLibs.rsp
+        make[1]: *** [cmTC_83263.exe] Error 1
+        make: *** [cmTC_83263/fast] Error 2
+        
+      exitCode: 2
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/opt/homebrew/share/cmake/Modules/CheckLibraryExists.cmake:142 (try_compile)"
+      - "/opt/homebrew/share/cmake/Modules/FindThreads.cmake:175 (check_library_exists)"
+      - "/opt/homebrew/share/cmake/Modules/FindThreads.cmake:238 (_threads_check_lib)"
+      - "CMakeLists.txt:41 (find_package)"
+    checks:
+      - "Looking for pthread_create in pthreads"
+    directories:
+      source: "/Users/zhipingwu/modelbest/devinfo/build-w64/CMakeFiles/CMakeScratch/TryCompile-Id3y8W"
+      binary: "/Users/zhipingwu/modelbest/devinfo/build-w64/CMakeFiles/CMakeScratch/TryCompile-Id3y8W"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin/x86_64-w64-mingw32-clang-scan-deps"
+      CMAKE_CXX_FLAGS: ""
+      CMAKE_CXX_FLAGS_DEBUG: "-g"
+      CMAKE_CXX_STDLIB_MODULES_JSON: ""
+      CMAKE_EXE_LINKER_FLAGS: ""
+    buildResult:
+      variable: "CMAKE_HAVE_PTHREADS_CREATE"
+      cached: true
+      stdout: |
+        Change Dir: '/Users/zhipingwu/modelbest/devinfo/build-w64/CMakeFiles/CMakeScratch/TryCompile-Id3y8W'
+        
+        Run Build Command(s): /opt/homebrew/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_00c40/fast
+        /Applications/Xcode.app/Contents/Developer/usr/bin/make  -f CMakeFiles/cmTC_00c40.dir/build.make CMakeFiles/cmTC_00c40.dir/build
+        Building CXX object CMakeFiles/cmTC_00c40.dir/CheckFunctionExists.cxx.obj
+        /Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin/x86_64-w64-mingw32-g++ -DCHECK_FUNCTION_EXISTS=pthread_create  -std=c++17 -MD -MT CMakeFiles/cmTC_00c40.dir/CheckFunctionExists.cxx.obj -MF CMakeFiles/cmTC_00c40.dir/CheckFunctionExists.cxx.obj.d -o CMakeFiles/cmTC_00c40.dir/CheckFunctionExists.cxx.obj -c /Users/zhipingwu/modelbest/devinfo/build-w64/CMakeFiles/CMakeScratch/TryCompile-Id3y8W/CheckFunctionExists.cxx
+        Linking CXX executable cmTC_00c40.exe
+        /opt/homebrew/bin/cmake -E cmake_link_script CMakeFiles/cmTC_00c40.dir/link.txt --verbose=1
+        lld: error: unable to find library -lpthreads
+        clang: error: linker command failed with exit code 1 (use -v to see invocation)
+        /opt/homebrew/bin/cmake -E rm -f CMakeFiles/cmTC_00c40.dir/objects.a
+        /Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin/x86_64-w64-mingw32-llvm-ar qc CMakeFiles/cmTC_00c40.dir/objects.a @CMakeFiles/cmTC_00c40.dir/objects1.rsp
+        /Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin/x86_64-w64-mingw32-g++ -Wl,--whole-archive CMakeFiles/cmTC_00c40.dir/objects.a -Wl,--no-whole-archive -o cmTC_00c40.exe -Wl,--out-implib,libcmTC_00c40.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles/cmTC_00c40.dir/linkLibs.rsp
+        make[1]: *** [cmTC_00c40.exe] Error 1
+        make: *** [cmTC_00c40/fast] Error 2
+        
+      exitCode: 2
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/opt/homebrew/share/cmake/Modules/CheckLibraryExists.cmake:142 (try_compile)"
+      - "/opt/homebrew/share/cmake/Modules/FindThreads.cmake:175 (check_library_exists)"
+      - "/opt/homebrew/share/cmake/Modules/FindThreads.cmake:239 (_threads_check_lib)"
+      - "CMakeLists.txt:41 (find_package)"
+    checks:
+      - "Looking for pthread_create in pthread"
+    directories:
+      source: "/Users/zhipingwu/modelbest/devinfo/build-w64/CMakeFiles/CMakeScratch/TryCompile-tIbWoS"
+      binary: "/Users/zhipingwu/modelbest/devinfo/build-w64/CMakeFiles/CMakeScratch/TryCompile-tIbWoS"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin/x86_64-w64-mingw32-clang-scan-deps"
+      CMAKE_CXX_FLAGS: ""
+      CMAKE_CXX_FLAGS_DEBUG: "-g"
+      CMAKE_CXX_STDLIB_MODULES_JSON: ""
+      CMAKE_EXE_LINKER_FLAGS: ""
+    buildResult:
+      variable: "CMAKE_HAVE_PTHREAD_CREATE"
+      cached: true
+      stdout: |
+        Change Dir: '/Users/zhipingwu/modelbest/devinfo/build-w64/CMakeFiles/CMakeScratch/TryCompile-tIbWoS'
+        
+        Run Build Command(s): /opt/homebrew/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_6946a/fast
+        /Applications/Xcode.app/Contents/Developer/usr/bin/make  -f CMakeFiles/cmTC_6946a.dir/build.make CMakeFiles/cmTC_6946a.dir/build
+        Building CXX object CMakeFiles/cmTC_6946a.dir/CheckFunctionExists.cxx.obj
+        /Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin/x86_64-w64-mingw32-g++ -DCHECK_FUNCTION_EXISTS=pthread_create  -std=c++17 -MD -MT CMakeFiles/cmTC_6946a.dir/CheckFunctionExists.cxx.obj -MF CMakeFiles/cmTC_6946a.dir/CheckFunctionExists.cxx.obj.d -o CMakeFiles/cmTC_6946a.dir/CheckFunctionExists.cxx.obj -c /Users/zhipingwu/modelbest/devinfo/build-w64/CMakeFiles/CMakeScratch/TryCompile-tIbWoS/CheckFunctionExists.cxx
+        Linking CXX executable cmTC_6946a.exe
+        /opt/homebrew/bin/cmake -E cmake_link_script CMakeFiles/cmTC_6946a.dir/link.txt --verbose=1
+        /opt/homebrew/bin/cmake -E rm -f CMakeFiles/cmTC_6946a.dir/objects.a
+        /Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin/x86_64-w64-mingw32-llvm-ar qc CMakeFiles/cmTC_6946a.dir/objects.a @CMakeFiles/cmTC_6946a.dir/objects1.rsp
+        /Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin/x86_64-w64-mingw32-g++ -Wl,--whole-archive CMakeFiles/cmTC_6946a.dir/objects.a -Wl,--no-whole-archive -o cmTC_6946a.exe -Wl,--out-implib,libcmTC_6946a.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles/cmTC_6946a.dir/linkLibs.rsp
+        
+      exitCode: 0
+...

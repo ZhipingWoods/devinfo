@@ -4,6 +4,10 @@ Drop-in binaries for the three desktop systems. None of them require anything
 to be installed on the machine you run them on: no runtime, no redistributable,
 no framework, no package manager.
 
+These are the raw files this repository packages into installers; if you just
+want to download and run, take `devinfo-<version>-<os>-<arch>` from the
+`release/` directory (or from the release page) instead.
+
 | file | system | notes |
 |---|---|---|
 | `windows/devinfo-x64.exe` | Windows 10/11 x64 | double-click it, or use a shell |
@@ -71,7 +75,8 @@ no packages.
   been executed — the source is the same but MSVC has not been proven.
 - Windows 7/8 need the Universal CRT update installed for the `api-ms-win-crt-*`
   imports to resolve. Windows 10 and 11 need nothing.
-- The Linux binaries are x86_64 only. No aarch64 Linux build yet.
+- The Linux binaries are built for x86_64 and aarch64; the aarch64 one was
+  run on a Jetson AGX Orin, the x86_64 one on a 2x EPYC machine.
 - These are unsigned. Windows SmartScreen and macOS Gatekeeper may warn on a
   downloaded copy; that is a signature, not a dependency. On macOS you can clear
   the quarantine attribute with `xattr -d com.apple.quarantine ./devinfo`.
