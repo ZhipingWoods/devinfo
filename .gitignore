@@ -9,3 +9,7 @@ build/
 # python bytecode from the site generators
 __pycache__/
 *.pyc
+# ruflo / claude-flow runtime state (recreate with: npx ruflo init)
+.claude/
+.claude-flow/
+.swarm/
