@@ -1,3 +1,0 @@
-/opt/homebrew/bin/cmake -E rm -f CMakeFiles/devinfo.dir/objects.a
-/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin/x86_64-w64-mingw32-llvm-ar qc CMakeFiles/devinfo.dir/objects.a @CMakeFiles/devinfo.dir/objects1.rsp
-/Users/zhipingwu/modelbest/devinfo/.toolchain/llvm-mingw-20240917-ucrt-macos-universal/bin/x86_64-w64-mingw32-g++ -O3 -DNDEBUG -shared -static -o devinfo.dll -Wl,--out-implib,libdevinfo.dll.a -Wl,--major-image-version,0,--minor-image-version,0 -Wl,--whole-archive CMakeFiles/devinfo.dir/objects.a -Wl,--no-whole-archive @CMakeFiles/devinfo.dir/linkLibs.rsp

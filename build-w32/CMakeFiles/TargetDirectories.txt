@@ -1,5 +1,0 @@
-/Users/zhipingwu/modelbest/devinfo/build-w32/CMakeFiles/devinfo_core.dir
-/Users/zhipingwu/modelbest/devinfo/build-w32/CMakeFiles/devinfo.dir
-/Users/zhipingwu/modelbest/devinfo/build-w32/CMakeFiles/devinfo-cli.dir
-/Users/zhipingwu/modelbest/devinfo/build-w32/CMakeFiles/edit_cache.dir
-/Users/zhipingwu/modelbest/devinfo/build-w32/CMakeFiles/rebuild_cache.dir
