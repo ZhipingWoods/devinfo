@@ -5,6 +5,27 @@ The text is the real stdout of the binary, byte for byte -- this script only
 paints it. Anything that is not in the capture file does not appear in the
 image, so the screenshots cannot drift away from what the tool prints.
 
+Where the captures came from:
+
+  macos-m5.txt      Apple M5, macOS 26.6, arm64, this laptop
+  linux-8x4090.txt  2x EPYC 7402 + 8x RTX 4090, Ubuntu 22.04, x86_64
+  jetson-orin.txt   Jetson AGX Orin 64GB, L4T R36.4, aarch64
+  windows-i7.txt    i7-11700, Windows 10.0.26200, x86_64. This one was
+                    recovered from git history: it is the report the binary
+                    wrote to devinfo-report.txt when it was double-clicked on
+                    that machine, not a transcription.
+
+                    It is the FIRST round of testing on that machine, before
+                    the six fixes results.html lists, and it shows two of them:
+                    amdhip64.dll is still labelled "rocm" there, and SSE4.1 /
+                    SSE4.2 are missing from the ISA line. src/core.cpp now
+                    emits "hip". The frame is kept because that box has not
+                    been re-tested, and the README says so under the cards.
+
+Every image is the same size, so the README cards line up. Long captures are
+cut with a visible "..." row; the cut is drawn, not hidden, and the elided
+range is named in JOBS below.
+
     python3 tools/render_shots.py
 
 Reads  assets/captures/*.txt
@@ -25,6 +46,8 @@ FSIZE = 13
 PAD = 22
 TITLEBAR = 34
 LINE_H = 19
+LINES = 34           # fixed content height, in lines, for every image
+COLS = 82            # fixed content width, in characters
 
 BG = (11, 15, 22)
 BG_TOP = (15, 20, 29)
@@ -50,6 +73,8 @@ def load_font(size, bold=False):
 def classify(line):
     """Return (kind, text) where kind drives the base colour of the line."""
     s = line.rstrip("\n")
+    if s.strip() == "...":
+        return "cut", s
     if not s.strip():
         return "blank", s
     if re.match(r"^devinfo - ", s):
@@ -63,8 +88,6 @@ def classify(line):
         return "head", s
     if s.lstrip().startswith("-- not present"):
         return "absent", s
-    if re.match(r"^\s+\w", s) or s.startswith("     "):
-        return "body", s
     return "body", s
 
 
@@ -76,7 +99,7 @@ UNIT = re.compile(
 )
 
 
-def draw_line(d, x, y, text, kind, f_reg, f_bold, width):
+def draw_line(d, x, y, text, kind, f_reg, f_bold):
     base = {
         "banner": TEAL,
         "rule": (45, 58, 78),
@@ -84,13 +107,11 @@ def draw_line(d, x, y, text, kind, f_reg, f_bold, width):
         "absent": RED,
         "body": FG,
         "blank": FG,
+        "cut": DIM,
     }.get(kind, FG)
 
-    if kind == "head":
-        d.text((x, y), text, font=f_bold, fill=ACCENT)
-        return
-    if kind == "banner":
-        d.text((x, y), text, font=f_bold, fill=TEAL)
+    if kind in ("head", "banner", "cut"):
+        d.text((x, y), text, font=f_bold if kind != "cut" else f_reg, fill=base)
         return
 
     # Per-token colouring. The tool marks every derived number with a trailing
@@ -127,22 +148,38 @@ def draw_line(d, x, y, text, kind, f_reg, f_bold, width):
         cx += d.textlength(tok, font=f_reg)
 
 
-def render(src: pathlib.Path, title: str, out: pathlib.Path, max_lines=None):
-    raw = src.read_text(encoding="utf-8", errors="replace").splitlines()
-    raw = [ln for ln in raw if not ln.startswith("bash: warning:")]
-    if max_lines and len(raw) > max_lines:
-        raw = raw[:max_lines]
+def select(lines, keep):
+    """Apply the keep ranges, inserting a visible cut between them.
+
+    keep is a list of (first, last) 1-based inclusive ranges, or None for the
+    whole capture. Cutting is an editorial act, so it is drawn as "..." rather
+    than silently stitched together.
+    """
+    if not keep:
+        return lines[:LINES]
+    out = []
+    for n, (a, b) in enumerate(keep):
+        if n:
+            out.append("...")
+        out.extend(lines[a - 1:b])
+    return out[:LINES]
+
+
+def render(src, title, out, chrome="mac", keep=None):
+    raw = [ln for ln in src.read_text(encoding="utf-8", errors="replace").splitlines()
+           if not ln.startswith("bash: warning:")]
+    raw = select(raw, keep)
 
     f_reg = load_font(FSIZE * SCALE)
     f_bold = load_font(FSIZE * SCALE, bold=True)
     f_title = load_font((FSIZE - 2) * SCALE)
 
+    # Fixed canvas: the widest line of the widest capture, and exactly LINES
+    # rows of text, so every card in the README is the same picture size.
     probe = ImageDraw.Draw(Image.new("RGB", (10, 10)))
-    text_w = max(probe.textlength(ln, font=f_reg) for ln in raw) if raw else 400
-    win_w = int(text_w) + PAD * 2 * SCALE
-    win_w = max(win_w, int(probe.textlength(title, font=f_reg)) + PAD * 2 * SCALE)
-    body_h = len(raw) * LINE_H * SCALE
-    win_h = TITLEBAR * SCALE + PAD * SCALE + body_h + PAD * SCALE
+    char_w = probe.textlength("M" * COLS, font=f_reg)
+    win_w = int(char_w) + PAD * 2 * SCALE
+    win_h = TITLEBAR * SCALE + PAD * SCALE * 2 + LINES * LINE_H * SCALE
 
     img = Image.new("RGB", (win_w, win_h), BG)
     d = ImageDraw.Draw(img)
@@ -154,38 +191,48 @@ def render(src: pathlib.Path, title: str, out: pathlib.Path, max_lines=None):
 
     d.rectangle([0, 0, win_w - 1, TITLEBAR * SCALE], fill=(19, 25, 36))
     cy = TITLEBAR * SCALE // 2
-    r = 5 * SCALE // 2
-    for i, col in enumerate([(255, 95, 86), (255, 189, 46), (39, 201, 63)]):
-        cxx = (16 + i * 15) * SCALE
-        d.ellipse([cxx - r, cy - r, cxx + r, cy + r], fill=col)
+    if chrome == "mac":
+        r = 5 * SCALE // 2
+        for i, col in enumerate([(255, 95, 86), (255, 189, 46), (39, 201, 63)]):
+            cxx = (16 + i * 15) * SCALE
+            d.ellipse([cxx - r, cy - r, cxx + r, cy + r], fill=col)
+    else:
+        # Windows: minimise, maximise, close, right-aligned.
+        r = 5 * SCALE // 2
+        for i, col in enumerate([(120, 134, 156), (120, 134, 156), (196, 43, 28)]):
+            cxx = win_w - (58 - i * 18) * SCALE // 2
+            d.rectangle([cxx - r, cy - r, cxx + r, cy + r], fill=col)
     d.text((80 * SCALE, cy - (FSIZE - 2) * SCALE // 2), title, font=f_title, fill=DIM)
     d.line([(0, TITLEBAR * SCALE), (win_w, TITLEBAR * SCALE)], fill=(30, 40, 55))
 
     y = TITLEBAR * SCALE + PAD * SCALE
     for ln in raw:
         kind, text = classify(ln)
-        draw_line(d, PAD * SCALE, y, text, kind, f_reg, f_bold, win_w)
+        draw_line(d, PAD * SCALE, y, text, kind, f_reg, f_bold)
         y += LINE_H * SCALE
 
     out.parent.mkdir(parents=True, exist_ok=True)
     img.save(out)
-    print(f"{out.relative_to(ROOT)}  {img.width}x{img.height}  {len(raw)} lines")
+    print(f"{out.relative_to(ROOT)}  {img.width}x{img.height}  {len(raw)} lines  {title}")
 
 
 def main():
     jobs = [
-        ("macos-m5.txt", "devinfo · Apple M5 · macOS", "macos-m5.png"),
-        ("linux-8x4090.txt", "devinfo · 2x EPYC 7402 + 8x RTX 4090 · Linux", "linux-8x4090.png"),
-        ("jetson-orin.txt", "devinfo · Jetson AGX Orin · Linux arm64", "jetson-orin.png"),
+        ("macos-m5.txt", "devinfo - Apple M5 - macOS", "macos-m5.png", "mac", None),
+        ("linux-8x4090.txt", "devinfo - 8x RTX 4090 - Linux", "linux-8x4090.png", "mac",
+         [(1, 17), (53, 62)]),
+        ("windows-i7.txt", "devinfo - i7-11700 - Windows", "windows-i7.png", "win", None),
+        ("jetson-orin.txt", "devinfo - Jetson AGX Orin - Linux arm64", "jetson-orin.png", "mac",
+         [(1, 16), (18, 28)]),
     ]
     if not CAPS.exists():
         sys.exit(f"missing {CAPS}")
-    for src, title, dst in jobs:
+    for src, title, dst, chrome, keep in jobs:
         p = CAPS / src
         if not p.exists():
             print(f"skip {src}: not captured")
             continue
-        render(p, title, OUT / dst)
+        render(p, title, OUT / dst, chrome, keep)
 
 
 if __name__ == "__main__":

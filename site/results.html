@@ -346,7 +346,11 @@ deploy (derived from the measurements above, not measured)
 <div><dt>加速栈</dt><dd>AMD HIP 5.2（amdhip64.dll）· 无 CUDA</dd></div></dl>
         <div class="machine-side">
           <div class="deploy-box"><h3>部署推导（derive，不是实测）</h3><dl class="facts small"><div><dt>异构 GPU</dt><dd>两张不同型号的卡不能合并成内存池，各自跑各自的作业</dd></div></dl></div>
-          
+
+      <figure class="shot-figure">
+        <button class="shot" data-full="assets/windows-i7.png"><img src="assets/windows-i7.png" alt="devinfo on the Dell OptiPlex 7090" loading="lazy"></button>
+        <figcaption>第一轮输出渲染 · 修复前 · 点击放大</figcaption>
+      </figure>
         </div>
       </div>
       <p class="machine-note">这台机器跑出了第一轮实机测试里的六个问题，全部已修：SSE4.2 漏报、CPU 峰值只有一半、异构显存被错误加总、训练容量显示 ~0b、异构并行措辞、HIP 被误标成 ROCm 版本号。修复后尚未在这台机器上复测——这一格留空，不填推测值。</p>

@@ -20,15 +20,29 @@
 
 ## 🖥️ 三个平台，一个二进制
 
-同一个程序、同样的输出，不需要按平台挑版本：
+<table>
+<tr>
+<td width="33%" valign="top">
+<p align="center"><b>macOS</b><br><sub>11+ &middot; Apple Silicon 与 Intel &middot; 同一个 universal 二进制</sub></p>
+<p align="center"><img src="site/assets/macos-m5.png" width="340" alt="devinfo 在 Apple M5 上"></p>
+<p><sub><code>sysctl</code> 与 IOKit 读拓扑、缓存和带宽，Metal 读 GPU，ANE 核心数从系统拿。不需要装任何东西。</sub></p>
+</td>
+<td width="33%" valign="top">
+<p align="center"><b>Linux</b><br><sub>x86_64 与 aarch64 &middot; 容器里也能跑</sub></p>
+<p align="center"><img src="site/assets/linux-8x4090.png" width="340" alt="devinfo 在 8 张 RTX 4090 上"></p>
+<p><sub>sysfs 与 procfs、NUMA、<code>cpufreq</code>、cgroup 限额；通过 <code>dlopen</code> 调 CUDA 驱动 API；PCIe 走 sysfs。不用 root，不用装任何东西。</sub></p>
+</td>
+<td width="33%" valign="top">
+<p align="center"><b>Windows</b><br><sub>10 与 11 &middot; x64 与 x86</sub></p>
+<p align="center"><img src="site/assets/windows-i7.png" width="340" alt="devinfo 在 i7-11700 上"></p>
+<p><sub>CPUID 读核心与指令集，DXGI 读显卡与显存，SetupAPI 读 NPU，NVML 补 NVIDIA 细节。一个 <code>.exe</code>，无运行时、无安装包。</sub></p>
+</td>
+</tr>
+</table>
 
-| | 在哪读 | 机器需要什么 |
-|---|---|---|
-| **Windows** 10/11<br>x64 · x86 | CPUID 读核心与指令集；DXGI 读显卡与显存；SetupAPI 读 NPU；NVML 补 NVIDIA 细节；电源接口读基础频率 | 什么都不需要——一个 `.exe`，无运行时、无安装包、不用在旁边放 DLL |
-| **macOS** 11+<br>Apple Silicon **和** Intel | `sysctl` + IOKit 读拓扑、缓存与带宽；Metal 读 GPU；ANE 核心数 | 什么都不需要 |
-| **Linux**<br>x86_64 · aarch64 | sysfs/procfs、NUMA、`cpufreq`、cgroup 限额；通过 `dlopen` 调 CUDA 驱动 API；PCIe 走 sysfs | 什么都不需要——不用 root，容器里也行 |
+同样的输出、同样的 JSON：不用按平台挑版本，不启子进程，不走 WMI，不在机器上装厂商 SDK，不要管理员权限。国产芯片——鲲鹏、飞腾、龙芯、兆芯——走同一套代码路径，Jetson Orin 也只是台普通的 aarch64 Linux。
 
-不启子进程、不走 WMI、不在机器上装厂商 SDK、不要管理员权限。国产芯片——鲲鹏、飞腾、龙芯、兆芯——走同一套代码路径，Jetson Orin 也只是台普通的 aarch64 Linux。
+<sub>Windows 那张是那台机器**第一轮**测试的截图，早于 [results.html](https://zhipingwoods.github.io/devinfo/results.html) 里列出的六个修复：图里还把 `amdhip64.dll` 标成 "rocm"，ISA 里缺 SSE4.2。那台机器修复后没有复测，所以这张图保留并标注，而不是换成一张好看但不真实的。</sub>
 
 ## ⬇️ 下载
 
@@ -96,33 +110,6 @@ deploy (derived from the measurements above, not measured)
 ```
 
 带 `~` 的数字是**从芯片规格表推算的**，不是从硬件读的，JSON 里对应 `estimated` 数组。没有任何数字是凭空填的。
-
-## 🖼️ 输出预览
-
-| Apple M5 · macOS arm64 | Jetson AGX Orin · Linux aarch64 |
-|:---:|:---:|
-| ![M5](site/assets/macos-m5.png) | ![Orin](site/assets/jetson-orin.png) |
-
-| 2× EPYC 7402 + 8× RTX 4090 · Linux x86_64 |
-|:---:|
-| ![8x4090](site/assets/linux-8x4090.png) |
-
-图中带 `~` 的数字是**从芯片规格表推算的**，不是从硬件读出来的，统一显示为琥珀色。没有任何数字是凭空填的。
-
-### 静态展示页
-
-在线版：**[zhipingwoods.github.io/devinfo](https://zhipingwoods.github.io/devinfo/)**　·　实测记录页：[results.html](https://zhipingwoods.github.io/devinfo/results.html)
-
-站点源码在 `site/`，不依赖任何 CDN：`site/index.html` 是产品页，`site/results.html` 是四台真实机器的实测记录（由 `tools/build_results.py` 从 `assets/captures/*.txt` 生成，原始输出逐字节注入，不会和程序实际打印的内容脱节）。
-
-本地直接打开：
-
-```bash
-python3 -m http.server 19090 --directory site
-# 打开 http://127.0.0.1:19090/
-```
-
-纯静态，没有构建步骤。线上的那份由 `gh-pages` 分支提供（站点在分支根目录），经 GitHub Pages 发布。
 
 ## 📝 简介
 
