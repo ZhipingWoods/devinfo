@@ -1,9 +1,10 @@
 name: ci
 
+# Manual only for now. Every automatic run stopped before its first step, so
+# the checks column was red on every commit without testing anything. Run it
+# from the Actions tab when it is wanted; put the push and pull_request
+# triggers back once runs actually start.
 on:
-  push:
-    branches: [main, master]
-  pull_request:
   workflow_dispatch:
 
 jobs:

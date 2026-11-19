@@ -4,9 +4,10 @@ name: release
 # machines they target, so this workflow only publishes them. The naming is
 # devinfo-<version>-<os>-<arch>.<ext>; archive contents are identical to the
 # repositories devinfo CLI plus its C ABI library.
+# Manual only for now, for the same reason as ci.yml: automatic runs were
+# stopping before their first step. Put the tag trigger back
+# (push: tags: ['v*']) once runs actually start.
 on:
-  push:
-    tags: ['v*']
   workflow_dispatch:
 
 permissions:
